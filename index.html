@@ -322,43 +322,116 @@
             `;
         }
 
-        // Test functions
+        // Test functions - Direct Firebase integration
         function testPageView() {
-            const tracker = new MicrositeTracker({
-                micrositeId: 'green-reserve-noida',
-                debug: true
+            if (!database) {
+                console.error('Firebase not initialized');
+                alert('Firebase not initialized. Please refresh the page.');
+                return;
+            }
+            
+            const timestamp = new Date().toISOString();
+            const eventData = {
+                gtm_id: 'gtm_dashboard_test_' + Date.now(),
+                microsite_id: 'green-reserve-noida',
+                event_type: 'page_view',
+                url: window.location.href,
+                referrer: document.referrer || 'direct',
+                utm_source: 'dashboard_test',
+                utm_medium: 'test',
+                utm_campaign: 'dashboard',
+                user_agent: navigator.userAgent,
+                timestamp: timestamp,
+                date: timestamp.split('T')[0],
+                source: 'dashboard_test'
+            };
+            
+            database.ref('visits').push(eventData).then(() => {
+                console.log('Test page view tracked');
+                alert('✅ Page view tracked! Check the dashboard numbers.');
+                loadAnalytics(); // Refresh the dashboard
+            }).catch(error => {
+                console.error('Error tracking page view:', error);
+                alert('❌ Error tracking page view: ' + error.message);
             });
-            tracker.trackPageView();
-            console.log('Test page view tracked');
         }
 
         function testLead() {
-            const tracker = new MicrositeTracker({
-                micrositeId: 'green-reserve-noida',
-                debug: true
+            if (!database) {
+                console.error('Firebase not initialized');
+                alert('Firebase not initialized. Please refresh the page.');
+                return;
+            }
+            
+            const timestamp = new Date().toISOString();
+            const eventData = {
+                gtm_id: 'gtm_lead_test_' + Date.now(),
+                microsite_id: 'green-reserve-noida',
+                event_type: 'form_submission',
+                url: window.location.href,
+                referrer: document.referrer || 'direct',
+                utm_source: 'dashboard_test',
+                utm_medium: 'test',
+                utm_campaign: 'dashboard',
+                user_agent: navigator.userAgent,
+                timestamp: timestamp,
+                date: timestamp.split('T')[0],
+                source: 'dashboard_test',
+                form_data: {
+                    name: 'Test User',
+                    email: 'test@example.com',
+                    phone: '1234567890',
+                    message: 'Test lead from dashboard'
+                }
+            };
+            
+            database.ref('leads').push(eventData).then(() => {
+                console.log('Test lead tracked');
+                alert('✅ Lead tracked! Check the dashboard numbers.');
+                loadAnalytics(); // Refresh the dashboard
+            }).catch(error => {
+                console.error('Error tracking lead:', error);
+                alert('❌ Error tracking lead: ' + error.message);
             });
-            tracker.trackLead({
-                name: 'Test User',
-                email: 'test@example.com',
-                phone: '1234567890',
-                message: 'Test lead from dashboard'
-            });
-            console.log('Test lead tracked');
         }
 
         function testFormSubmission() {
-            const tracker = new MicrositeTracker({
-                micrositeId: 'green-reserve-noida',
-                debug: true
-            });
-            tracker.trackEvent('form_submission', {
+            if (!database) {
+                console.error('Firebase not initialized');
+                alert('Firebase not initialized. Please refresh the page.');
+                return;
+            }
+            
+            const timestamp = new Date().toISOString();
+            const eventData = {
+                gtm_id: 'gtm_form_test_' + Date.now(),
+                microsite_id: 'green-reserve-noida',
+                event_type: 'form_submission',
+                url: window.location.href,
+                referrer: document.referrer || 'direct',
+                utm_source: 'dashboard_test',
+                utm_medium: 'test',
+                utm_campaign: 'dashboard',
+                user_agent: navigator.userAgent,
+                timestamp: timestamp,
+                date: timestamp.split('T')[0],
+                source: 'dashboard_test',
                 form_data: {
                     name: 'Test Form User',
                     email: 'form@example.com',
-                    phone: '9876543210'
+                    phone: '9876543210',
+                    message: 'Test form submission from dashboard'
                 }
+            };
+            
+            database.ref('leads').push(eventData).then(() => {
+                console.log('Test form submission tracked');
+                alert('✅ Form submission tracked! Check the dashboard numbers.');
+                loadAnalytics(); // Refresh the dashboard
+            }).catch(error => {
+                console.error('Error tracking form submission:', error);
+                alert('❌ Error tracking form submission: ' + error.message);
             });
-            console.log('Test form submission tracked');
         }
 
         // Initialize dashboard
