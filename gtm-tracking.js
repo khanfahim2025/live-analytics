@@ -4,21 +4,32 @@
  * It sends data directly to Firebase without needing serverless functions
  */
 
-// Firebase configuration - Your actual config
-const firebaseConfig = {
-    apiKey: "AIzaSyDl8ApkaKB-Cpg9fHfk4uwRpAUn6oj-2FA",
-    authDomain: "live-analytics-dashboard.firebaseapp.com",
-    databaseURL: "https://live-analytics-dashboard-default-rtdb.asia-southeast1.firebasedatabase.app",
-    projectId: "live-analytics-dashboard",
-    storageBucket: "live-analytics-dashboard.firebasestorage.app",
-    messagingSenderId: "289125971781",
-    appId: "1:289125971781:web:f9eee35fc1938a7d43302c",
-    measurementId: "G-CMZT1BT8W5"
-};
+// Wait for Firebase to be loaded before initializing
+let firebaseApp = null;
+let database = null;
 
-// Initialize Firebase
-if (typeof firebase !== 'undefined') {
-    firebase.initializeApp(firebaseConfig);
+// Initialize Firebase when ready
+function initializeFirebase() {
+    if (typeof firebase !== 'undefined' && !firebaseApp) {
+        const firebaseConfig = {
+            apiKey: "AIzaSyDl8ApkaKB-Cpg9fHfk4uwRpAUn6oj-2FA",
+            authDomain: "live-analytics-dashboard.firebaseapp.com",
+            databaseURL: "https://live-analytics-dashboard-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "live-analytics-dashboard",
+            storageBucket: "live-analytics-dashboard.firebasestorage.app",
+            messagingSenderId: "289125971781",
+            appId: "1:289125971781:web:f9eee35fc1938a7d43302c",
+            measurementId: "G-CMZT1BT8W5"
+        };
+        
+        try {
+            firebaseApp = firebase.initializeApp(firebaseConfig);
+            database = firebase.database();
+            console.log('🔥 Firebase initialized successfully');
+        } catch (error) {
+            console.error('❌ Firebase initialization error:', error);
+        }
+    }
 }
 
 class RealMicrositeTracker {
@@ -72,13 +83,22 @@ class RealMicrositeTracker {
         this.log('Tracking event', eventData);
         
         try {
+            // Initialize Firebase if not already done
+            if (!database) {
+                initializeFirebase();
+            }
+            
+            if (!database) {
+                throw new Error('Firebase database not initialized');
+            }
+            
             // Store directly in Firebase
-            const ref = firebase.database().ref('events').push();
+            const ref = database.ref('events').push();
             await ref.set(eventData);
             
             // Also store in specific collections
             if (eventType === 'page_view') {
-                const visitRef = firebase.database().ref('visits').push();
+                const visitRef = database.ref('visits').push();
                 await visitRef.set({
                     ...eventData,
                     date: eventData.timestamp.split('T')[0]
@@ -86,7 +106,7 @@ class RealMicrositeTracker {
             }
             
             if (eventType === 'form_submission' || eventType === 'lead_conversion') {
-                const leadRef = firebase.database().ref('leads').push();
+                const leadRef = database.ref('leads').push();
                 await leadRef.set({
                     ...eventData,
                     date: eventData.timestamp.split('T')[0]
@@ -276,13 +296,32 @@ class RealMicrositeTracker {
 
 // Auto-initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize tracker for green-reserve-noida
-    window.micrositeTracker = new RealMicrositeTracker({
-        micrositeId: 'green-reserve-noida',
-        debug: true
-    });
+    // Wait for Firebase to be loaded
+    const checkFirebase = setInterval(() => {
+        if (typeof firebase !== 'undefined') {
+            clearInterval(checkFirebase);
+            initializeFirebase();
+            
+            // Initialize tracker for green-reserve-noida
+            window.micrositeTracker = new RealMicrositeTracker({
+                micrositeId: 'green-reserve-noida',
+                debug: true
+            });
+            
+            console.log('🚀 Live Analytics Tracker initialized for green-reserve-noida.in');
+        }
+    }, 100);
     
-    console.log('🚀 Live Analytics Tracker initialized for green-reserve-noida.in');
+    // Fallback timeout
+    setTimeout(() => {
+        if (!window.micrositeTracker) {
+            console.warn('⚠️ Firebase not loaded, initializing tracker without Firebase');
+            window.micrositeTracker = new RealMicrositeTracker({
+                micrositeId: 'green-reserve-noida',
+                debug: true
+            });
+        }
+    }, 5000);
 });
 
 // Export for manual initialization
