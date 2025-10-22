@@ -597,9 +597,9 @@
         <button class="test-btn form" onclick="testFormSubmission()">Test Form Submission</button>
     </div>
 
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js"></script>
+    <!-- Firebase SDK v8 for compatibility -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     
     <script>
         // Firebase configuration - Your actual config
@@ -626,33 +626,45 @@
         // Load analytics data
         async function loadAnalytics() {
             try {
-                console.log('Loading analytics data...');
+                console.log('🔄 Loading analytics data...');
+                
+                if (!database) {
+                    console.error('❌ Database not initialized');
+                    return;
+                }
                 
                 // Load visits
+                console.log('📊 Loading visits...');
                 const visitsRef = database.ref('visits');
                 const visitsSnapshot = await visitsRef.once('value');
                 const visitsData = visitsSnapshot.val() || {};
                 visits = Object.keys(visitsData).length;
+                console.log('👥 Visits found:', visits, visitsData);
 
                 // Load leads
+                console.log('📊 Loading leads...');
                 const leadsRef = database.ref('leads');
                 const leadsSnapshot = await leadsRef.once('value');
                 const leadsData = leadsSnapshot.val() || {};
                 leads = Object.keys(leadsData).length;
+                console.log('🎯 Leads found:', leads, leadsData);
 
                 // Load events
+                console.log('📊 Loading events...');
                 const eventsRef = database.ref('events');
                 const eventsSnapshot = await eventsRef.once('value');
                 const eventsData = eventsSnapshot.val() || {};
                 events = Object.keys(eventsData).length;
+                console.log('📈 Events found:', events, eventsData);
 
                 // Update dashboard
                 updateDashboard();
                 
-                console.log('Analytics loaded:', { visits, leads, events });
+                console.log('✅ Analytics loaded successfully:', { visits, leads, events });
                 
             } catch (error) {
-                console.error('Error loading analytics:', error);
+                console.error('❌ Error loading analytics:', error);
+                console.error('Error details:', error.message);
             }
         }
 
@@ -849,14 +861,41 @@
 
         // Initialize dashboard
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('Dashboard initialized');
-            loadAnalytics();
+            console.log('🚀 Dashboard initializing...');
             
-            // Update performance metrics every 5 seconds
-            setInterval(updatePerformanceMetrics, 5000);
+            // Wait for Firebase to be ready
+            const checkFirebase = setInterval(() => {
+                if (typeof firebase !== 'undefined') {
+                    clearInterval(checkFirebase);
+                    console.log('🔥 Firebase loaded, initializing dashboard...');
+                    
+                    try {
+                        firebase.initializeApp(firebaseConfig);
+                        database = firebase.database();
+                        console.log('✅ Firebase initialized successfully');
+                        
+                        // Load analytics data
+                        loadAnalytics();
+                        
+                        // Update performance metrics every 5 seconds
+                        setInterval(updatePerformanceMetrics, 5000);
+                        
+                        // Auto-refresh data every 30 seconds
+                        setInterval(loadAnalytics, 30000);
+                        
+                    } catch (error) {
+                        console.error('❌ Firebase initialization error:', error);
+                    }
+                }
+            }, 100);
             
-            // Auto-refresh data every 30 seconds
-            setInterval(loadAnalytics, 30000);
+            // Fallback timeout
+            setTimeout(() => {
+                if (!database) {
+                    console.warn('⚠️ Firebase not loaded after 5 seconds, trying to load data anyway...');
+                    loadAnalytics();
+                }
+            }, 5000);
         });
     </script>
 </body>
