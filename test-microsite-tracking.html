@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Microsite Tracking</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        form {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Test Microsite Tracking</h1>
+        <p>This page simulates your microsite to test the tracking functionality.</p>
+        
+        <div id="status"></div>
+        
+        <h2>📊 Test Tracking</h2>
+        <button onclick="testPageView()">Test Page View</button>
+        <button onclick="testButtonClick()">Test Button Click</button>
+        <button onclick="testLead()">Test Lead Generation</button>
+        
+        <h2>📝 Test Form</h2>
+        <form id="testForm">
+            <input type="text" name="name" placeholder="Your Name" required>
+            <input type="email" name="email" placeholder="Your Email" required>
+            <input type="tel" name="phone" placeholder="Your Phone">
+            <textarea name="message" placeholder="Your Message"></textarea>
+            <button type="submit">Submit Inquiry</button>
+        </form>
+        
+        <h2>🔗 Test Links</h2>
+        <button class="enquire-now">Enquire Now</button>
+        <button class="register-now">Register Now</button>
+        <button class="request-brochure">Request Brochure</button>
+        <button class="download-brochure">Download Brochure</button>
+        
+        <div id="results"></div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js"></script>
+    
+    <!-- Simple Tracking Script -->
+    <script src="https://khanfahim2025.github.io/live-analytics/simple-tracking.js"></script>
+    
+    <script>
+        function showStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.innerHTML = `<div class="status ${type}">${message}</div>`;
+        }
+
+        function showResult(message, type = 'info') {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML += `<div class="status ${type}">${message}</div>`;
+        }
+
+        function testPageView() {
+            if (window.LiveAnalytics) {
+                window.LiveAnalytics.trackPageView();
+                showResult('✅ Page view tracking test sent', 'success');
+            } else {
+                showResult('❌ LiveAnalytics not available', 'error');
+            }
+        }
+
+        function testButtonClick() {
+            if (window.LiveAnalytics) {
+                window.LiveAnalytics.trackButtonClick('Test Button Click', 'button_click');
+                showResult('✅ Button click tracking test sent', 'success');
+            } else {
+                showResult('❌ LiveAnalytics not available', 'error');
+            }
+        }
+
+        function testLead() {
+            if (window.LiveAnalytics) {
+                window.LiveAnalytics.trackLead({
+                    name: 'Test User',
+                    email: 'test@example.com',
+                    phone: '1234567890',
+                    message: 'Test lead from microsite'
+                });
+                showResult('✅ Lead tracking test sent', 'success');
+            } else {
+                showResult('❌ LiveAnalytics not available', 'error');
+            }
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            showStatus('🚀 Test page loaded. Check console for tracking logs.', 'info');
+            
+            // Check if tracking is working
+            setTimeout(() => {
+                if (window.LiveAnalytics) {
+                    showStatus('✅ Live Analytics Tracker loaded successfully!', 'success');
+                } else {
+                    showStatus('❌ Live Analytics Tracker not loaded', 'error');
+                }
+            }, 2000);
+        });
+    </script>
+</body>
+</html>
