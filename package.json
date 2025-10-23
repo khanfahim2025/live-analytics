@@ -1,0 +1,33 @@
+{
+  "name": "live-analytics-dashboard",
+  "version": "1.0.0",
+  "description": "Real-time GTM tracking dashboard for microsites",
+  "main": "index.html",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "python3 -m http.server 3000",
+    "python": "python3 -m http.server 8000",
+    "build": "echo 'No build step required for static site'",
+    "deploy": "gh-pages -d ."
+  },
+  "engines": {
+    "node": "18.x"
+  },
+  "keywords": [
+    "analytics",
+    "gtm",
+    "tracking",
+    "dashboard",
+    "microsites",
+    "real-time"
+  ],
+  "author": "Live Analytics Dashboard",
+  "license": "MIT",
+  "devDependencies": {
+    "gh-pages": "^6.0.0"
+  },
+  "dependencies": {
+    "chart.js": "^4.4.0",
+    "socket.io-client": "^4.7.4"
+  }
+}

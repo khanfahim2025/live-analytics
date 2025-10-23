@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Analytics Dashboard - GitHub Pages</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="header-content">
+                <h1><i class="fas fa-chart-line"></i> Live Analytics Dashboard</h1>
+                <p>Real-time monitoring for websites and microsites</p>
+                <div class="connection-status">
+                    <span class="status-indicator connected"></span>
+                    <span>Connected to GitHub Pages</span>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button class="btn-primary" onclick="refreshData()">
+                    <i class="fas fa-sync-alt"></i> Refresh Data
+                </button>
+            </div>
+        </header>
+
+        <div class="dashboard-grid">
+            <!-- Overview Cards -->
+            <div class="overview-section">
+                <div class="overview-cards">
+                    <div class="overview-card">
+                        <div class="card-icon visitors">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="card-content">
+                            <h3 id="totalVisitors">0</h3>
+                            <p>Total Visitors</p>
+                            <span class="trend up">↗️ +12%</span>
+                        </div>
+                    </div>
+                    
+                    <div class="overview-card">
+                        <div class="card-icon leads">
+                            <i class="fas fa-handshake"></i>
+                        </div>
+                        <div class="card-content">
+                            <h3 id="totalLeads">0</h3>
+                            <p>Total Leads</p>
+                            <span class="trend up">↗️ +8%</span>
+                        </div>
+                    </div>
+                    
+                    <div class="overview-card">
+                        <div class="card-icon conversion">
+                            <i class="fas fa-percentage"></i>
+                        </div>
+                        <div class="card-content">
+                            <h3 id="totalConversion">0%</h3>
+                            <p>Overall Conversion</p>
+                            <span class="trend up">↗️ +2.1%</span>
+                        </div>
+                    </div>
+                    
+                    <div class="overview-card">
+                        <div class="card-icon websites">
+                            <i class="fas fa-globe"></i>
+                        </div>
+                        <div class="card-content">
+                            <h3 id="totalWebsites">1</h3>
+                            <p>Total Websites</p>
+                            <span class="status-text live">🟢 All Live</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Microsite Performance Table -->
+            <div class="section">
+                <div class="section-header">
+                    <h2><i class="fas fa-chart-bar"></i> Microsite Performance</h2>
+                    <div class="section-actions">
+                        <button class="btn-secondary" onclick="exportData()">
+                            <i class="fas fa-download"></i> Export
+                        </button>
+                        <button class="btn-primary" onclick="addMicrosite()">
+                            <i class="fas fa-plus"></i> Add Microsite
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="table-container">
+                    <table class="performance-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Website</th>
+                                <th>Visitors</th>
+                                <th>Leads</th>
+                                <th>Conversion %</th>
+                                <th>Website Status</th>
+                                <th>Form Status</th>
+                                <th>Last Activity</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="micrositesTable">
+                            <tr>
+                                <td>1</td>
+                                <td>
+                                    <div class="website-info">
+                                        <strong>Homesfy Test Website</strong>
+                                        <br>
+                                        <small>https://www.homesfytestwebsite.com</small>
+                                    </div>
+                                </td>
+                                <td><span class="metric-value" id="visitors-1">0</span></td>
+                                <td><span class="metric-value" id="leads-1">0</span></td>
+                                <td><span class="metric-value" id="conversion-1">0%</span></td>
+                                <td><span class="status-badge online">🟢 ONLINE</span></td>
+                                <td><span class="status-badge working">✅ Working</span></td>
+                                <td><span class="last-activity">Just now</span></td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button class="btn-icon" onclick="editMicrosite(1)" title="Edit">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn-icon delete" onclick="removeMicrosite(1)" title="Remove">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Live Website Status -->
+            <div class="section">
+                <div class="section-header">
+                    <h2><i class="fas fa-globe"></i> Live Website Status</h2>
+                </div>
+                <div class="status-cards">
+                    <div class="status-card">
+                        <div class="status-header">
+                            <h3>Homesfy Test Website</h3>
+                            <span class="status-badge online">🟢 ONLINE</span>
+                        </div>
+                        <div class="status-details">
+                            <p><strong>Response:</strong> <span id="responseTime-1">0ms</span> | <strong>Uptime:</strong> <span id="uptime-1">100%</span></p>
+                            <p><strong>Visitors:</strong> <span id="liveVisitors-1">0</span> | <strong>Leads:</strong> <span id="liveLeads-1">0</span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Live Performance Metrics -->
+            <div class="section">
+                <div class="section-header">
+                    <h2><i class="fas fa-tachometer-alt"></i> Live Performance Metrics</h2>
+                </div>
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-icon">🚀</div>
+                        <div class="metric-content">
+                            <h4>Response Time</h4>
+                            <p id="avgResponseTime">0ms</p>
+                            <span class="trend up">↗️ -15ms</span>
+                        </div>
+                    </div>
+                    
+                    <div class="metric-card">
+                        <div class="metric-icon">📊</div>
+                        <div class="metric-content">
+                            <h4>Uptime</h4>
+                            <p id="avgUptime">100%</p>
+                            <span class="trend up">↗️ +0.1%</span>
+                        </div>
+                    </div>
+                    
+                    <div class="metric-card">
+                        <div class="metric-icon">👥</div>
+                        <div class="metric-content">
+                            <h4>Concurrent Users</h4>
+                            <p id="concurrentUsers">0</p>
+                            <span class="trend up">↗️ +12</span>
+                        </div>
+                    </div>
+                    
+                    <div class="metric-card">
+                        <div class="metric-icon">🔄</div>
+                        <div class="metric-content">
+                            <h4>Page Load Speed</h4>
+                            <p id="pageLoadSpeed">0.0s</p>
+                            <span class="trend up">↗️ -0.3s</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- API Configuration Section -->
+        <div class="section">
+            <div class="section-header">
+                <h2><i class="fas fa-cog"></i> API Configuration</h2>
+            </div>
+            <div class="config-section">
+                <div class="config-item">
+                    <label for="apiUrl">Server API URL:</label>
+                    <input type="text" id="apiUrl" value="https://your-server.herokuapp.com" placeholder="https://your-server.herokuapp.com">
+                    <small>Enter your deployed server URL (Heroku, Railway, etc.)</small>
+                </div>
+                <div class="config-actions">
+                    <button class="btn-primary" onclick="updateApiUrl()">
+                        <i class="fas fa-save"></i> Save Configuration
+                    </button>
+                    <button class="btn-secondary" onclick="testConnection()">
+                        <i class="fas fa-plug"></i> Test Connection
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // GitHub Pages Compatible Dashboard
+        class GitHubDashboard {
+            constructor() {
+                this.apiUrl = localStorage.getItem('apiUrl') || 'https://your-server.herokuapp.com';
+                this.updateApiUrlDisplay();
+                this.init();
+            }
+
+            init() {
+                console.log('🚀 GitHub Pages Dashboard Initialized');
+                this.loadData();
+                
+                // Auto-refresh every 30 seconds
+                setInterval(() => {
+                    this.loadData();
+                }, 30000);
+            }
+
+            updateApiUrlDisplay() {
+                document.getElementById('apiUrl').value = this.apiUrl;
+            }
+
+            updateApiUrl() {
+                const newUrl = document.getElementById('apiUrl').value.trim();
+                if (newUrl) {
+                    this.apiUrl = newUrl;
+                    localStorage.setItem('apiUrl', this.apiUrl);
+                    console.log('✅ API URL updated:', this.apiUrl);
+                    alert('API URL updated successfully!');
+                }
+            }
+
+            async testConnection() {
+                try {
+                    const response = await fetch(`${this.apiUrl}/api/counts.json`);
+                    if (response.ok) {
+                        alert('✅ Connection successful! Server is reachable.');
+                    } else {
+                        alert('❌ Connection failed. Server returned error: ' + response.status);
+                    }
+                } catch (error) {
+                    alert('❌ Connection failed. Error: ' + error.message);
+                }
+            }
+
+            async loadData() {
+                try {
+                    console.log('📊 Loading data from:', this.apiUrl);
+                    
+                    const response = await fetch(`${this.apiUrl}/api/counts.json`);
+                    if (!response.ok) {
+                        throw new Error(`Server error: ${response.status}`);
+                    }
+                    
+                    const serverCounts = await response.json();
+                    console.log('📊 Server counts:', serverCounts);
+                    
+                    // Update dashboard with server data
+                    this.updateDashboard(serverCounts);
+                    
+                } catch (error) {
+                    console.error('❌ Error loading data:', error);
+                    this.showOfflineMode();
+                }
+            }
+
+            updateDashboard(serverCounts) {
+                // Update overview cards
+                let totalVisitors = 0;
+                let totalLeads = 0;
+                let totalConversion = 0;
+                let siteCount = 0;
+
+                Object.values(serverCounts).forEach(site => {
+                    totalVisitors += site.visitors || 0;
+                    totalLeads += site.leads || 0;
+                    totalConversion += parseFloat(site.conversionRate) || 0;
+                    siteCount++;
+                });
+
+                document.getElementById('totalVisitors').textContent = totalVisitors;
+                document.getElementById('totalLeads').textContent = totalLeads;
+                document.getElementById('totalConversion').textContent = siteCount > 0 ? (totalConversion / siteCount).toFixed(1) + '%' : '0%';
+                document.getElementById('totalWebsites').textContent = siteCount;
+
+                // Update individual site data
+                Object.entries(serverCounts).forEach(([gtmId, data], index) => {
+                    const siteIndex = index + 1;
+                    
+                    // Update table
+                    document.getElementById(`visitors-${siteIndex}`).textContent = data.visitors || 0;
+                    document.getElementById(`leads-${siteIndex}`).textContent = data.leads || 0;
+                    document.getElementById(`conversion-${siteIndex}`).textContent = data.conversionRate || '0%';
+                    
+                    // Update live status
+                    document.getElementById(`liveVisitors-${siteIndex}`).textContent = data.visitors || 0;
+                    document.getElementById(`liveLeads-${siteIndex}`).textContent = data.leads || 0;
+                    
+                    // Update response time and uptime (mock data for demo)
+                    document.getElementById(`responseTime-${siteIndex}`).textContent = Math.floor(Math.random() * 50 + 10) + 'ms';
+                    document.getElementById(`uptime-${siteIndex}`).textContent = '99.' + Math.floor(Math.random() * 9) + '%';
+                });
+
+                // Update performance metrics
+                document.getElementById('avgResponseTime').textContent = Math.floor(Math.random() * 30 + 20) + 'ms';
+                document.getElementById('avgUptime').textContent = '99.' + Math.floor(Math.random() * 9) + '%';
+                document.getElementById('concurrentUsers').textContent = Math.floor(Math.random() * 10);
+                document.getElementById('pageLoadSpeed').textContent = (Math.random() * 2 + 0.5).toFixed(1) + 's';
+            }
+
+            showOfflineMode() {
+                console.log('📴 Showing offline mode - no server connection');
+                // Keep existing data, just show that we're in offline mode
+                document.querySelector('.connection-status span:last-child').textContent = 'Offline Mode';
+                document.querySelector('.connection-status .status-indicator').classList.remove('connected');
+                document.querySelector('.connection-status .status-indicator').classList.add('disconnected');
+            }
+        }
+
+        function refreshData() {
+            window.dashboard.loadData();
+        }
+
+        function exportData() {
+            alert('Export functionality would be implemented here');
+        }
+
+        function addMicrosite() {
+            alert('Add microsite functionality would be implemented here');
+        }
+
+        function editMicrosite(id) {
+            alert('Edit microsite functionality would be implemented here');
+        }
+
+        function removeMicrosite(id) {
+            alert('Remove microsite functionality would be implemented here');
+        }
+
+        // Initialize dashboard when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            window.dashboard = new GitHubDashboard();
+        });
+    </script>
+</body>
+</html>

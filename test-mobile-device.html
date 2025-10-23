@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mobile Device Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .info { background: #f0f0f0; padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <h1>📱 Mobile Device Detection Test</h1>
+    
+    <div id="deviceInfo" class="info">
+        <h3>Device Information:</h3>
+        <p><strong>User Agent:</strong> <span id="userAgent"></span></p>
+        <p><strong>Device Type:</strong> <span id="deviceType"></span></p>
+        <p><strong>Is Mobile:</strong> <span id="isMobile"></span></p>
+        <p><strong>Is Tablet:</strong> <span id="isTablet"></span></p>
+        <p><strong>Screen Size:</strong> <span id="screenSize"></span></p>
+        <p><strong>Viewport:</strong> <span id="viewport"></span></p>
+        <p><strong>Orientation:</strong> <span id="orientation"></span></p>
+    </div>
+
+    <div id="connectionTest" class="info">
+        <h3>Connection Test:</h3>
+        <p><strong>Server Status:</strong> <span id="serverStatus">Testing...</span></p>
+        <p><strong>API Response:</strong> <span id="apiResponse">Testing...</span></p>
+    </div>
+
+    <div id="trackingTest" class="info">
+        <h3>Tracking Test:</h3>
+        <button onclick="testTracking()">Test Tracking</button>
+        <p><strong>Tracking Status:</strong> <span id="trackingStatus">Ready to test</span></p>
+    </div>
+
+    <script>
+        // Enhanced mobile detection (same as in homesfy-tracker-fixed.js)
+        function isMobileDevice() {
+            const userAgent = navigator.userAgent.toLowerCase();
+            const mobileKeywords = [
+                'android', 'webos', 'iphone', 'ipad', 'ipod', 'blackberry', 
+                'iemobile', 'opera mini', 'mobile', 'tablet', 'kindle', 'silk'
+            ];
+            return mobileKeywords.some(keyword => userAgent.includes(keyword));
+        }
+
+        function isTabletDevice() {
+            const userAgent = navigator.userAgent.toLowerCase();
+            return /ipad|android(?!.*mobile)|tablet|kindle|silk/i.test(userAgent);
+        }
+
+        function getDeviceType() {
+            if (isTabletDevice()) return 'tablet';
+            if (isMobileDevice()) return 'mobile';
+            return 'desktop';
+        }
+
+        // Display device information
+        document.getElementById('userAgent').textContent = navigator.userAgent;
+        document.getElementById('deviceType').textContent = getDeviceType();
+        document.getElementById('isMobile').textContent = isMobileDevice();
+        document.getElementById('isTablet').textContent = isTabletDevice();
+        document.getElementById('screenSize').textContent = `${window.screen.width}x${window.screen.height}`;
+        document.getElementById('viewport').textContent = `${window.innerWidth}x${window.innerHeight}`;
+        document.getElementById('orientation').textContent = window.innerWidth > window.innerHeight ? 'landscape' : 'portrait';
+
+        // Test server connection
+        async function testConnection() {
+            try {
+                const response = await fetch('http://10.74.28.74:9000/api/counts.json');
+                if (response.ok) {
+                    const data = await response.json();
+                    document.getElementById('serverStatus').textContent = '✅ Connected';
+                    document.getElementById('apiResponse').textContent = '✅ API Working';
+                    document.getElementById('connectionTest').className = 'info success';
+                } else {
+                    document.getElementById('serverStatus').textContent = '❌ Server Error';
+                    document.getElementById('apiResponse').textContent = `❌ HTTP ${response.status}`;
+                    document.getElementById('connectionTest').className = 'info error';
+                }
+            } catch (error) {
+                document.getElementById('serverStatus').textContent = '❌ Connection Failed';
+                document.getElementById('apiResponse').textContent = `❌ ${error.message}`;
+                document.getElementById('connectionTest').className = 'info error';
+            }
+        }
+
+        // Test tracking
+        async function testTracking() {
+            document.getElementById('trackingStatus').textContent = '🔄 Sending test event...';
+            
+            const testEvent = {
+                event: 'gtm.testEvent',
+                gtmId: 'GTM-5PHH5D6T',
+                siteName: 'Mobile Test Device',
+                siteUrl: window.location.href,
+                data: {
+                    timestamp: Date.now(),
+                    url: window.location.href,
+                    referrer: document.referrer,
+                    sessionId: 'test_' + Date.now(),
+                    isMobile: isMobileDevice(),
+                    isTablet: isTabletDevice(),
+                    deviceType: getDeviceType(),
+                    orientation: window.innerWidth > window.innerHeight ? 'landscape' : 'portrait',
+                    userAgent: navigator.userAgent,
+                    screenSize: {
+                        width: window.screen.width,
+                        height: window.screen.height
+                    },
+                    viewport: {
+                        width: window.innerWidth,
+                        height: window.innerHeight
+                    }
+                }
+            };
+
+            try {
+                const response = await fetch('http://10.74.28.74:9000/api/receive', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(testEvent)
+                });
+
+                if (response.ok) {
+                    document.getElementById('trackingStatus').textContent = '✅ Test event sent successfully!';
+                    document.getElementById('trackingTest').className = 'info success';
+                } else {
+                    document.getElementById('trackingStatus').textContent = '❌ Failed to send test event';
+                    document.getElementById('trackingTest').className = 'info error';
+                }
+            } catch (error) {
+                document.getElementById('trackingStatus').textContent = `❌ Error: ${error.message}`;
+                document.getElementById('trackingTest').className = 'info error';
+            }
+        }
+
+        // Test connection on page load
+        testConnection();
+    </script>
+</body>
+</html>

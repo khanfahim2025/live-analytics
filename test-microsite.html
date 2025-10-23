@@ -3,212 +3,137 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Test Microsite - Green Reserve Noida</title>
+    <title>Test Microsite - Homesfy Test Website</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-        }
-        .container {
             max-width: 800px;
             margin: 0 auto;
-            padding: 40px 20px;
+            padding: 20px;
+            background: #f5f5f5;
         }
-        .hero {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 15px;
-            padding: 40px;
-            text-align: center;
-            margin-bottom: 30px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
-        .hero h1 {
-            color: #2c3e50;
-            font-size: 2.5rem;
-            margin-bottom: 20px;
-        }
-        .hero p {
-            color: #7f8c8d;
-            font-size: 1.2rem;
-            margin-bottom: 30px;
-        }
-        .form-section {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 15px;
-            padding: 40px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-        }
-        .form-section h2 {
-            color: #2c3e50;
-            margin-bottom: 20px;
+        h1 {
+            color: #333;
             text-align: center;
         }
         .form-group {
             margin-bottom: 20px;
         }
-        .form-group label {
+        label {
             display: block;
             margin-bottom: 5px;
-            color: #2c3e50;
             font-weight: bold;
         }
-        .form-group input,
-        .form-group textarea {
+        input, textarea {
             width: 100%;
-            padding: 12px;
-            border: 2px solid #ecf0f1;
-            border-radius: 8px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        button {
+            background: #4299e1;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
             font-size: 16px;
-            transition: border-color 0.3s ease;
         }
-        .form-group input:focus,
-        .form-group textarea:focus {
-            outline: none;
-            border-color: #3498db;
+        button:hover {
+            background: #3182ce;
         }
-        .submit-btn {
-            background: #27ae60;
-            color: white;
-            padding: 15px 30px;
-            border: none;
-            border-radius: 8px;
-            font-size: 18px;
-            cursor: pointer;
-            width: 100%;
-            transition: background-color 0.3s ease;
-        }
-        .submit-btn:hover {
-            background: #229954;
-        }
-        .cta-btn {
-            background: #e67e22;
-            color: white;
-            padding: 15px 30px;
-            border: none;
-            border-radius: 8px;
-            font-size: 18px;
-            cursor: pointer;
+        .cta-button {
+            background: #48bb78;
             margin: 10px;
-            transition: background-color 0.3s ease;
         }
-        .cta-btn:hover {
-            background: #d35400;
+        .cta-button:hover {
+            background: #38a169;
         }
         .tracking-info {
-            background: rgba(255, 255, 255, 0.9);
-            padding: 20px;
-            border-radius: 10px;
+            background: #e7f3ff;
+            padding: 15px;
+            border-radius: 5px;
             margin-top: 20px;
-            border-left: 4px solid #3498db;
-        }
-        .tracking-info h3 {
-            color: #2c3e50;
-            margin-bottom: 10px;
-        }
-        .tracking-info p {
-            color: #7f8c8d;
-            margin-bottom: 5px;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="hero">
-            <h1>L&T Green Reserve Noida</h1>
-            <p>Premium residential project with modern amenities and green living</p>
-            <button class="cta-btn" data-track-lead="true">Get Brochure</button>
-            <button class="cta-btn" data-track-lead="true">Schedule Site Visit</button>
-            <button class="cta-btn enquire-now" data-track-lead="true">Enquire Now</button>
-        </div>
+        <h1>🏠 Homesfy Test Website</h1>
+        <p>This is a test microsite to demonstrate real-time tracking with the Live Analytics Dashboard.</p>
+        
+        <h2>Contact Form</h2>
+        <form id="contact-form">
+            <div class="form-group">
+                <label for="name">Name:</label>
+                <input type="text" id="name" name="name" required>
+            </div>
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+            <div class="form-group">
+                <label for="phone">Phone:</label>
+                <input type="tel" id="phone" name="phone">
+            </div>
+            <div class="form-group">
+                <label for="message">Message:</label>
+                <textarea id="message" name="message" rows="4"></textarea>
+            </div>
+            <button type="submit">Send Message</button>
+        </form>
 
-        <div class="form-section">
-            <h2>Get in Touch</h2>
-            <form id="contactForm">
-                <div class="form-group">
-                    <label for="name">Full Name *</label>
-                    <input type="text" id="name" name="name" required>
-                </div>
-                <div class="form-group">
-                    <label for="email">Email Address *</label>
-                    <input type="email" id="email" name="email" required>
-                </div>
-                <div class="form-group">
-                    <label for="phone">Phone Number *</label>
-                    <input type="tel" id="phone" name="phone" required>
-                </div>
-                <div class="form-group">
-                    <label for="message">Message</label>
-                    <textarea id="message" name="message" rows="4" placeholder="Tell us about your requirements..."></textarea>
-                </div>
-                <button type="submit" class="submit-btn" data-track-lead="true">Send Inquiry</button>
-            </form>
-        </div>
+        <h2>Call-to-Action Buttons</h2>
+        <button class="cta-button" onclick="trackConversion({type: 'lead', value: 50})">Get Quote</button>
+        <button class="cta-button" onclick="trackConversion({type: 'inquiry', value: 25})">Schedule Visit</button>
+        <button class="cta-button" onclick="trackConversion({type: 'download', value: 10})">Download Brochure</button>
 
         <div class="tracking-info">
-            <h3>🔍 Tracking Information</h3>
-            <p><strong>Microsite ID:</strong> green-reserve-noida</p>
-            <p><strong>Tracking Status:</strong> <span id="trackingStatus">Initializing...</span></p>
-            <p><strong>Page Views:</strong> <span id="pageViews">0</span></p>
-            <p><strong>Form Submissions:</strong> <span id="formSubmissions">0</span></p>
-            <p><strong>Last Activity:</strong> <span id="lastActivity">None</span></p>
+            <h3>📊 Tracking Information</h3>
+            <p>This page is being tracked by the Live Analytics Dashboard. The following events are being monitored:</p>
+            <ul>
+                <li>✅ Page views</li>
+                <li>✅ Form submissions</li>
+                <li>✅ Button clicks</li>
+                <li>✅ Scroll depth</li>
+                <li>✅ Time on page</li>
+                <li>✅ Conversions</li>
+            </ul>
+            <p><strong>Dashboard URL:</strong> <a href="http://localhost:9000" target="_blank">http://localhost:9000</a></p>
         </div>
     </div>
 
-    <!-- Include Firebase and tracking script -->
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js"></script>
-    <script src="gtm-tracking.js"></script>
+    <!-- Add the tracking script -->
+    <script src="homesfy-tracking.js"></script>
     
     <script>
-        // Firebase configuration - Your actual config
-        const firebaseConfig = {
-            apiKey: "AIzaSyDl8ApkaKB-Cpg9fHfk4uwRpAUn6oj-2FA",
-            authDomain: "live-analytics-dashboard.firebaseapp.com",
-            databaseURL: "https://live-analytics-dashboard-default-rtdb.asia-southeast1.firebasedatabase.app",
-            projectId: "live-analytics-dashboard",
-            storageBucket: "live-analytics-dashboard.firebasestorage.app",
-            messagingSenderId: "289125971781",
-            appId: "1:289125971781:web:f9eee35fc1938a7d43302c",
-            measurementId: "G-CMZT1BT8W5"
-        };
-
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-
-        // Update tracking status
+        // Add some demo content to make the page scrollable
         document.addEventListener('DOMContentLoaded', function() {
-            setTimeout(() => {
-                document.getElementById('trackingStatus').textContent = 'Active';
-                document.getElementById('lastActivity').textContent = new Date().toLocaleString();
-            }, 1000);
+            // Add some demo content
+            const container = document.querySelector('.container');
+            const demoContent = document.createElement('div');
+            demoContent.innerHTML = `
+                <h2>About Our Services</h2>
+                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+                
+                <h2>Our Properties</h2>
+                <p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+                
+                <h2>Contact Information</h2>
+                <p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.</p>
+                
+                <h2>Testimonials</h2>
+                <p>Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.</p>
+            `;
+            container.appendChild(demoContent);
         });
-
-        // Listen for tracking events
-        if (window.micrositeTracker) {
-            // Override the trackEvent method to update UI
-            const originalTrackEvent = window.micrositeTracker.trackEvent;
-            window.micrositeTracker.trackEvent = async function(eventType, additionalData) {
-                const result = await originalTrackEvent.call(this, eventType, additionalData);
-                
-                // Update UI
-                if (eventType === 'page_view') {
-                    const currentViews = parseInt(document.getElementById('pageViews').textContent) || 0;
-                    document.getElementById('pageViews').textContent = currentViews + 1;
-                }
-                
-                if (eventType === 'form_submission') {
-                    const currentSubmissions = parseInt(document.getElementById('formSubmissions').textContent) || 0;
-                    document.getElementById('formSubmissions').textContent = currentSubmissions + 1;
-                }
-                
-                document.getElementById('lastActivity').textContent = new Date().toLocaleString();
-                
-                return result;
-            };
-        }
     </script>
 </body>
 </html>
