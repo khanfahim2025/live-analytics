@@ -6,20 +6,27 @@ const url = require('url');
 // Data storage
 let trackingData = [];
 
-// Site counts - server-side counting
-let siteCounts = {
-    'GTM-5PHH5D6T': {
-        siteName: 'Homesfy Test Website',
-        siteUrl: 'https://www.homesfytestwebsite.com',
-        visitors: 0,
-        leads: 0,
-        conversions: 0,
-        pageViews: 0,
-        formSubmissions: 0,
-        buttonClicks: 0,
-        lastUpdated: new Date().toISOString()
+// Site counts - server-side counting (dynamically handles multiple sites)
+let siteCounts = {};
+
+// Function to initialize a new site if it doesn't exist
+function initializeSite(gtmId, siteName, siteUrl) {
+    if (!siteCounts[gtmId]) {
+        siteCounts[gtmId] = {
+            siteName: siteName,
+            siteUrl: siteUrl,
+            visitors: 0,
+            leads: 0,
+            conversions: 0,
+            pageViews: 0,
+            formSubmissions: 0,
+            buttonClicks: 0,
+            conversionRate: '0.0',
+            lastUpdated: new Date().toISOString()
+        };
+        console.log('🆕 Initialized new site:', siteName, 'with GTM ID:', gtmId);
     }
-};
+}
 
 // MIME types
 const mimeTypes = {
@@ -72,6 +79,10 @@ const server = http.createServer((req, res) => {
                 
                 // Count events on server side
                 const gtmId = data.gtmId;
+                
+                // Initialize site if it doesn't exist
+                initializeSite(gtmId, data.siteName, data.siteUrl);
+                
                 if (siteCounts[gtmId]) {
                     switch (data.event) {
                         case 'gtm.pageView':

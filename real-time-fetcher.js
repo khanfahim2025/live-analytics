@@ -35,13 +35,30 @@ class RealTimeDataFetcher {
             });
             this.saveMicrosites();
         } else {
-            // Add your real microsite
+            // Add your real microsites
             this.microsites = [
                 {
                     id: 1,
                     name: "Homesfy Test Website",
                     url: "https://www.homesfytestwebsite.com",
                     gtmId: "GTM-5PHH5D6T", // Your actual GTM ID
+                    status: "online",
+                    visitors: 0,
+                    leads: 0,
+                    conversion: 0,
+                    lastActivity: "Just now",
+                    formStatus: "working",
+                    responseTime: 0,
+                    uptime: 100,
+                    concurrentUsers: 0,
+                    formSelector: 'form, .contact-form, #contact-form',
+                    conversionGoal: 'Lead Generation'
+                },
+                {
+                    id: 2,
+                    name: "Green Reserve Noida",
+                    url: "https://www.green-reserve-noida.in",
+                    gtmId: "GTM-WLQ7HBKH", // Your second GTM ID
                     status: "online",
                     visitors: 0,
                     leads: 0,
