@@ -146,6 +146,11 @@ const server = http.createServer((req, res) => {
                         case 'gtm.buttonClick':
                             siteCounts[gtmId].buttonClicks++;
                             break;
+                        case 'gtm.formValidationFailure':
+                            // Track validation failures but don't count as leads
+                            siteCounts[gtmId].validationFailures = (siteCounts[gtmId].validationFailures || 0) + 1;
+                            console.log('❌ Form validation failure tracked:', data.data.failureReason);
+                            break;
                     }
                     
                     // Update conversion rate

@@ -96,7 +96,7 @@
         }
     }
 
-        // Track form submission - PREVENT DUPLICATES
+        // Track form submission - PREVENT DUPLICATES (only after validation passes)
         function trackFormSubmission(form) {
             const formKey = form.id || form.className || 'unknown';
             
@@ -109,13 +109,24 @@
             // Mark form as submitted in this session
             sessionData.submittedForms.push(formKey);
             
-            console.log('📝 Form submission event sent to server');
+            console.log('📝 Form submission event sent to server (validation passed)');
             
             sendEvent('formSubmit', {
                 formId: form.id || 'unknown',
                 formClass: form.className || 'unknown',
                 formType: form.getAttribute('data-tracking-id') || 'unknown',
                 isFormSubmission: true // Flag to identify this as form submission
+            });
+        }
+
+        // Track form validation failure
+        function trackFormValidationFailure(form, reason) {
+            console.log('❌ Form validation failed:', reason);
+            sendEvent('formValidationFailure', {
+                formId: form.id || 'unknown',
+                formClass: form.className || 'unknown',
+                failureReason: reason,
+                isValidationFailure: true
             });
         }
 
@@ -149,15 +160,33 @@
         // Track initial page view
         trackPageView();
 
-        // Track form submissions - FIXED: Only track actual form submissions
+        // Track form submissions - INTEGRATED WITH VALIDATION
         document.addEventListener('submit', function(e) {
             if (e.target.id === 'ModalFormSlug4' || 
                 e.target.id === 'ModalFormSlug1' || 
                 e.target.id === 'ModalFormSlug2' ||
                 e.target.classList.contains('popupModal-form')) {
                 
+                console.log('📝 Form submission detected:', e.target.id || e.target.className);
+                
+                // Check if validation will pass by examining the form data
+                const form = e.target;
+                const countryCode = form.querySelector('.form-country')?.value;
+                const phoneNumber = form.querySelector('.form-number')?.value;
+                
+                // Validate Indian phone numbers (same logic as your saveLead function)
+                if (countryCode === "+91" && phoneNumber) {
+                    const cleanNumber = phoneNumber.replace(/\D/g, "");
+                    if (cleanNumber.length !== 10 || /^[1-5]/.test(cleanNumber)) {
+                        console.log('❌ Form validation will fail - invalid Indian phone number');
+                        trackFormValidationFailure(form, 'Invalid Indian phone number');
+                        return; // Don't track as successful submission
+                    }
+                }
+                
+                // If we reach here, validation should pass
                 trackFormSubmission(e.target);
-                console.log('📝 Form submitted:', e.target.id || e.target.className);
+                console.log('✅ Form submission tracked (validation passed)');
             }
         });
 
@@ -231,6 +260,7 @@
     // Make functions globally available
     window.trackConversion = trackConversion;
     window.trackFormSubmission = trackFormSubmission;
+    window.trackFormValidationFailure = trackFormValidationFailure;
     window.trackButtonClick = trackButtonClick;
     window.sendEvent = sendEvent;
     window.getSessionData = function() {
