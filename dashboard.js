@@ -469,6 +469,7 @@ function exportData() {
 // Load real data from server counts
 async function loadRealData() {
     console.log('📊 Loading real data from server counts...');
+    // Updated for Railway deployment
     
     try {
         const response = await fetch('https://web-production-beea8.up.railway.app/api/counts.json');
