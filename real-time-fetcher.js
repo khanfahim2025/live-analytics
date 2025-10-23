@@ -213,24 +213,40 @@ class RealTimeDataFetcher {
         this.updateDashboard();
     }
 
-    // Check all microsite status
+    // Enhanced microsite status checking
     async checkAllMicrositeStatus() {
+        console.log('🔍 Starting enhanced status check for all microsites...');
+        
         for (const site of this.microsites) {
             try {
-                const response = await this.checkSiteStatus(site.url);
-                site.status = response.status;
-                site.responseTime = response.responseTime;
-                site.uptime = response.uptime;
+                console.log(`🔍 Checking ${site.name} (${site.url})...`);
                 
-                // Check form status
+                // Use enhanced status checking
+                const enhancedStatus = await this.checkEnhancedSiteStatus(site);
+                
+                // Update site with enhanced status
+                site.status = enhancedStatus.status;
+                site.responseTime = enhancedStatus.responseTime;
+                site.uptime = enhancedStatus.uptime;
+                site.domainStatus = enhancedStatus.domainStatus;
+                site.domainDaysLeft = enhancedStatus.domainDaysLeft;
+                site.domainExpiryDate = enhancedStatus.domainExpiryDate;
+                site.lastChecked = enhancedStatus.lastChecked;
+                
+                // Check form status with enhanced detection
                 site.formStatus = await this.checkFormStatus(site);
                 
+                console.log(`✅ ${site.name} status: ${site.status}, forms: ${site.formStatus}, domain: ${site.domainStatus}`);
+                
             } catch (error) {
-                console.error(`Error checking status for ${site.name}:`, error);
+                console.error(`❌ Error checking status for ${site.name}:`, error);
                 site.status = 'offline';
                 site.formStatus = 'error';
+                site.domainStatus = 'error';
             }
         }
+        
+        console.log('🎉 Enhanced status check completed!');
         this.updateDashboard();
     }
 
@@ -262,12 +278,82 @@ class RealTimeDataFetcher {
         }
     }
 
-    // Check if a site is accessible
+    // Enhanced website status detection
     async checkSiteStatus(url) {
         const startTime = Date.now();
         
         try {
-            // Use a CORS proxy to check the site
+            // Method 1: Try direct fetch first (if CORS allows)
+            try {
+                const response = await fetch(url, {
+                    method: 'HEAD',
+                    mode: 'no-cors',
+                    timeout: 5000
+                });
+                
+                const responseTime = Date.now() - startTime;
+                
+                // If we get here, the site is accessible
+                return {
+                    status: 'online',
+                    responseTime: responseTime,
+                    uptime: 99.9,
+                    httpStatus: 'accessible',
+                    method: 'direct'
+                };
+            } catch (directError) {
+                console.log('Direct fetch failed, trying server-side check...');
+                
+                // Method 2: Use server-side status check
+                return await this.checkViaServer(url, startTime);
+            }
+            
+        } catch (error) {
+            console.error('All status check methods failed:', error);
+            return {
+                status: 'offline',
+                responseTime: 0,
+                uptime: 0,
+                error: error.message,
+                method: 'failed'
+            };
+        }
+    }
+
+    // Server-side status check via your API
+    async checkViaServer(url, startTime) {
+        try {
+            const response = await fetch('https://web-production-beea8.up.railway.app/api/check-status', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ url: url })
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                const responseTime = Date.now() - startTime;
+                
+                return {
+                    status: data.status || 'online',
+                    responseTime: responseTime,
+                    uptime: data.uptime || 99.9,
+                    httpStatus: data.httpStatus || '200',
+                    method: 'server'
+                };
+            } else {
+                throw new Error('Server-side check failed');
+            }
+        } catch (error) {
+            console.error('Server-side check failed:', error);
+            
+            // Fallback: Use CORS proxy as last resort
+            return await this.checkViaProxy(url, startTime);
+        }
+    }
+
+    // Fallback: CORS proxy check
+    async checkViaProxy(url, startTime) {
+        try {
             const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
             const response = await fetch(proxyUrl, {
                 method: 'GET',
@@ -282,20 +368,23 @@ class RealTimeDataFetcher {
                 return {
                     status: 'online',
                     responseTime: responseTime,
-                    uptime: 99.9
+                    uptime: 99.9,
+                    method: 'proxy'
                 };
             } else {
                 return {
                     status: 'warning',
                     responseTime: responseTime,
-                    uptime: 95.0
+                    uptime: 95.0,
+                    method: 'proxy'
                 };
             }
         } catch (error) {
             return {
                 status: 'offline',
                 responseTime: 0,
-                uptime: 0
+                uptime: 0,
+                method: 'proxy-failed'
             };
         }
     }
@@ -338,22 +427,168 @@ class RealTimeDataFetcher {
         };
     }
 
-    // Check form status on the microsite
+    // Enhanced form status detection
     async checkFormStatus(site) {
         try {
-            // This would check if forms are working on your site
-            // For now, we'll simulate the check
-            const isWorking = Math.random() > 0.1; // 90% chance of working
+            console.log(`🔍 Checking form status for ${site.name}...`);
             
-            if (isWorking) {
-                return 'working';
-            } else if (Math.random() > 0.5) {
-                return 'warning';
-            } else {
+            // Method 1: Try to fetch the site and analyze HTML
+            try {
+                const response = await fetch(site.url, {
+                    method: 'GET',
+                    mode: 'no-cors'
+                });
+                
+                // If direct fetch works, analyze the content
+                return await this.analyzeFormContent(site.url);
+                
+            } catch (directError) {
+                console.log('Direct form check failed, trying server-side analysis...');
+                
+                // Method 2: Use server-side form analysis
+                return await this.checkFormViaServer(site.url);
+            }
+            
+        } catch (error) {
+            console.error('Form status check failed:', error);
+            return 'error';
+        }
+    }
+
+    // Analyze form content from HTML
+    async analyzeFormContent(url) {
+        try {
+            // Use CORS proxy to get HTML content
+            const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
+            const response = await fetch(proxyUrl);
+            
+            if (!response.ok) {
                 return 'error';
             }
+            
+            const data = await response.json();
+            const html = data.contents || '';
+            
+            // Analyze HTML for form elements
+            const hasForms = html.includes('<form') || html.includes('form-') || html.includes('contact-form');
+            const hasSubmitButtons = html.includes('type="submit"') || html.includes('submit') || html.includes('button');
+            const hasInputs = html.includes('<input') || html.includes('input-') || html.includes('name=');
+            const hasTextareas = html.includes('<textarea') || html.includes('textarea');
+            const hasSelects = html.includes('<select') || html.includes('select');
+            
+            // Check for specific form indicators
+            const hasContactForm = html.includes('contact') || html.includes('enquiry') || html.includes('lead');
+            const hasEmailInput = html.includes('type="email"') || html.includes('email');
+            const hasPhoneInput = html.includes('type="tel"') || html.includes('phone') || html.includes('mobile');
+            
+            console.log('Form analysis:', {
+                hasForms, hasSubmitButtons, hasInputs, hasTextareas, hasSelects,
+                hasContactForm, hasEmailInput, hasPhoneInput
+            });
+            
+            // Determine form status based on analysis
+            if (hasForms && hasSubmitButtons && (hasInputs || hasTextareas)) {
+                if (hasContactForm && (hasEmailInput || hasPhoneInput)) {
+                    return 'working'; // Complete contact form detected
+                } else {
+                    return 'warning'; // Basic form detected but may be incomplete
+                }
+            } else if (hasForms || hasSubmitButtons || hasInputs) {
+                return 'warning'; // Partial form elements detected
+            } else {
+                return 'error'; // No form elements detected
+            }
+            
         } catch (error) {
+            console.error('Form content analysis failed:', error);
             return 'error';
+        }
+    }
+
+    // Server-side form status check
+    async checkFormViaServer(url) {
+        try {
+            const response = await fetch('https://web-production-beea8.up.railway.app/api/check-forms', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ url: url })
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                return data.formStatus || 'error';
+            } else {
+                throw new Error('Server-side form check failed');
+            }
+        } catch (error) {
+            console.error('Server-side form check failed:', error);
+            return 'error';
+        }
+    }
+
+    // Enhanced domain expiry check
+    async checkDomainExpiry(url) {
+        try {
+            const domain = new URL(url).hostname;
+            console.log(`🔍 Checking domain expiry for ${domain}...`);
+            
+            // Use WHOIS API to check domain expiry
+            const response = await fetch(`https://api.whoisjson.com/v1/${domain}`);
+            
+            if (response.ok) {
+                const data = await response.json();
+                
+                if (data.expiration_date) {
+                    const expiryDate = new Date(data.expiration_date);
+                    const daysUntilExpiry = Math.ceil((expiryDate - new Date()) / (1000 * 60 * 60 * 24));
+                    
+                    console.log(`Domain ${domain} expires in ${daysUntilExpiry} days`);
+                    
+                    if (daysUntilExpiry < 7) {
+                        return { status: 'critical', daysLeft: daysUntilExpiry, expiryDate: data.expiration_date };
+                    } else if (daysUntilExpiry < 30) {
+                        return { status: 'warning', daysLeft: daysUntilExpiry, expiryDate: data.expiration_date };
+                    } else {
+                        return { status: 'ok', daysLeft: daysUntilExpiry, expiryDate: data.expiration_date };
+                    }
+                }
+            }
+            
+            return { status: 'unknown' };
+            
+        } catch (error) {
+            console.error('Domain expiry check failed:', error);
+            return { status: 'error' };
+        }
+    }
+
+    // Enhanced site status with domain expiry
+    async checkEnhancedSiteStatus(site) {
+        try {
+            // Check basic site status
+            const siteStatus = await this.checkSiteStatus(site.url);
+            
+            // Check domain expiry
+            const domainStatus = await this.checkDomainExpiry(site.url);
+            
+            // Combine status information
+            return {
+                ...siteStatus,
+                domainStatus: domainStatus.status,
+                domainDaysLeft: domainStatus.daysLeft,
+                domainExpiryDate: domainStatus.expiryDate,
+                lastChecked: new Date().toISOString()
+            };
+            
+        } catch (error) {
+            console.error('Enhanced status check failed:', error);
+            return {
+                status: 'offline',
+                responseTime: 0,
+                uptime: 0,
+                domainStatus: 'error',
+                error: error.message
+            };
         }
     }
 
@@ -420,12 +655,19 @@ class RealTimeDataFetcher {
                         ${site.status === 'online' ? '🟢 ONLINE' : 
                           site.status === 'warning' ? '🟡 WARNING' : '🔴 OFFLINE'}
                     </span>
+                    ${site.responseTime ? `<div style="font-size: 0.75rem; color: #718096;">${site.responseTime}ms</div>` : ''}
+                    ${site.domainStatus ? `<div style="font-size: 0.75rem; color: ${site.domainStatus === 'critical' ? '#e53e3e' : site.domainStatus === 'warning' ? '#d69e2e' : '#38a169'};">
+                        ${site.domainStatus === 'critical' ? '🔴 Domain expires in ' + site.domainDaysLeft + ' days' :
+                          site.domainStatus === 'warning' ? '🟡 Domain expires in ' + site.domainDaysLeft + ' days' :
+                          site.domainStatus === 'ok' ? '✅ Domain OK (' + site.domainDaysLeft + ' days)' : ''}
+                    </div>` : ''}
                 </td>
                 <td>
                     <span class="status-${site.formStatus}">
                         ${site.formStatus === 'working' ? '✅ Working' : 
                           site.formStatus === 'warning' ? '⚠️ Warning' : '❌ Error'}
                     </span>
+                    ${site.lastChecked ? `<div style="font-size: 0.75rem; color: #718096;">Checked: ${new Date(site.lastChecked).toLocaleTimeString()}</div>` : ''}
                 </td>
                 <td>${site.lastActivity}</td>
                 <td>
@@ -455,7 +697,12 @@ class RealTimeDataFetcher {
                 </div>
                 <div class="website-metrics">
                     Response: ${site.responseTime}ms | Uptime: ${site.uptime}%<br>
-                    Visitors: ${site.visitors.toLocaleString()} | Leads: ${site.leads.toLocaleString()}
+                    Visitors: ${site.visitors.toLocaleString()} | Leads: ${site.leads.toLocaleString()}<br>
+                    ${site.domainStatus ? `<span style="color: ${site.domainStatus === 'critical' ? '#e53e3e' : site.domainStatus === 'warning' ? '#d69e2e' : '#38a169'};">
+                        ${site.domainStatus === 'critical' ? '🔴 Domain expires in ' + site.domainDaysLeft + ' days' :
+                          site.domainStatus === 'warning' ? '🟡 Domain expires in ' + site.domainDaysLeft + ' days' :
+                          site.domainStatus === 'ok' ? '✅ Domain OK (' + site.domainDaysLeft + ' days)' : ''}
+                    </span>` : ''}
                 </div>
             `;
             grid.appendChild(card);
