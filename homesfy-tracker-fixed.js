@@ -12,7 +12,7 @@
     const DASHBOARD_CONFIG = {
         gtmId: 'GTM-5PHH5D6T',
         siteName: 'Homesfy Test Website',
-        dashboardUrl: 'https://your-railway-app.up.railway.app', // Replace with your Railway URL
+        dashboardUrl: 'https://web-production-beea8.up.railway.app', // Replace with your Railway URL
         siteUrl: 'https://www.homesfytestwebsite.com'
     };
 
