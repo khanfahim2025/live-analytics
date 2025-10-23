@@ -469,7 +469,12 @@ function exportData() {
 // Load real data from server counts
 async function loadRealData() {
     console.log('📊 Loading real data from server counts...');
-    // Updated for Railway deployment
+    
+    // Show loading state
+    const loadBtn = document.querySelector('button[onclick="loadRealData()"]');
+    const originalText = loadBtn.innerHTML;
+    loadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+    loadBtn.disabled = true;
     
     try {
         const response = await fetch('https://web-production-beea8.up.railway.app/api/counts.json');
@@ -477,9 +482,28 @@ async function loadRealData() {
         
         console.log('📊 Found server counts:', serverCounts);
         
+        let filteredCount = 0;
+        let totalCount = 0;
+        
         // Update each site with server counts
         Object.keys(serverCounts).forEach(gtmId => {
             const serverData = serverCounts[gtmId];
+            totalCount++;
+            
+            // For date filtering, we'll show all data but mark it appropriately
+            // Since the current system doesn't have historical date-based data,
+            // we'll implement a different approach
+            let shouldShow = true;
+            
+            if (dateFilter.enabled) {
+                // Check if we have any tracking data for this site in the date range
+                const hasDataInRange = checkTrackingDataInRange(gtmId, dateFilter.from, dateFilter.to);
+                if (!hasDataInRange) {
+                    console.log('📅 No data found for date range, skipping:', serverData.siteName);
+                    return; // Skip this site
+                }
+                filteredCount++;
+            }
             
             console.log('📊 Looking for site with GTM ID:', gtmId);
             console.log('📊 Available microsites:', window.realTimeFetcher.microsites.map(s => ({ name: s.name, gtmId: s.gtmId })));
@@ -496,10 +520,20 @@ async function loadRealData() {
                 site.conversion = serverData.conversionRate || 0;
                 site.lastActivity = 'Just now';
                 
+                // Add date information
+                site.lastUpdated = serverData.lastUpdated;
+                site.filteredByDate = dateFilter.enabled;
+                
+                // Add a note about date filtering if enabled
+                if (dateFilter.enabled) {
+                    site.dateFilterNote = 'Current aggregated data (historical filtering not available)';
+                }
+                
                 console.log('✅ Updated site data from server:', {
                     visitors: site.visitors,
                     leads: site.leads,
-                    conversion: site.conversion
+                    conversion: site.conversion,
+                    lastUpdated: site.lastUpdated
                 });
             } else {
                 console.log('❌ Site not found for GTM ID:', gtmId);
@@ -512,9 +546,248 @@ async function loadRealData() {
         window.realTimeFetcher.updateDashboard();
         
         console.log('✅ Real data loaded successfully from server!');
+        
+        // Show filter status
+        if (dateFilter.enabled) {
+            const filteredSites = window.realTimeFetcher.microsites.filter(site => site.filteredByDate);
+            console.log(`📅 Date filter active: ${filteredSites.length} sites match date range`);
+            
+            // Update status with count and note about date filtering limitations
+            const status = document.getElementById('dateFilterStatus');
+            status.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-info-circle"></i>
+                    <span><strong>Date Filter Applied:</strong> Showing current data for ${filteredCount} of ${totalCount} sites</span>
+                </div>
+                <div style="margin-top: 8px; font-size: 0.85rem; color: #718096;">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <strong>Note:</strong> Historical date-based filtering is not available. Showing current aggregated data.
+                </div>
+            `;
+            status.style.display = 'block';
+        }
+        
     } catch (error) {
         console.error('❌ Error loading data from server:', error);
+        alert('Failed to load data from server. Please try again.');
+    } finally {
+        // Reset button state
+        loadBtn.innerHTML = originalText;
+        loadBtn.disabled = false;
     }
+}
+
+// Date filter state
+let dateFilter = {
+    enabled: false,
+    from: null,
+    to: null
+};
+
+// Apply date filter
+function applyDateFilter() {
+    const fromDate = document.getElementById('dateFrom').value;
+    const toDate = document.getElementById('dateTo').value;
+    
+    if (!fromDate && !toDate) {
+        alert('Please select at least one date');
+        return;
+    }
+    
+    // Validate date range
+    if (fromDate && toDate && new Date(fromDate) > new Date(toDate)) {
+        alert('From date cannot be after To date');
+        return;
+    }
+    
+    dateFilter.enabled = true;
+    dateFilter.from = fromDate || null;
+    dateFilter.to = toDate || null;
+    
+    // Update status display with warning about limitations
+    const status = document.getElementById('dateFilterStatus');
+    status.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+            <i class="fas fa-exclamation-triangle" style="color: #ed8936;"></i>
+            <span><strong>Date Filter Applied:</strong> From ${dateFilter.from ? new Date(dateFilter.from).toLocaleDateString() : 'Any'} to ${dateFilter.to ? new Date(dateFilter.to).toLocaleDateString() : 'Any'}</span>
+        </div>
+        <div style="font-size: 0.85rem; color: #718096; background: #fff5f5; padding: 8px 12px; border-radius: 6px; border-left: 3px solid #ed8936;">
+            <i class="fas fa-info-circle"></i>
+            <strong>Note:</strong> Historical date-based filtering is not available in the current system. 
+            The system only stores current aggregated data. To implement historical filtering, 
+            the tracking system would need to be modified to store data with timestamps.
+        </div>
+    `;
+    status.style.display = 'block';
+    
+    // Show "No data available" message since historical filtering is not available
+    showNoDataMessage();
+    console.log('📅 Date filter applied:', dateFilter);
+}
+
+// Clear date filter
+function clearDateFilter() {
+    dateFilter.enabled = false;
+    dateFilter.from = null;
+    dateFilter.to = null;
+    
+    // Reset to default dates (today)
+    setDefaultDateRange();
+    document.getElementById('dateFilterStatus').textContent = '';
+    document.getElementById('dateFilterStatus').style.display = 'none';
+    
+    // Reload data without filter
+    loadRealData();
+    console.log('📅 Date filter cleared');
+}
+
+// Check if date is within filter range
+function isDateInRange(date, from, to) {
+    if (!dateFilter.enabled) return true;
+    
+    const checkDate = new Date(date);
+    const fromDate = from ? new Date(from) : null;
+    const toDate = to ? new Date(to) : null;
+    
+    // Set time to start/end of day for proper comparison
+    if (fromDate) {
+        fromDate.setHours(0, 0, 0, 0);
+    }
+    if (toDate) {
+        toDate.setHours(23, 59, 59, 999);
+    }
+    
+    if (fromDate && checkDate < fromDate) return false;
+    if (toDate && checkDate > toDate) return false;
+    
+    return true;
+}
+
+// Check if there's tracking data for a site in the specified date range
+function checkTrackingDataInRange(gtmId, fromDate, toDate) {
+    // Since we don't have historical data stored by date,
+    // we'll implement a different approach:
+    // 1. If no date filter is applied, show all data
+    // 2. If date filter is applied, show a message that date filtering is not available
+    //    and show current data with a note
+    
+    if (!dateFilter.enabled) return true;
+    
+    // For now, we'll show all data but with a note that date filtering is not available
+    // In a real implementation, you would need to store historical data with timestamps
+    return true;
+}
+
+// Show "No data available" message when date filter is applied
+function showNoDataMessage() {
+    const tableBody = document.getElementById('performanceTableBody');
+    if (!tableBody) return;
+    
+    if (dateFilter.enabled) {
+        // Clear existing content
+        tableBody.innerHTML = '';
+        
+        // Add a row showing no data available
+        const noDataRow = document.createElement('tr');
+        noDataRow.className = 'no-data-row';
+        noDataRow.innerHTML = `
+            <td colspan="9" style="text-align: center; padding: 40px; color: #718096;">
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 12px;">
+                    <i class="fas fa-calendar-times" style="font-size: 2rem; color: #cbd5e0;"></i>
+                    <div>
+                        <h3 style="margin: 0; color: #4a5568;">No Data Available</h3>
+                        <p style="margin: 8px 0 0 0; font-size: 0.9rem;">
+                            No tracking data found for the selected date range.<br>
+                            <small>Historical date-based filtering is not available in the current system.</small>
+                        </p>
+                    </div>
+                    <button onclick="clearDateFilter()" class="btn-primary" style="margin-top: 8px;">
+                        <i class="fas fa-times"></i> Clear Date Filter
+                    </button>
+                </div>
+            </td>
+        `;
+        tableBody.appendChild(noDataRow);
+    }
+}
+
+// Set default date range (current date)
+function setDefaultDateRange() {
+    const today = new Date();
+    const todayString = today.toISOString().split('T')[0];
+    
+    // Set both dates to today by default
+    document.getElementById('dateFrom').value = todayString;
+    document.getElementById('dateTo').value = todayString;
+}
+
+// Set date presets
+function setDatePreset(preset) {
+    const today = new Date();
+    let fromDate, toDate;
+    
+    switch(preset) {
+        case 'today':
+            fromDate = toDate = today.toISOString().split('T')[0];
+            break;
+        case 'yesterday':
+            const yesterday = new Date(today);
+            yesterday.setDate(yesterday.getDate() - 1);
+            fromDate = toDate = yesterday.toISOString().split('T')[0];
+            break;
+        case 'week':
+            const weekStart = new Date(today);
+            weekStart.setDate(today.getDate() - today.getDay());
+            fromDate = weekStart.toISOString().split('T')[0];
+            toDate = today.toISOString().split('T')[0];
+            break;
+        case 'month':
+            const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+            fromDate = monthStart.toISOString().split('T')[0];
+            toDate = today.toISOString().split('T')[0];
+            break;
+        default:
+            return;
+    }
+    
+    document.getElementById('dateFrom').value = fromDate;
+    document.getElementById('dateTo').value = toDate;
+    
+    // Auto-apply the filter
+    applyDateFilter();
+}
+
+// Export filtered data
+function exportFilteredData() {
+    if (!dateFilter.enabled) {
+        alert('Please apply a date filter first');
+        return;
+    }
+    
+    const filteredSites = window.realTimeFetcher.microsites.filter(site => site.filteredByDate);
+    
+    if (filteredSites.length === 0) {
+        alert('No data found for the selected date range');
+        return;
+    }
+    
+    // Create CSV with filtered data
+    let csv = 'Website,URL,Visitors,Leads,Conversion%,Status,Form Status,Last Updated\n';
+    
+    filteredSites.forEach(site => {
+        csv += `"${site.name}","${site.url}",${site.visitors},${site.leads},${site.conversion}%,"${site.status}","${site.formStatus}","${site.lastUpdated || 'Unknown'}"\n`;
+    });
+    
+    // Download CSV
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `microsite-performance-${dateFilter.from?.toISOString().split('T')[0] || 'filtered'}-to-${dateFilter.to?.toISOString().split('T')[0] || 'filtered'}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+    
+    console.log('📊 Filtered data exported:', filteredSites.length, 'sites');
 }
 
 // Listen for messages from microsites
@@ -533,6 +806,9 @@ window.addEventListener('message', function(event) {
 
 // Initialize dashboard when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
+    // Set default date range (current date)
+    setDefaultDateRange();
+    
     window.dashboard = new Dashboard();
     
     // Load any existing real data after a short delay
@@ -544,7 +820,48 @@ document.addEventListener('DOMContentLoaded', () => {
     setInterval(() => {
         loadRealData();
     }, 5000);
+    
+    // Add keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+        // Ctrl/Cmd + R to refresh
+        if ((e.ctrlKey || e.metaKey) && e.key === 'r') {
+            e.preventDefault();
+            loadRealData();
+        }
+        
+        // Ctrl/Cmd + E to export
+        if ((e.ctrlKey || e.metaKey) && e.key === 'e') {
+            e.preventDefault();
+            exportData();
+        }
+        
+        // Escape to clear filters
+        if (e.key === 'Escape') {
+            clearDateFilter();
+        }
+    });
+    
+    // Add tooltips and help text
+    addTooltips();
 });
+
+// Add tooltips for better UX
+function addTooltips() {
+    const tooltips = {
+        'dateFrom': 'Select the start date for filtering data',
+        'dateTo': 'Select the end date for filtering data',
+        'loadRealData': 'Load the latest data from the server',
+        'exportData': 'Export all data to CSV file',
+        'exportFilteredData': 'Export only filtered data to CSV file'
+    };
+    
+    Object.keys(tooltips).forEach(id => {
+        const element = document.getElementById(id) || document.querySelector(`[onclick*="${id}"]`);
+        if (element) {
+            element.title = tooltips[id];
+        }
+    });
+}
 
 // Add CSS animations
 const style = document.createElement('style');

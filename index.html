@@ -111,6 +111,48 @@
                             <i class="fas fa-download"></i> Load Real Data
                         </button>
                     </div>
+                    
+                    <!-- Date Filter Controls -->
+                    <div class="date-filter-controls">
+                        <div class="filter-header">
+                            <h4><i class="fas fa-calendar-alt"></i> Filter by Date Range</h4>
+                            <div class="filter-presets">
+                                <button onclick="setDatePreset('today')" class="preset-btn">Today</button>
+                                <button onclick="setDatePreset('yesterday')" class="preset-btn">Yesterday</button>
+                                <button onclick="setDatePreset('week')" class="preset-btn">This Week</button>
+                                <button onclick="setDatePreset('month')" class="preset-btn">This Month</button>
+                            </div>
+                        </div>
+                        <div class="date-filter-row">
+                            <div class="date-input-group">
+                                <label for="dateFrom">From:</label>
+                                <input type="date" id="dateFrom" class="date-input">
+                            </div>
+                            <div class="date-input-group">
+                                <label for="dateTo">To:</label>
+                                <input type="date" id="dateTo" class="date-input">
+                            </div>
+                            <div class="filter-actions">
+                                <button onclick="applyDateFilter()" class="btn-filter">
+                                    <i class="fas fa-filter"></i> Apply Filter
+                                </button>
+                                <button onclick="clearDateFilter()" class="btn-clear">
+                                    <i class="fas fa-times"></i> Clear
+                                </button>
+                                <button onclick="exportFilteredData()" class="btn-export-filtered">
+                                    <i class="fas fa-download"></i> Export Filtered
+                                </button>
+                            </div>
+                        </div>
+                        <div id="dateFilterStatus" class="date-filter-status" style="display: none;"></div>
+                        <div class="filter-help">
+                            <small>
+                                <i class="fas fa-info-circle"></i>
+                                <strong>Keyboard Shortcuts:</strong> 
+                                Ctrl+R (Refresh) | Ctrl+E (Export) | Esc (Clear Filters)
+                            </small>
+                        </div>
+                    </div>
                 </div>
                 <div class="table-container">
                     <table class="performance-table" id="performanceTable">
@@ -121,6 +163,7 @@
                                 <th>Visitors</th>
                                 <th>Leads</th>
                                 <th>Conversion %</th>
+                                <th>Performance</th>
                                 <th>Website Status</th>
                                 <th>Form Status</th>
                                 <th>Last Activity</th>
