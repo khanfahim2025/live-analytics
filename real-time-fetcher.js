@@ -22,6 +22,10 @@ class RealTimeDataFetcher {
         this.clearAnalysisData();
         
         this.loadMicrosites();
+        
+        // Clean up test sites
+        this.cleanupMicrosites();
+        
         this.startRealTimeFetching();
     }
     
@@ -34,6 +38,33 @@ class RealTimeDataFetcher {
             }
         });
         console.log('🧹 Cleared previous analysis data');
+    }
+    
+    // Remove test sites and clean up microsites
+    cleanupMicrosites() {
+        console.log('🧹 Cleaning up microsites...');
+        
+        // Remove test sites
+        const originalLength = this.microsites.length;
+        this.microsites = this.microsites.filter(site => {
+            // Remove test sites
+            if (site.url.includes('test.com') || 
+                site.name.toLowerCase().includes('test') ||
+                site.url.includes('localhost') ||
+                site.url.includes('127.0.0.1')) {
+                console.log(`🗑️ Removing test site: ${site.name} (${site.url})`);
+                return false;
+            }
+            return true;
+        });
+        
+        const removedCount = originalLength - this.microsites.length;
+        if (removedCount > 0) {
+            console.log(`✅ Removed ${removedCount} test site(s)`);
+            this.saveMicrosites();
+        } else {
+            console.log('✅ No test sites found to remove');
+        }
     }
 
     // Load microsites configuration - AUTO-DETECTION VERSION

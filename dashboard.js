@@ -804,6 +804,50 @@ window.addEventListener('message', function(event) {
     }
 });
 
+// Function to manually remove test sites
+function removeTestSites() {
+    console.log('🧹 Manually removing test sites...');
+    
+    // Get current microsites
+    const saved = localStorage.getItem('microsites');
+    if (saved) {
+        const microsites = JSON.parse(saved);
+        const originalLength = microsites.length;
+        
+        // Filter out test sites
+        const cleanedMicrosites = microsites.filter(site => {
+            if (site.url.includes('test.com') || 
+                site.name.toLowerCase().includes('test') ||
+                site.url.includes('localhost') ||
+                site.url.includes('127.0.0.1')) {
+                console.log(`🗑️ Removing: ${site.name} (${site.url})`);
+                return false;
+            }
+            return true;
+        });
+        
+        // Save cleaned data
+        localStorage.setItem('microsites', JSON.stringify(cleanedMicrosites));
+        
+        const removedCount = originalLength - cleanedMicrosites.length;
+        console.log(`✅ Removed ${removedCount} test site(s)`);
+        
+        // Refresh the dashboard
+        if (window.realTimeFetcher) {
+            window.realTimeFetcher.loadMicrosites();
+            window.realTimeFetcher.updatePerformanceTable();
+        }
+        
+        // Reload the page to see changes
+        setTimeout(() => {
+            location.reload();
+        }, 1000);
+    }
+}
+
+// Make function available globally
+window.removeTestSites = removeTestSites;
+
 // Initialize dashboard when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
     // Set default date range (current date)
