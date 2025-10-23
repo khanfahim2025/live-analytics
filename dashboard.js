@@ -804,9 +804,9 @@ window.addEventListener('message', function(event) {
     }
 });
 
-// Function to manually remove test sites
+// Function to manually remove only obvious test sites (preserve real data)
 function removeTestSites() {
-    console.log('🧹 Manually removing test sites...');
+    console.log('🧹 Manually removing only obvious test sites (preserving real data)...');
     
     // Get current microsites
     const saved = localStorage.getItem('microsites');
@@ -814,15 +814,14 @@ function removeTestSites() {
         const microsites = JSON.parse(saved);
         const originalLength = microsites.length;
         
-        // Filter out test sites
+        // Only remove obvious test sites, preserve all real microsite data
         const cleanedMicrosites = microsites.filter(site => {
-            if (site.url.includes('test.com') || 
-                site.name.toLowerCase().includes('test') ||
-                site.url.includes('localhost') ||
-                site.url.includes('127.0.0.1')) {
-                console.log(`🗑️ Removing: ${site.name} (${site.url})`);
+            // Only remove obvious test sites, keep all real data
+            if (site.url.includes('test.com') && site.name.toLowerCase().includes('test site')) {
+                console.log(`🗑️ Removing obvious test site: ${site.name} (${site.url})`);
                 return false;
             }
+            // Keep all other sites (real data)
             return true;
         });
         
@@ -830,7 +829,7 @@ function removeTestSites() {
         localStorage.setItem('microsites', JSON.stringify(cleanedMicrosites));
         
         const removedCount = originalLength - cleanedMicrosites.length;
-        console.log(`✅ Removed ${removedCount} test site(s)`);
+        console.log(`✅ Removed ${removedCount} obvious test site(s) (preserved all real data)`);
         
         // Refresh the dashboard
         if (window.realTimeFetcher) {

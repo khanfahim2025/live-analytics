@@ -23,7 +23,7 @@ class RealTimeDataFetcher {
         
         this.loadMicrosites();
         
-        // Clean up test sites
+        // Clean up only obvious test sites (PRESERVE ALL REAL DATA)
         this.cleanupMicrosites();
         
         this.startRealTimeFetching();
@@ -40,30 +40,28 @@ class RealTimeDataFetcher {
         console.log('🧹 Cleared previous analysis data');
     }
     
-    // Remove test sites and clean up microsites
+    // Clean up only obvious test sites (preserve real data)
     cleanupMicrosites() {
-        console.log('🧹 Cleaning up microsites...');
+        console.log('🧹 Cleaning up obvious test sites only...');
         
-        // Remove test sites
+        // Only remove obvious test sites, preserve all real data
         const originalLength = this.microsites.length;
         this.microsites = this.microsites.filter(site => {
-            // Remove test sites
-            if (site.url.includes('test.com') || 
-                site.name.toLowerCase().includes('test') ||
-                site.url.includes('localhost') ||
-                site.url.includes('127.0.0.1')) {
-                console.log(`🗑️ Removing test site: ${site.name} (${site.url})`);
+            // Only remove obvious test sites, keep all real microsite data
+            if (site.url.includes('test.com') && site.name.toLowerCase().includes('test site')) {
+                console.log(`🗑️ Removing obvious test site: ${site.name} (${site.url})`);
                 return false;
             }
+            // Keep all other sites (real data)
             return true;
         });
         
         const removedCount = originalLength - this.microsites.length;
         if (removedCount > 0) {
-            console.log(`✅ Removed ${removedCount} test site(s)`);
+            console.log(`✅ Removed ${removedCount} obvious test site(s)`);
             this.saveMicrosites();
         } else {
-            console.log('✅ No test sites found to remove');
+            console.log('✅ No obvious test sites found to remove');
         }
     }
 
