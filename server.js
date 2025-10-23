@@ -161,10 +161,10 @@ const server = http.createServer((req, res) => {
     });
 });
 
-const PORT = 9000;
+const PORT = process.env.PORT || 9000;
 server.listen(PORT, '0.0.0.0', () => {
-    console.log(`🚀 Server running at http://localhost:${PORT}/`);
-    console.log(`🚀 Server accessible at http://10.74.28.74:${PORT}/`);
-    console.log(`📊 API endpoint: http://10.74.28.74:${PORT}/api/receive`);
-    console.log(`📊 Data endpoint: http://10.74.28.74:${PORT}/api/data.json`);
+    console.log(`🚀 Server running on port ${PORT}`);
+    console.log(`📊 API endpoint: /api/receive`);
+    console.log(`📊 Data endpoint: /api/data.json`);
+    console.log(`📊 Counts endpoint: /api/counts.json`);
 });

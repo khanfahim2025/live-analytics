@@ -12,7 +12,7 @@
     const DASHBOARD_CONFIG = {
         gtmId: 'GTM-5PHH5D6T',
         siteName: 'Homesfy Test Website',
-        dashboardUrl: 'http://10.74.28.74:9000', // Use your laptop's IP address
+        dashboardUrl: 'https://your-railway-app.up.railway.app', // Replace with your Railway URL
         siteUrl: 'https://www.homesfytestwebsite.com'
     };
 

@@ -471,7 +471,7 @@ async function loadRealData() {
     console.log('📊 Loading real data from server counts...');
     
     try {
-        const response = await fetch('http://localhost:9000/api/counts.json');
+        const response = await fetch('https://your-railway-app.up.railway.app/api/counts.json');
         const serverCounts = await response.json();
         
         console.log('📊 Found server counts:', serverCounts);
