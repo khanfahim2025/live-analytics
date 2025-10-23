@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌐 Live Analytics Dashboard</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Header -->
+        <header class="dashboard-header">
+            <div class="header-content">
+                <div class="header-left">
+                    <h1><i class="fas fa-chart-line"></i> Live Analytics Dashboard</h1>
+                    <p>Real-time monitoring for websites and microsites</p>
+                </div>
+                <div class="header-right">
+                    <div class="connection-status">
+                        <span class="status-indicator connected"></span>
+                        <span>Connected</span>
+                    </div>
+                    <button class="refresh-btn" onclick="refreshData()">
+                        <i class="fas fa-sync-alt"></i> Refresh Data
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Time Range Selector -->
+        <div class="time-range-selector">
+            <button class="time-btn active" data-period="day">Day</button>
+            <button class="time-btn" data-period="week">Week</button>
+            <button class="time-btn" data-period="month">Month</button>
+        </div>
+
+        <!-- Main Metrics Cards -->
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <div class="metric-header">
+                    <h3>Total Visitors</h3>
+                    <span class="trend positive">↗️ +12%</span>
+                </div>
+                <div class="metric-value" id="totalVisitors">0</div>
+                <div class="metric-chart">
+                    <canvas id="visitorsChart"></canvas>
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-header">
+                    <h3>Total Leads</h3>
+                    <span class="trend positive">↗️ +8%</span>
+                </div>
+                <div class="metric-value" id="totalLeads">0</div>
+                <div class="metric-chart">
+                    <canvas id="leadsChart"></canvas>
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-header">
+                    <h3>Overall Conversion</h3>
+                    <span class="trend positive">↗️ +2.1%</span>
+                </div>
+                <div class="metric-value" id="conversionRate">0%</div>
+                <div class="metric-chart">
+                    <canvas id="conversionChart"></canvas>
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-header">
+                    <h3>Total Websites</h3>
+                    <span class="status-badge live">🟢 All Live</span>
+                </div>
+                <div class="metric-value" id="totalWebsites">0</div>
+                <div class="metric-sub">
+                    <span id="activeWebsites">0 Active</span>
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-header">
+                    <h3>Working Forms</h3>
+                    <span class="status-badge working">✅ All Working</span>
+                </div>
+                <div class="metric-value" id="workingForms">0</div>
+                <div class="metric-sub">
+                    <span id="formStatus">All Working</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content Grid -->
+        <div class="content-grid">
+            <!-- Microsite Performance Table -->
+            <div class="content-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-table"></i> Microsite Performance</h2>
+                    <div class="section-actions">
+                        <button class="btn-secondary" onclick="exportData()">
+                            <i class="fas fa-download"></i> Export
+                        </button>
+                        <button class="btn-primary" onclick="addMicrosite()">
+                            <i class="fas fa-plus"></i> Add Microsite
+                        </button>
+                        <button class="btn-secondary" onclick="loadRealData()" style="background: #48bb78; margin-left: 10px;">
+                            <i class="fas fa-download"></i> Load Real Data
+                        </button>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table class="performance-table" id="performanceTable">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Website</th>
+                                <th>Visitors</th>
+                                <th>Leads</th>
+                                <th>Conversion %</th>
+                                <th>Website Status</th>
+                                <th>Form Status</th>
+                                <th>Last Activity</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="performanceTableBody">
+                            <!-- Dynamic content will be inserted here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Conversion Trends Chart -->
+            <div class="content-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-chart-line"></i> Conversion Trends</h2>
+                </div>
+                <div class="chart-container">
+                    <canvas id="conversionTrendsChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Live Website Status -->
+            <div class="content-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-globe"></i> Live Website Status</h2>
+                </div>
+                <div class="website-status-grid" id="websiteStatusGrid">
+                    <!-- Dynamic content will be inserted here -->
+                </div>
+            </div>
+
+            <!-- Alerts & Notifications -->
+            <div class="content-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-bell"></i> Alerts & Notifications</h2>
+                </div>
+                <div class="alerts-container" id="alertsContainer">
+                    <div class="no-alerts">
+                        <i class="fas fa-check-circle"></i>
+                        <p>No alerts at this time</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Live Performance Metrics -->
+            <div class="content-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-tachometer-alt"></i> Live Performance Metrics</h2>
+                </div>
+                <div class="performance-metrics">
+                    <div class="perf-metric">
+                        <div class="perf-icon">🚀</div>
+                        <div class="perf-content">
+                            <h4>Response Time</h4>
+                            <div class="perf-value" id="responseTime">245ms</div>
+                            <div class="perf-trend positive">↗️ -15ms</div>
+                        </div>
+                    </div>
+                    <div class="perf-metric">
+                        <div class="perf-icon">📊</div>
+                        <div class="perf-content">
+                            <h4>Uptime</h4>
+                            <div class="perf-value" id="uptime">99.9%</div>
+                            <div class="perf-trend positive">↗️ +0.1%</div>
+                        </div>
+                    </div>
+                    <div class="perf-metric">
+                        <div class="perf-icon">👥</div>
+                        <div class="perf-content">
+                            <h4>Concurrent Users</h4>
+                            <div class="perf-value" id="concurrentUsers">3</div>
+                            <div class="perf-trend positive">↗️ +12</div>
+                        </div>
+                    </div>
+                    <div class="perf-metric">
+                        <div class="perf-icon">🔄</div>
+                        <div class="perf-content">
+                            <h4>Page Load Speed</h4>
+                            <div class="perf-value" id="pageLoadSpeed">1.2s</div>
+                            <div class="perf-trend positive">↗️ -0.3s</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Microsite Modal -->
+    <div class="modal" id="addMicrositeModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add New Microsite</h3>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="addMicrositeForm">
+                    <div class="form-group">
+                        <label for="siteName">Site Name</label>
+                        <input type="text" id="siteName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="siteUrl">Site URL</label>
+                        <input type="url" id="siteUrl" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="gtmId">GTM Container ID</label>
+                        <input type="text" id="gtmId" placeholder="GTM-XXXXXXX" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="formSelector">Form Selector (CSS)</label>
+                        <input type="text" id="formSelector" placeholder="#contact-form, .lead-form">
+                    </div>
+                    <div class="form-group">
+                        <label for="conversionGoal">Conversion Goal Name</label>
+                        <input type="text" id="conversionGoal" placeholder="Lead Generation">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeModal()">Cancel</button>
+                <button class="btn-primary" onclick="saveMicrosite()">Add Microsite</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
+    <script src="api/track.js"></script>
+    <script src="real-time-fetcher.js"></script>
+    <script src="dashboard.js"></script>
+</body>
+</html>

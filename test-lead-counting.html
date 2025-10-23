@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Lead Counting</title>
+</head>
+<body>
+    <h1>Test Lead Counting</h1>
+    <p>This page tests the fixed lead counting logic.</p>
+    
+    <form id="testForm">
+        <input type="text" placeholder="Name" required>
+        <button type="submit" data-track-lead="true">Submit Form</button>
+    </form>
+    
+    <button data-track-lead="true" onclick="testConversion()">Test Conversion</button>
+    
+    <div id="results"></div>
+
+    <script>
+        // Test the fixed tracking script
+        function testConversion() {
+            if (window.trackConversion) {
+                window.trackConversion({
+                    type: 'lead',
+                    value: 50,
+                    goal: 'Test Conversion'
+                });
+                document.getElementById('results').innerHTML += '<p>✅ Conversion tracked</p>';
+            }
+        }
+        
+        // Test form submission
+        document.getElementById('testForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            if (window.trackFormSubmission) {
+                window.trackFormSubmission(e.target);
+                document.getElementById('results').innerHTML += '<p>✅ Form submission tracked</p>';
+            }
+        });
+    </script>
+
+    <!-- Include the fixed tracking script -->
+    <script src="homesfy-tracker-fixed.js"></script>
+</body>
+</html>
