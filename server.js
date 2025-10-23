@@ -9,6 +9,40 @@ let trackingData = [];
 // Site counts - server-side counting (dynamically handles multiple sites)
 let siteCounts = {};
 
+// PERSISTENT STORAGE FUNCTIONS
+const DATA_FILE = path.join(__dirname, 'data', 'siteCounts.json');
+
+// Ensure data directory exists
+if (!fs.existsSync(path.join(__dirname, 'data'))) {
+    fs.mkdirSync(path.join(__dirname, 'data'));
+}
+
+// Load existing data on server start
+function loadPersistentData() {
+    try {
+        if (fs.existsSync(DATA_FILE)) {
+            const data = fs.readFileSync(DATA_FILE, 'utf8');
+            siteCounts = JSON.parse(data);
+            console.log('📊 Loaded persistent data:', Object.keys(siteCounts).length, 'sites');
+        } else {
+            console.log('📊 No existing data found, starting fresh');
+        }
+    } catch (error) {
+        console.error('❌ Error loading persistent data:', error);
+        siteCounts = {};
+    }
+}
+
+// Save data to file
+function savePersistentData() {
+    try {
+        fs.writeFileSync(DATA_FILE, JSON.stringify(siteCounts, null, 2));
+        console.log('💾 Saved persistent data');
+    } catch (error) {
+        console.error('❌ Error saving persistent data:', error);
+    }
+}
+
 // Function to initialize a new site if it doesn't exist
 function initializeSite(gtmId, siteName, siteUrl) {
     if (!siteCounts[gtmId]) {
@@ -25,8 +59,12 @@ function initializeSite(gtmId, siteName, siteUrl) {
             lastUpdated: new Date().toISOString()
         };
         console.log('🆕 Initialized new site:', siteName, 'with GTM ID:', gtmId);
+        savePersistentData(); // Save immediately when new site is added
     }
 }
+
+// Load persistent data on startup
+loadPersistentData();
 
 // MIME types
 const mimeTypes = {
@@ -122,6 +160,9 @@ const server = http.createServer((req, res) => {
                         leads: siteCounts[gtmId].leads,
                         conversionRate: siteCounts[gtmId].conversionRate
                     });
+                    
+                    // Save data after each update
+                    savePersistentData();
                 }
                 
                 console.log('📊 Received tracking data:', data.event, data.siteName);
@@ -178,4 +219,5 @@ server.listen(PORT, '0.0.0.0', () => {
     console.log(`📊 API endpoint: /api/receive`);
     console.log(`📊 Data endpoint: /api/data.json`);
     console.log(`📊 Counts endpoint: /api/counts.json`);
+    console.log(`💾 Persistent data file: ${DATA_FILE}`);
 });
