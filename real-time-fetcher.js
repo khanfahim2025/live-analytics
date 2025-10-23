@@ -22,57 +22,76 @@ class RealTimeDataFetcher {
         this.startRealTimeFetching();
     }
 
-    // Load microsites configuration
+    // Load microsites configuration - AUTO-DETECTION VERSION
     loadMicrosites() {
         const saved = localStorage.getItem('microsites');
         if (saved) {
             this.microsites = JSON.parse(saved);
-            // Update GTM ID if it's the old placeholder
-            this.microsites.forEach(site => {
-                if (site.gtmId === "GTM-XXXXXXX") {
-                    site.gtmId = "GTM-5PHH5D6T";
+        } else {
+            // Start with empty array - will be populated automatically
+            this.microsites = [];
+            this.saveMicrosites();
+        }
+        
+        // Auto-detect new microsites from server
+        this.autoDetectMicrosites();
+    }
+
+    // Auto-detect microsites from server data
+    async autoDetectMicrosites() {
+        try {
+            const response = await fetch('https://web-production-beea8.up.railway.app/api/counts.json');
+            const serverCounts = await response.json();
+            
+            console.log('🔍 Auto-detecting microsites from server...');
+            
+            // Add any new microsites found on server
+            Object.keys(serverCounts).forEach(gtmId => {
+                const serverData = serverCounts[gtmId];
+                
+                // Check if this microsite already exists
+                const existingSite = this.microsites.find(site => site.gtmId === gtmId);
+                
+                if (!existingSite) {
+                    // Auto-add new microsite
+                    const newSite = {
+                        id: Date.now() + Math.random(), // Generate unique ID
+                        name: serverData.siteName || `Site ${gtmId}`,
+                        url: serverData.siteUrl || 'https://unknown-site.com',
+                        gtmId: gtmId,
+                        status: "online",
+                        visitors: serverData.visitors || 0,
+                        leads: serverData.leads || 0,
+                        conversion: serverData.conversionRate || 0,
+                        lastActivity: "Just now",
+                        formStatus: "working",
+                        responseTime: 0,
+                        uptime: 100,
+                        concurrentUsers: 0,
+                        formSelector: 'form, .contact-form, #contact-form',
+                        conversionGoal: 'Lead Generation'
+                    };
+                    
+                    this.microsites.push(newSite);
+                    console.log('✅ Auto-added new microsite:', newSite.name, 'with GTM ID:', gtmId);
+                } else {
+                    // Update existing site with server data
+                    existingSite.visitors = serverData.visitors || 0;
+                    existingSite.leads = serverData.leads || 0;
+                    existingSite.conversion = serverData.conversionRate || 0;
+                    existingSite.lastActivity = 'Just now';
                 }
             });
+            
             this.saveMicrosites();
-        } else {
-            // Add your real microsites
-            this.microsites = [
-                {
-                    id: 1,
-                    name: "Homesfy Test Website",
-                    url: "https://www.homesfytestwebsite.com",
-                    gtmId: "GTM-5PHH5D6T", // Your actual GTM ID
-                    status: "online",
-                    visitors: 0,
-                    leads: 0,
-                    conversion: 0,
-                    lastActivity: "Just now",
-                    formStatus: "working",
-                    responseTime: 0,
-                    uptime: 100,
-                    concurrentUsers: 0,
-                    formSelector: 'form, .contact-form, #contact-form',
-                    conversionGoal: 'Lead Generation'
-                },
-                {
-                    id: 2,
-                    name: "Green Reserve Noida",
-                    url: "https://www.green-reserve-noida.in",
-                    gtmId: "GTM-WLQ7HBKH", // Your second GTM ID
-                    status: "online",
-                    visitors: 0,
-                    leads: 0,
-                    conversion: 0,
-                    lastActivity: "Just now",
-                    formStatus: "working",
-                    responseTime: 0,
-                    uptime: 100,
-                    concurrentUsers: 0,
-                    formSelector: 'form, .contact-form, #contact-form',
-                    conversionGoal: 'Lead Generation'
-                }
-            ];
-            this.saveMicrosites();
+            console.log('🎉 Auto-detection complete! Found', this.microsites.length, 'microsites');
+            
+            // Update dashboard after auto-detection
+            this.updateAnalytics();
+            this.updateDashboard();
+            
+        } catch (error) {
+            console.log('⚠️ Auto-detection failed:', error);
         }
     }
 
@@ -98,6 +117,11 @@ class RealTimeDataFetcher {
         setInterval(() => {
             this.checkForNewTrackingData();
         }, 5000);
+        
+        // Auto-detect new microsites every 30 seconds
+        setInterval(() => {
+            this.autoDetectMicrosites();
+        }, 30000);
     }
 
     // Setup listener for real data from microsites
