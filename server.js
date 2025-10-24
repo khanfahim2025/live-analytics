@@ -930,6 +930,14 @@ const server = http.createServer((req, res) => {
         return;
     }
 
+    // Serve test detection page
+    if (pathname === '/test-detection') {
+        const testPage = fs.readFileSync(path.join(__dirname, 'test-detection.html'), 'utf8');
+        res.writeHead(200, { 'Content-Type': 'text/html' });
+        res.end(testPage);
+        return;
+    }
+
     // Serve static files
     let filePath = pathname === '/' ? '/index.html' : pathname;
     filePath = path.join(__dirname, filePath);
