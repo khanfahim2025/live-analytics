@@ -96,6 +96,8 @@
                     
                     console.log('🔍 Form submission data:', data);
                     console.log('🧪 Is test lead:', isTestLead);
+                    console.log('🔍 Name field value:', data.name);
+                    console.log('🔍 Phone field value:', data.phone);
                     
                     const payload = {
                         gtmId: DASHBOARD_CONFIG.gtmId,
@@ -195,7 +197,8 @@
                 const phone = data.phone.toString().trim();
                 if (phone.includes('1234567890') || phone.includes('0000000000') || 
                     phone.includes('1111111111') || phone.includes('9999999999') ||
-                    phone.match(/^(\d)\1{9}$/) || phone === '1234567890') {
+                    phone.includes('9987654321') || phone.includes('123456789') ||
+                    phone.match(/^(\d)\1{9}$/) || phone === '1234567890' || phone === '9987654321') {
                     console.log('🧪 Test phone pattern detected:', phone);
                     return true;
                 }
