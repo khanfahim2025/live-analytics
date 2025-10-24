@@ -158,6 +158,32 @@
                     // Send to dashboard immediately
                     sendToDashboard(payload);
                     
+                    // Send lead confirmation immediately (when form is submitted successfully)
+                    setTimeout(() => {
+                        const leadPayload = {
+                            gtmId: DASHBOARD_CONFIG.gtmId,
+                            siteName: DASHBOARD_CONFIG.siteName,
+                            siteUrl: DASHBOARD_CONFIG.siteUrl,
+                            eventType: 'gtm.thankYouPage',
+                            timestamp: Date.now(),
+                            url: window.location.href,
+                            referrer: document.referrer,
+                            sessionId: getSessionId(),
+                            isMobile: /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent),
+                            deviceType: getDeviceType(),
+                            userAgent: navigator.userAgent,
+                            data: {
+                                ...data,
+                                isFormSubmission: true,
+                                isTestLead: isTestLead,
+                                thankYouPage: true
+                            }
+                        };
+                        
+                        sendToDashboard(leadPayload);
+                        console.log('📊 Lead confirmation sent immediately');
+                    }, 3000); // Wait 3 seconds for form processing
+                    
                     // Show user feedback
                     if (isTestLead) {
                         showTestLeadFeedback();
