@@ -50,6 +50,9 @@
             
             // Set up button click tracking
             setupButtonTracking();
+            
+            // Track thank you page visits
+            trackThankYouPage();
         }
         
         // Track page view
@@ -145,27 +148,25 @@
                         }
                     };
                     
+                    // Store lead data in session storage for thank you page tracking
+                    sessionStorage.setItem('leadData', JSON.stringify({
+                        ...data,
+                        isTestLead: isTestLead,
+                        timestamp: Date.now()
+                    }));
+                    
                     // Send to dashboard immediately
                     sendToDashboard(payload);
                     
                     // Show user feedback
                     if (isTestLead) {
                         showTestLeadFeedback();
-                        // For test leads, prevent the form from submitting to the website's API
-                        event.preventDefault();
-                        event.stopPropagation();
-                        event.stopImmediatePropagation();
-                        console.log('🚫 Test lead detected - preventing form submission to website API');
-                        
-                        // Redirect to thank you page after a short delay
-                        setTimeout(() => {
-                            window.location.href = 'thankyou.html';
-                        }, 2000);
-                        
-                        return false;
+                        console.log('🧪 Test lead detected - allowing form to proceed with validation');
+                        // For test leads, allow the form to proceed but mark it as test lead
+                        // The website's validation will handle phone number validation
+                        // We'll track it when it reaches the thank you page
                     } else {
                         showRealLeadFeedback();
-                        // For real leads, allow the form to proceed normally
                         console.log('✅ Real lead - allowing form submission to proceed');
                     }
                 }, true); // Use capture phase to intercept before other handlers
@@ -222,6 +223,56 @@
             
             console.log('✅ Real lead detected - no field contains "test"');
             return false;
+        }
+        
+        // Track thank you page visits
+        function trackThankYouPage() {
+            // Check if we're on the thank you page
+            if (window.location.href.includes('thankyou.html') || window.location.href.includes('thank-you')) {
+                console.log('🎉 Thank you page detected!');
+                
+                // Get the lead data from session storage (stored during form submission)
+                const leadData = sessionStorage.getItem('leadData');
+                if (leadData) {
+                    try {
+                        const data = JSON.parse(leadData);
+                        const isTestLead = data.isTestLead;
+                        
+                        console.log('📊 Thank you page - Lead data:', data);
+                        console.log('🧪 Is test lead:', isTestLead);
+                        
+                        // Send final lead confirmation to dashboard
+                        const payload = {
+                            gtmId: DASHBOARD_CONFIG.gtmId,
+                            siteName: DASHBOARD_CONFIG.siteName,
+                            siteUrl: DASHBOARD_CONFIG.siteUrl,
+                            eventType: 'gtm.thankYouPage',
+                            timestamp: Date.now(),
+                            url: window.location.href,
+                            referrer: document.referrer,
+                            sessionId: getSessionId(),
+                            isMobile: /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent),
+                            deviceType: getDeviceType(),
+                            userAgent: navigator.userAgent,
+                            data: {
+                                ...data,
+                                isFormSubmission: true,
+                                isTestLead: isTestLead,
+                                thankYouPage: true
+                            }
+                        };
+                        
+                        sendToDashboard(payload);
+                        
+                        // Clear the stored data
+                        sessionStorage.removeItem('leadData');
+                        
+                        console.log('✅ Thank you page lead tracked successfully');
+                    } catch (error) {
+                        console.error('❌ Error processing thank you page data:', error);
+                    }
+                }
+            }
         }
         
         // Send data to dashboard

@@ -573,17 +573,21 @@ const server = http.createServer((req, res) => {
                             siteCounts[gtmId].pageViews++;
                             break;
                         case 'gtm.formSubmit':
-                            // Check if this is a test lead
+                            // Don't count leads yet - just track form submission
+                            siteCounts[gtmId].formSubmissions++;
+                            console.log('📝 Form submission tracked for:', siteCounts[gtmId].siteName);
+                            break;
+                        case 'gtm.thankYouPage':
+                            // Count leads only when they reach thank you page (after validation)
                             if (isTestLead(data)) {
                                 siteCounts[gtmId].testLeads++;
-                                console.log('🧪 Test lead detected and counted:', data.data);
+                                console.log('🧪 Test lead confirmed on thank you page for:', siteCounts[gtmId].siteName);
                                 // Schedule cleanup after 1 minute
                                 scheduleTestLeadCleanup(gtmId);
                             } else {
                                 siteCounts[gtmId].leads++;
-                                console.log('✅ Real lead counted:', data.data);
+                                console.log('✅ Real lead confirmed on thank you page for:', siteCounts[gtmId].siteName);
                             }
-                            siteCounts[gtmId].formSubmissions++;
                             break;
                         case 'gtm.conversion':
                             // Only count conversion if it's NOT from a form submit
