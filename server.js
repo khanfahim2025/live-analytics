@@ -843,7 +843,7 @@ const server = http.createServer((req, res) => {
 
 const PORT = process.env.PORT || 9000;
 server.listen(PORT, '0.0.0.0', () => {
-    console.log(`🚀 Server running on port ${PORT} - Railway deployment v3.0 - Test Lead Detection FIXED`);
+    console.log(`🚀 Server running on port ${PORT} - Railway deployment v4.0 - Test Lead Detection COMPLETELY FIXED`);
     console.log(`📊 API endpoint: /api/receive`);
     console.log(`📊 Data endpoint: /api/data.json`);
     console.log(`📊 Counts endpoint: /api/counts.json`);
