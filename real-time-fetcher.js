@@ -1231,6 +1231,12 @@ class RealTimeDataFetcher {
 
     // Update performance table
     updatePerformanceTable() {
+        // Check if table is currently filtered - if so, don't override
+        if (window.isTableFiltered) {
+            console.log('🔍 Table is filtered - skipping real-time update');
+            return;
+        }
+        
         const tbody = document.getElementById('performanceTableBody');
         tbody.innerHTML = '';
 

@@ -524,6 +524,9 @@ function addMicrosite() {
     }
 }
 
+// Global variable to track if table is filtered
+window.isTableFiltered = false;
+
 // Domain search functionality
 function filterByDomain() {
     const searchTerm = document.getElementById('domainSearch').value.toLowerCase().trim();
@@ -534,6 +537,9 @@ function filterByDomain() {
         clearDomainSearch();
         return;
     }
+    
+    // Set global flag to prevent real-time updates from overriding filter
+    window.isTableFiltered = true;
     
     // Filter the performance table
     if (window.realTimeFetcher && window.realTimeFetcher.microsites) {
@@ -581,6 +587,9 @@ function clearDomainSearch() {
     if (filterIndicator) {
         filterIndicator.style.display = 'none';
     }
+    
+    // Clear the filter flag
+    window.isTableFiltered = false;
     
     // Restore full performance table
     if (window.realTimeFetcher) {
