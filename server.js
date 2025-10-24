@@ -395,13 +395,19 @@ function generateRecommendations(metrics, score) {
 
 // Function to detect if a lead is a test lead
 function isTestLead(data) {
+    console.log('🔍 DEBUG: Checking if lead is test lead. Data:', JSON.stringify(data, null, 2));
+    
     // Check for test keywords in various form fields
     const testKeywords = ['test', 'demo', 'sample', 'example', 'fake', 'dummy'];
     const fieldsToCheck = ['name', 'firstName', 'lastName', 'email', 'phone', 'message', 'comment', 'description', 'elementText', 'modalFromName', 'modalFromEmail', 'modalFromMobile', 'modalFromPhone', 'formName', 'formEmail', 'formPhone', 'formMobile', 'contactName', 'contactEmail', 'contactPhone', 'contactMobile'];
     
+    console.log('🔍 DEBUG: Checking fields:', fieldsToCheck);
+    console.log('🔍 DEBUG: Test keywords:', testKeywords);
+    
     for (const field of fieldsToCheck) {
         if (data.data && data.data[field]) {
             const value = data.data[field].toString().toLowerCase();
+            console.log(`🔍 DEBUG: Checking field "${field}" with value:`, value);
             for (const keyword of testKeywords) {
                 if (value.includes(keyword)) {
                     console.log(`🧪 Test keyword "${keyword}" found in field "${field}":`, value);
@@ -883,7 +889,7 @@ const server = http.createServer((req, res) => {
 
 const PORT = process.env.PORT || 9000;
     server.listen(PORT, '0.0.0.0', () => {
-        console.log(`🚀 Server running on port ${PORT} - Railway deployment v8.0 - TEST LEAD DETECTION FIX`);
+        console.log(`🚀 Server running on port ${PORT} - Railway deployment v9.0 - FORCE REDEPLOY TEST LEAD FIX`);
         console.log(`📊 API endpoint: /api/receive`);
         console.log(`📊 Data endpoint: /api/data.json`);
         console.log(`📊 Counts endpoint: /api/counts.json`);
