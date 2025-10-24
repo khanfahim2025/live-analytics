@@ -797,13 +797,16 @@ body {
 }
 
 .performance-section .section-header {
-    background: transparent;
+    background: white;
     backdrop-filter: none;
-    padding: 0;
-    border-bottom: none;
+    padding: 24px 32px;
+    border-bottom: 1px solid #e2e8f0;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    border-radius: 12px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    margin-bottom: 20px;
 }
 
 .section-title h2 {
