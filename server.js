@@ -397,16 +397,21 @@ function generateRecommendations(metrics, score) {
 function isTestLead(data) {
     console.log('🔍 DEBUG: Checking if lead is test lead. Data:', JSON.stringify(data, null, 2));
     
-    // SIMPLE TEST LEAD DETECTION: Just check if name field contains "test"
-    if (data.data && data.data.name && typeof data.data.name === 'string' && data.data.name.trim() !== '') {
-        const name = data.data.name.toLowerCase().trim();
-        if (name.includes('test')) {
-            console.log('🧪 Test lead detected - name contains "test":', { name: data.data.name });
-            return true;
+    // Check ALL fields for "test" keyword (same logic as client-side)
+    if (data.data) {
+        for (const [fieldName, fieldValue] of Object.entries(data.data)) {
+            if (typeof fieldValue === 'string' && fieldValue.trim() !== '') {
+                const value = fieldValue.toLowerCase().trim();
+                console.log(`🔍 Checking field "${fieldName}":`, value);
+                if (value.includes('test')) {
+                    console.log(`🧪 Test lead detected - field "${fieldName}" contains "test":`, { field: fieldName, value: fieldValue });
+                    return true;
+                }
+            }
         }
     }
     
-    console.log('✅ Real lead detected - name does not contain "test"');
+    console.log('✅ Real lead detected - no field contains "test"');
     return false;
 }
 
