@@ -397,57 +397,16 @@ function generateRecommendations(metrics, score) {
 function isTestLead(data) {
     console.log('🔍 DEBUG: Checking if lead is test lead. Data:', JSON.stringify(data, null, 2));
     
-    // Check for test keywords in various form fields
-    const testKeywords = ['test', 'demo', 'sample', 'example', 'fake', 'dummy'];
-    const fieldsToCheck = ['name', 'firstName', 'lastName', 'email', 'phone', 'message', 'comment', 'description', 'elementText', 'modalFromName', 'modalFromEmail', 'modalFromMobile', 'modalFromPhone', 'formName', 'formEmail', 'formPhone', 'formMobile', 'contactName', 'contactEmail', 'contactPhone', 'contactMobile'];
-    
-    console.log('🔍 DEBUG: Checking fields:', fieldsToCheck);
-    console.log('🔍 DEBUG: Test keywords:', testKeywords);
-    
-    for (const field of fieldsToCheck) {
-        if (data.data && data.data[field]) {
-            const value = data.data[field].toString().toLowerCase();
-            console.log(`🔍 DEBUG: Checking field "${field}" with value:`, value);
-            for (const keyword of testKeywords) {
-                if (value.includes(keyword)) {
-                    console.log(`🧪 Test keyword "${keyword}" found in field "${field}":`, value);
-                    return true;
-                }
-            }
-        }
-    }
-    
-    // Check for test email patterns
-    if (data.data && data.data.email) {
-        const email = data.data.email.toLowerCase();
-        if (email.includes('test') || email.includes('demo') || email.includes('example') || 
-            email.includes('@test.') || email.includes('@demo.') || email.includes('@example.')) {
-            console.log(`🧪 Test email pattern detected:`, email);
+    // SIMPLE TEST LEAD DETECTION: Just check if name field contains "test"
+    if (data.data && data.data.name && typeof data.data.name === 'string' && data.data.name.trim() !== '') {
+        const name = data.data.name.toLowerCase().trim();
+        if (name.includes('test')) {
+            console.log('🧪 Test lead detected - name contains "test":', { name: data.data.name });
             return true;
         }
     }
     
-    // Check for test phone numbers (common test patterns)
-    if (data.data && data.data.phone) {
-        const phone = data.data.phone.toString();
-        // Check for common test phone patterns
-        if (phone.includes('1234567890') || phone.includes('0000000000') || 
-            phone.includes('1111111111') || phone.includes('9999999999') ||
-            phone.match(/^(\d)\1{9}$/)) { // All same digits
-            console.log(`🧪 Test phone pattern detected:`, phone);
-            return true;
-        }
-    }
-    
-    // Check for test names in form submissions
-    if (data.data && data.data.formId) {
-        const formId = data.data.formId.toLowerCase();
-        if (formId.includes('test') || formId.includes('demo') || formId.includes('sample')) {
-            console.log(`🧪 Test form ID detected:`, formId);
-            return true;
-        }
-    }
-    
+    console.log('✅ Real lead detected - name does not contain "test"');
     return false;
 }
 
