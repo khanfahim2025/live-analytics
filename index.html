@@ -108,76 +108,96 @@
         <!-- Main Content Grid -->
         <div class="content-grid">
             <!-- Microsite Performance Table -->
-            <div class="content-section">
+            <div class="content-section performance-section">
+                <!-- Section Header -->
                 <div class="section-header">
-                    <h2><i class="fas fa-table"></i> Microsite Performance</h2>
-                    <div class="section-actions">
-                        <button class="btn-secondary" onclick="exportData()">
-                            <i class="fas fa-download"></i> Export
-                        </button>
-                        <button class="btn-primary" onclick="addMicrosite()">
-                            <i class="fas fa-plus"></i> Add Microsite
-                        </button>
-                        <button class="btn-secondary" onclick="loadRealData()" style="background: #48bb78; margin-left: 10px;">
-                            <i class="fas fa-download"></i> Load Real Data
-                        </button>
+                    <div class="section-title">
+                        <h2><i class="fas fa-chart-line"></i> Microsite Performance</h2>
+                        <p class="section-subtitle">Monitor and analyze your website performance metrics</p>
                     </div>
-                    
-                    <!-- Domain Search Controls -->
-                    <div class="domain-search-controls">
-                        <div class="search-header">
-                            <h4><i class="fas fa-search"></i> Search by Domain</h4>
-                            <div class="search-input-group">
-                                <input type="text" id="domainSearch" class="domain-search-input" placeholder="Search by domain (e.g., www.xyz.com)" onkeyup="filterByDomain()">
-                                <button onclick="clearDomainSearch()" class="btn-clear-search" title="Clear search">
+                    <div class="section-actions">
+                        <div class="action-group">
+                            <button class="btn-action btn-export" onclick="exportData()">
+                                <i class="fas fa-download"></i>
+                                <span>Export</span>
+                            </button>
+                            <button class="btn-action btn-add" onclick="addMicrosite()">
+                                <i class="fas fa-plus"></i>
+                                <span>Add Site</span>
+                            </button>
+                            <button class="btn-action btn-load" onclick="loadRealData()">
+                                <i class="fas fa-sync-alt"></i>
+                                <span>Load Data</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Search and Filter Controls -->
+                <div class="controls-container">
+                    <!-- Domain Search -->
+                    <div class="control-group search-group">
+                        <div class="control-header">
+                            <i class="fas fa-search"></i>
+                            <h4>Search Websites</h4>
+                        </div>
+                        <div class="search-container">
+                            <div class="search-input-wrapper">
+                                <input type="text" id="domainSearch" class="search-input" placeholder="Search by domain or website name..." onkeyup="filterByDomain()">
+                                <button onclick="clearDomainSearch()" class="search-clear" title="Clear search">
                                     <i class="fas fa-times"></i>
                                 </button>
                             </div>
                         </div>
-                        <div id="domainSearchStatus" class="domain-search-status" style="display: none;"></div>
+                        <div id="domainSearchStatus" class="search-status" style="display: none;"></div>
                     </div>
-                    
-                    <!-- Date Filter Controls -->
-                    <div class="date-filter-controls">
-                        <div class="filter-header">
-                            <h4><i class="fas fa-calendar-alt"></i> Filter by Date Range</h4>
-                            <div class="filter-presets">
-                                <button onclick="setDatePreset('today')" class="preset-btn">Today</button>
+
+                    <!-- Date Filter -->
+                    <div class="control-group filter-group">
+                        <div class="control-header">
+                            <i class="fas fa-calendar-alt"></i>
+                            <h4>Date Range Filter</h4>
+                        </div>
+                        <div class="filter-container">
+                            <div class="preset-buttons">
+                                <button onclick="setDatePreset('today')" class="preset-btn active">Today</button>
                                 <button onclick="setDatePreset('yesterday')" class="preset-btn">Yesterday</button>
                                 <button onclick="setDatePreset('week')" class="preset-btn">This Week</button>
                                 <button onclick="setDatePreset('month')" class="preset-btn">This Month</button>
                             </div>
-                        </div>
-                        <div class="date-filter-row">
-                            <div class="date-input-group">
-                                <label for="dateFrom">From:</label>
-                                <input type="date" id="dateFrom" class="date-input">
-                            </div>
-                            <div class="date-input-group">
-                                <label for="dateTo">To:</label>
-                                <input type="date" id="dateTo" class="date-input">
+                            <div class="date-inputs">
+                                <div class="date-field">
+                                    <label for="dateFrom">From</label>
+                                    <input type="date" id="dateFrom" class="date-input">
+                                </div>
+                                <div class="date-field">
+                                    <label for="dateTo">To</label>
+                                    <input type="date" id="dateTo" class="date-input">
+                                </div>
                             </div>
                             <div class="filter-actions">
                                 <button onclick="applyDateFilter()" class="btn-filter">
-                                    <i class="fas fa-filter"></i> Apply Filter
+                                    <i class="fas fa-filter"></i>
+                                    <span>Apply</span>
                                 </button>
                                 <button onclick="clearDateFilter()" class="btn-clear">
-                                    <i class="fas fa-times"></i> Clear
+                                    <i class="fas fa-times"></i>
+                                    <span>Clear</span>
                                 </button>
                                 <button onclick="exportFilteredData()" class="btn-export-filtered">
-                                    <i class="fas fa-download"></i> Export Filtered
+                                    <i class="fas fa-download"></i>
+                                    <span>Export</span>
                                 </button>
                             </div>
                         </div>
-                        <div id="dateFilterStatus" class="date-filter-status" style="display: none;"></div>
-                        <div class="filter-help">
-                            <small>
-                                <i class="fas fa-info-circle"></i>
-                                <strong>Keyboard Shortcuts:</strong> 
-                                Ctrl+R (Refresh) | Ctrl+E (Export) | Esc (Clear Filters)
-                            </small>
-                        </div>
+                        <div id="dateFilterStatus" class="filter-status" style="display: none;"></div>
                     </div>
+                </div>
+
+                <!-- Keyboard Shortcuts -->
+                <div class="shortcuts-info">
+                    <i class="fas fa-keyboard"></i>
+                    <span><strong>Shortcuts:</strong> Ctrl+R (Refresh) | Ctrl+E (Export) | Esc (Clear)</span>
                 </div>
                 <div class="table-container">
                     <div id="tableFilterIndicator" class="table-filter-indicator" style="display: none;">
