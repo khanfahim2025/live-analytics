@@ -908,7 +908,9 @@ const server = http.createServer((req, res) => {
             'Content-Type': 'application/javascript',
             'Cache-Control': 'no-cache, no-store, must-revalidate',
             'Pragma': 'no-cache',
-            'Expires': '0'
+            'Expires': '0',
+            'Last-Modified': new Date().toUTCString(),
+            'ETag': '"' + Date.now() + '"'
         });
         res.end(trackingScript);
         return;

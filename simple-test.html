@@ -139,6 +139,14 @@
             document.getElementById('phone').value = '9987654321';
             document.getElementById('message').value = 'Interested in property';
             
+            // Show the values in the form
+            console.log('Setting test values:', {
+                name: 'test fahim',
+                email: 'fahim@example.com', 
+                phone: '9987654321',
+                message: 'Interested in property'
+            });
+            
             submitForm('test');
         }
 
@@ -159,6 +167,9 @@
             for (let [key, value] of formData.entries()) {
                 data[key] = value;
             }
+            
+            console.log('Form data being tested:', data);
+            console.log('Type:', type);
             
             // Test the detection logic manually
             const isTestLead = isTestSubmission(data);
