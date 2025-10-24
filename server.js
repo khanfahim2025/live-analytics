@@ -496,6 +496,23 @@ const server = http.createServer((req, res) => {
         return;
     }
 
+    // API endpoint to clear all data (for Railway deployment)
+    if (pathname === '/api/clear-data' && method === 'POST') {
+        try {
+            siteCounts = {};
+            fs.writeFileSync(DATA_FILE, JSON.stringify(siteCounts, null, 2));
+            console.log('🧹 Cleared all data on Railway deployment');
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ message: 'All data cleared successfully', success: true }));
+            return;
+        } catch (error) {
+            console.error('❌ Error clearing data:', error);
+            res.writeHead(500, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ message: 'Error clearing data', error: error.message }));
+            return;
+        }
+    }
+
     // API endpoints
     if (pathname === '/api/receive' && method === 'POST') {
         let body = '';
@@ -843,7 +860,7 @@ const server = http.createServer((req, res) => {
 
 const PORT = process.env.PORT || 9000;
 server.listen(PORT, '0.0.0.0', () => {
-    console.log(`🚀 Server running on port ${PORT} - Railway deployment v4.0 - Test Lead Detection COMPLETELY FIXED`);
+    console.log(`🚀 Server running on port ${PORT} - Railway deployment v5.0 - Test Lead Detection FINAL FIX`);
     console.log(`📊 API endpoint: /api/receive`);
     console.log(`📊 Data endpoint: /api/data.json`);
     console.log(`📊 Counts endpoint: /api/counts.json`);
