@@ -903,7 +903,7 @@ const server = http.createServer((req, res) => {
 
     // Serve tracking script with cache busting
     if (pathname === '/tracking.js') {
-        const trackingScript = fs.readFileSync(path.join(__dirname, 'tracking.js'), 'utf8');
+        const trackingScript = fs.readFileSync(path.join(__dirname, 'tracking-v2.js'), 'utf8');
         res.writeHead(200, { 
             'Content-Type': 'application/javascript',
             'Cache-Control': 'no-cache, no-store, must-revalidate',
