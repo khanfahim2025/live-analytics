@@ -183,6 +183,13 @@
                     </div>
                 </div>
                 <div class="table-container">
+                    <div id="tableFilterIndicator" class="table-filter-indicator" style="display: none;">
+                        <i class="fas fa-filter"></i>
+                        <span>Table filtered by domain search</span>
+                        <button onclick="clearDomainSearch()" class="btn-clear-filter" title="Clear filter">
+                            <i class="fas fa-times"></i> Clear Filter
+                        </button>
+                    </div>
                     <table class="performance-table" id="performanceTable">
                         <thead>
                             <tr>

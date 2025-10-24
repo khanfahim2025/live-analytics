@@ -543,16 +543,22 @@ function filterByDomain() {
             return siteName.includes(searchTerm) || siteUrl.includes(searchTerm);
         });
         
-        // Update the performance table with filtered results
+        // Update the performance table with ONLY filtered results
         updatePerformanceTableWithFilter(filteredSites);
+        
+        // Show table filter indicator
+        const filterIndicator = document.getElementById('tableFilterIndicator');
+        if (filterIndicator) {
+            filterIndicator.style.display = 'flex';
+        }
         
         // Show search status
         if (filteredSites.length > 0) {
-            statusDiv.innerHTML = `<i class="fas fa-check-circle"></i> Showing ${filteredSites.length} site(s) matching "${searchTerm}"`;
+            statusDiv.innerHTML = `<i class="fas fa-check-circle"></i> Showing ${filteredSites.length} site(s) matching "${searchTerm}" - Other sites hidden`;
             statusDiv.className = 'domain-search-status active';
             statusDiv.style.display = 'block';
         } else {
-            statusDiv.innerHTML = `<i class="fas fa-exclamation-circle"></i> No sites found matching "${searchTerm}"`;
+            statusDiv.innerHTML = `<i class="fas fa-exclamation-circle"></i> No sites found matching "${searchTerm}" - All sites hidden`;
             statusDiv.className = 'domain-search-status no-results';
             statusDiv.style.display = 'block';
         }
@@ -563,19 +569,27 @@ function clearDomainSearch() {
     document.getElementById('domainSearch').value = '';
     document.getElementById('domainSearchStatus').style.display = 'none';
     
+    // Hide table filter indicator
+    const filterIndicator = document.getElementById('tableFilterIndicator');
+    if (filterIndicator) {
+        filterIndicator.style.display = 'none';
+    }
+    
     // Restore full performance table
     if (window.realTimeFetcher) {
         window.realTimeFetcher.updatePerformanceTable();
     }
 }
 
-// Update performance table with filtered results
+// Update performance table with filtered results (shows ONLY matching sites)
 function updatePerformanceTableWithFilter(filteredSites) {
     const tbody = document.getElementById('performanceTableBody');
     if (!tbody) return;
     
+    // Clear the table completely - this will hide all non-matching sites
     tbody.innerHTML = '';
 
+    // Show ONLY the filtered sites
     filteredSites.forEach((site, index) => {
         const row = document.createElement('tr');
         
