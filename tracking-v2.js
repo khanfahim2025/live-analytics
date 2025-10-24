@@ -94,6 +94,9 @@
                     // Check if this is a test lead
                     const isTestLead = isTestSubmission(data);
                     
+                    console.log('🔍 Form submission data:', data);
+                    console.log('🧪 Is test lead:', isTestLead);
+                    
                     const payload = {
                         gtmId: DASHBOARD_CONFIG.gtmId,
                         siteName: DASHBOARD_CONFIG.siteName,
@@ -165,8 +168,8 @@
             
             // Check for test keywords in form fields
             for (const [key, value] of Object.entries(data)) {
-                if (typeof value === 'string') {
-                    const lowerValue = value.toLowerCase();
+                if (typeof value === 'string' && value.trim() !== '') {
+                    const lowerValue = value.toLowerCase().trim();
                     for (const keyword of TEST_KEYWORDS) {
                         if (lowerValue.includes(keyword)) {
                             console.log('🧪 Test keyword detected:', { field: key, value: value, keyword: keyword });
@@ -177,29 +180,30 @@
             }
             
             // Check for test email patterns
-            if (data.email) {
-                const email = data.email.toLowerCase();
+            if (data.email && data.email.trim() !== '') {
+                const email = data.email.toLowerCase().trim();
                 if (email.includes('test') || email.includes('demo') || email.includes('example') || 
-                    email.includes('@test.') || email.includes('@demo.') || email.includes('@example.')) {
+                    email.includes('@test.') || email.includes('@demo.') || email.includes('@example.') ||
+                    email === 'test@example.com' || email === 'demo@test.com') {
                     console.log('🧪 Test email pattern detected:', email);
                     return true;
                 }
             }
             
             // Check for test phone patterns
-            if (data.phone) {
-                const phone = data.phone.toString();
+            if (data.phone && data.phone.toString().trim() !== '') {
+                const phone = data.phone.toString().trim();
                 if (phone.includes('1234567890') || phone.includes('0000000000') || 
                     phone.includes('1111111111') || phone.includes('9999999999') ||
-                    phone.match(/^(\d)\1{9}$/)) {
+                    phone.match(/^(\d)\1{9}$/) || phone === '1234567890') {
                     console.log('🧪 Test phone pattern detected:', phone);
                     return true;
                 }
             }
             
             // Check for test names in form submissions
-            if (data.formId) {
-                const formId = data.formId.toLowerCase();
+            if (data.formId && data.formId.trim() !== '') {
+                const formId = data.formId.toLowerCase().trim();
                 if (formId.includes('test') || formId.includes('demo') || formId.includes('sample')) {
                     console.log('🧪 Test form ID detected:', formId);
                     return true;
