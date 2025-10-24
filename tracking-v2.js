@@ -167,17 +167,34 @@
         // Check if submission is a test lead
         function isTestSubmission(data) {
             console.log('🔍 Checking for test lead in data:', data);
+            console.log('🔍 All form fields:', Object.keys(data));
+            console.log('🔍 Name field value:', data.name);
+            console.log('🔍 Name field type:', typeof data.name);
             
             // SIMPLE TEST LEAD DETECTION: Just check if name field contains "test"
             if (data.name && typeof data.name === 'string' && data.name.trim() !== '') {
                 const name = data.name.toLowerCase().trim();
+                console.log('🔍 Name after processing:', name);
                 if (name.includes('test')) {
                     console.log('🧪 Test lead detected - name contains "test":', { name: data.name });
                     return true;
                 }
             }
             
-            console.log('✅ Real lead detected - name does not contain "test"');
+            // Check other possible name fields
+            const nameFields = ['name', 'firstName', 'fullName', 'contactName', 'customerName', 'userName'];
+            for (const field of nameFields) {
+                if (data[field] && typeof data[field] === 'string' && data[field].trim() !== '') {
+                    const name = data[field].toLowerCase().trim();
+                    console.log(`🔍 Checking field "${field}":`, name);
+                    if (name.includes('test')) {
+                        console.log(`🧪 Test lead detected - field "${field}" contains "test":`, { field: field, value: data[field] });
+                        return true;
+                    }
+                }
+            }
+            
+            console.log('✅ Real lead detected - no name field contains "test"');
             return false;
         }
         
