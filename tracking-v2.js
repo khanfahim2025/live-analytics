@@ -156,6 +156,12 @@
                         event.stopPropagation();
                         event.stopImmediatePropagation();
                         console.log('🚫 Test lead detected - preventing form submission to website API');
+                        
+                        // Redirect to thank you page after a short delay
+                        setTimeout(() => {
+                            window.location.href = 'thankyou.html';
+                        }, 2000);
+                        
                         return false;
                     } else {
                         showRealLeadFeedback();
