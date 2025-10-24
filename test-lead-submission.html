@@ -130,6 +130,7 @@
                 <select id="siteUrl" required>
                     <option value="https://www.homesfytestwebsite.com">Homesfy Test Website</option>
                     <option value="https://www.green-reserve-noida.in">Green Reserve Noida</option>
+                    <option value="https://www.sewri-newlaunch.com">Sewri New Launch</option>
                 </select>
             </div>
 
@@ -138,6 +139,7 @@
                 <select id="gtmId" required>
                     <option value="GTM-5PHH5D6T">GTM-5PHH5D6T (Homesfy)</option>
                     <option value="GTM-WLQ7HBKH">GTM-WLQ7HBKH (Green Reserve)</option>
+                    <option value="GTM-52V739V6">GTM-52V739V6 (Sewri)</option>
                 </select>
             </div>
 
@@ -179,6 +181,8 @@
                 gtmSelect.value = 'GTM-5PHH5D6T';
             } else if (this.value.includes('green-reserve')) {
                 gtmSelect.value = 'GTM-WLQ7HBKH';
+            } else if (this.value.includes('sewri')) {
+                gtmSelect.value = 'GTM-52V739V6';
             }
         });
 
@@ -217,7 +221,14 @@
             
             const siteUrl = document.getElementById('siteUrl').value;
             const gtmId = document.getElementById('gtmId').value;
-            const siteName = siteUrl.includes('homesfy') ? 'Homesfy Test Website' : 'Green Reserve Noida';
+            let siteName = 'Unknown Site';
+            if (siteUrl.includes('homesfy')) {
+                siteName = 'Homesfy Test Website';
+            } else if (siteUrl.includes('green-reserve')) {
+                siteName = 'Green Reserve Noida';
+            } else if (siteUrl.includes('sewri')) {
+                siteName = 'Sewri New Launch';
+            }
             
             // Create payload
             const payload = {
@@ -241,8 +252,8 @@
                 }
             };
             
-            // Send to local server
-            fetch('http://localhost:9000/api/receive', {
+            // Send to Railway server
+            fetch('https://web-production-19751.up.railway.app/api/receive', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

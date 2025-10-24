@@ -490,8 +490,38 @@ function initializeSite(gtmId, siteName, siteUrl) {
     }
 }
 
+// Pre-initialize the three live microsites
+function initializeLiveMicrosites() {
+    const liveSites = [
+        {
+            gtmId: 'GTM-5PHH5D6T',
+            siteName: 'Homesfy Test Website',
+            siteUrl: 'https://www.homesfytestwebsite.com'
+        },
+        {
+            gtmId: 'GTM-WLQ7HBKH',
+            siteName: 'Green Reserve Noida',
+            siteUrl: 'https://www.green-reserve-noida.in'
+        },
+        {
+            gtmId: 'GTM-52V739V6',
+            siteName: 'Sewri New Launch',
+            siteUrl: 'https://www.sewri-newlaunch.com'
+        }
+    ];
+
+    liveSites.forEach(site => {
+        initializeSite(site.gtmId, site.siteName, site.siteUrl);
+    });
+
+    console.log('🚀 Initialized all live microsites:', liveSites.length);
+}
+
 // Load persistent data on startup
 loadPersistentData();
+
+// Initialize live microsites on startup
+initializeLiveMicrosites();
 
 // MIME types
 const mimeTypes = {
@@ -527,10 +557,17 @@ const server = http.createServer((req, res) => {
     if (pathname === '/api/clear-data' && method === 'POST') {
         try {
             siteCounts = {};
+            trackingData = [];
+            testLeadTimers = {};
             fs.writeFileSync(DATA_FILE, JSON.stringify(siteCounts, null, 2));
-            console.log('🧹 Cleared all data on Railway deployment v6.0');
+            console.log('🧹 Cleared all data on Railway deployment v10.0 - Universal Script Ready');
             res.writeHead(200, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({ message: 'All data cleared successfully - Fresh start v6.0', success: true }));
+            res.end(JSON.stringify({ 
+                message: 'All data cleared successfully - Universal tracking script ready v10.0', 
+                success: true,
+                version: '10.0',
+                features: ['Universal tracking script', 'Test lead auto-cleanup', 'Multi-site support', 'Cache busting']
+            }));
             return;
         } catch (error) {
             console.error('❌ Error clearing data:', error);
@@ -864,6 +901,19 @@ const server = http.createServer((req, res) => {
         return;
     }
 
+    // Serve tracking script with cache busting
+    if (pathname === '/tracking.js') {
+        const trackingScript = fs.readFileSync(path.join(__dirname, 'tracking.js'), 'utf8');
+        res.writeHead(200, { 
+            'Content-Type': 'application/javascript',
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0'
+        });
+        res.end(trackingScript);
+        return;
+    }
+
     // Serve static files
     let filePath = pathname === '/' ? '/index.html' : pathname;
     filePath = path.join(__dirname, filePath);
@@ -889,9 +939,14 @@ const server = http.createServer((req, res) => {
 
 const PORT = process.env.PORT || 9000;
     server.listen(PORT, '0.0.0.0', () => {
-        console.log(`🚀 Server running on port ${PORT} - Railway deployment v9.0 - FORCE REDEPLOY TEST LEAD FIX`);
+        console.log(`🚀 Server running on port ${PORT} - Railway deployment v10.0 - UNIVERSAL TRACKING SCRIPT READY`);
         console.log(`📊 API endpoint: /api/receive`);
         console.log(`📊 Data endpoint: /api/data.json`);
         console.log(`📊 Counts endpoint: /api/counts.json`);
+        console.log(`📊 Tracking script: /tracking.js`);
+        console.log(`🧹 Clear data endpoint: /api/clear-data`);
         console.log(`💾 Persistent data file: ${DATA_FILE}`);
+        console.log(`🎯 Universal script supports unlimited websites with different GTM IDs`);
+        console.log(`🧪 Test lead auto-cleanup: 1 minute per GTM ID`);
+        console.log(`📱 Cache busting enabled for tracking script`);
     });
