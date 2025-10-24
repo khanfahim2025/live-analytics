@@ -1276,12 +1276,7 @@ class RealTimeDataFetcher {
             row.innerHTML = `
                 <td>${index + 1}</td>
                 <td>
-                    <div style="font-weight: 600;">
-                        <a href="${site.url}" target="_blank" class="table-website-link" title="Visit ${site.name}">
-                            ${site.name}
-                            <i class="fas fa-external-link-alt"></i>
-                        </a>
-                    </div>
+                    <div style="font-weight: 600;">${site.name}</div>
                     <div style="font-size: 0.75rem; color: #718096;">
                         <a href="${site.url}" target="_blank" class="table-url-link" title="Open ${site.url}">
                             ${site.url}
@@ -1334,12 +1329,7 @@ class RealTimeDataFetcher {
             const card = document.createElement('div');
             card.className = `website-status-card ${site.status}`;
             card.innerHTML = `
-                <div class="website-name">
-                    <a href="${site.url}" target="_blank" class="website-link" title="Visit ${site.name}">
-                        ${site.name}
-                        <i class="fas fa-external-link-alt"></i>
-                    </a>
-                </div>
+                <div class="website-name">${site.name}</div>
                 <div class="website-status">
                     <span class="status-${site.status}">
                         ${site.status === 'online' ? '🟢 ONLINE' : 
