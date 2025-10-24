@@ -11,29 +11,41 @@
 (function() {
     'use strict';
     
-    // Get configuration from website
-    const config = window.LiveAnalyticsConfig || {};
-    
-    // Validate configuration
-    if (!config.gtmId || !config.siteName || !config.siteUrl) {
-        console.error('❌ Live Analytics: Missing required configuration. Please set window.LiveAnalyticsConfig');
-        return;
+    // Wait for configuration to be set
+    function waitForConfig() {
+        return new Promise((resolve) => {
+            const checkConfig = () => {
+                if (window.LiveAnalyticsConfig && window.LiveAnalyticsConfig.gtmId) {
+                    resolve(window.LiveAnalyticsConfig);
+                } else {
+                    setTimeout(checkConfig, 100);
+                }
+            };
+            checkConfig();
+        });
     }
     
-    const DASHBOARD_CONFIG = {
-        gtmId: config.gtmId,
-        siteName: config.siteName,
-        dashboardUrl: config.dashboardUrl || 'https://web-production-19751.up.railway.app',
-        siteUrl: config.siteUrl
-    };
+    // Initialize when configuration is ready
+    waitForConfig().then((config) => {
+        console.log('✅ Configuration loaded:', config);
+        initializeTracking(config);
+    });
+    
+    function initializeTracking(config) {
+        const DASHBOARD_CONFIG = {
+            gtmId: config.gtmId,
+            siteName: config.siteName,
+            dashboardUrl: config.dashboardUrl || 'https://web-production-19751.up.railway.app',
+            siteUrl: config.siteUrl
+        };
 
-    // Test lead detection keywords
-    const TEST_KEYWORDS = ['test', 'demo', 'sample', 'example', 'fake', 'dummy'];
-    
-    console.log('🚀 Live Analytics Tracking Initialized for:', DASHBOARD_CONFIG.siteName, 'GTM:', DASHBOARD_CONFIG.gtmId);
-    
-    // Initialize tracking
-    function initTracking() {
+        // Test lead detection keywords
+        const TEST_KEYWORDS = ['test', 'demo', 'sample', 'example', 'fake', 'dummy'];
+        
+        console.log('🚀 Live Analytics Tracking Initialized for:', DASHBOARD_CONFIG.siteName, 'GTM:', DASHBOARD_CONFIG.gtmId);
+        
+        // Initialize tracking
+        function initTracking() {
         // Track page view
         trackPageView();
         
@@ -274,11 +286,12 @@
         }, 5000);
     }
     
-    // Initialize when DOM is ready
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initTracking);
-    } else {
-        initTracking();
+        // Initialize when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initTracking);
+        } else {
+            initTracking();
+        }
     }
     
 })();
