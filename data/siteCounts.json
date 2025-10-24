@@ -1,0 +1,28 @@
+{
+  "GTM-5PHH5D6T": {
+    "siteName": "Homesfy Test Website",
+    "siteUrl": "https://www.homesfytestwebsite.com",
+    "visitors": 0,
+    "leads": 0,
+    "testLeads": 2,
+    "conversions": 0,
+    "pageViews": 0,
+    "formSubmissions": 5,
+    "buttonClicks": 0,
+    "conversionRate": "0.0",
+    "lastUpdated": "2025-10-24T10:16:01.860Z"
+  },
+  "GTM-WLQ7HBKH": {
+    "siteName": "Homesfy Test Website",
+    "siteUrl": "https://www.homesfytestwebsite.com",
+    "visitors": 0,
+    "leads": 0,
+    "testLeads": 0,
+    "conversions": 0,
+    "pageViews": 0,
+    "formSubmissions": 3,
+    "buttonClicks": 0,
+    "conversionRate": "0.0",
+    "lastUpdated": "2025-10-24T10:16:31.291Z"
+  }
+}

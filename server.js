@@ -10,6 +10,9 @@ let trackingData = [];
 // Site counts - server-side counting (dynamically handles multiple sites)
 let siteCounts = {};
 
+// Test lead cleanup tracking
+let testLeadTimers = {};
+
 // PERSISTENT STORAGE FUNCTIONS
 const DATA_FILE = path.join(__dirname, 'data', 'siteCounts.json');
 
@@ -442,6 +445,24 @@ function isTestLead(data) {
     return false;
 }
 
+// Function to schedule test lead cleanup after 1 minute
+function scheduleTestLeadCleanup(gtmId) {
+    // Clear any existing timer for this site
+    if (testLeadTimers[gtmId]) {
+        clearTimeout(testLeadTimers[gtmId]);
+    }
+    
+    // Set new timer to clean up test leads after 1 minute
+    testLeadTimers[gtmId] = setTimeout(() => {
+        if (siteCounts[gtmId] && siteCounts[gtmId].testLeads > 0) {
+            console.log(`🧹 Auto-cleaning test leads for ${siteCounts[gtmId].siteName} after 1 minute`);
+            siteCounts[gtmId].testLeads = 0;
+            savePersistentData();
+        }
+        delete testLeadTimers[gtmId];
+    }, 60000); // 1 minute = 60000ms
+}
+
 // Function to initialize a new site if it doesn't exist
 function initializeSite(gtmId, siteName, siteUrl) {
     if (!siteCounts[gtmId]) {
@@ -549,6 +570,8 @@ const server = http.createServer((req, res) => {
                             if (isTestLead(data)) {
                                 siteCounts[gtmId].testLeads++;
                                 console.log('🧪 Test lead detected and counted:', data.data);
+                                // Schedule cleanup after 1 minute
+                                scheduleTestLeadCleanup(gtmId);
                             } else {
                                 siteCounts[gtmId].leads++;
                                 console.log('✅ Real lead counted:', data.data);
