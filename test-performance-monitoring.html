@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Performance Monitoring Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f7fafc;
+        }
+        .test-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .test-button {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        .test-button:hover {
+            background: linear-gradient(135deg, #5a67d8, #6b46c1);
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f0fff4;
+            border-radius: 6px;
+            border-left: 4px solid #38a169;
+        }
+        .error {
+            background: #fed7d7;
+            border-left-color: #e53e3e;
+        }
+        .loading {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #e2e8f0;
+            border-top: 2px solid #4299e1;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <h1>🚀 Free Performance Monitoring Test</h1>
+    
+    <div class="test-container">
+        <h2>Test Performance Monitoring API</h2>
+        <p>This test will verify that the free performance monitoring system is working correctly.</p>
+        
+        <button class="test-button" onclick="testPerformanceAPI()">
+            🔍 Test Performance Check
+        </button>
+        
+        <button class="test-button" onclick="testServerStatus()">
+            🖥️ Test Server Status
+        </button>
+        
+        <div id="testResults"></div>
+    </div>
+
+    <div class="test-container">
+        <h2>Performance Monitoring Features</h2>
+        <ul>
+            <li>✅ <strong>Response Time Analysis</strong> - Measures server response time</li>
+            <li>✅ <strong>Page Size Analysis</strong> - Analyzes content size and compression</li>
+            <li>✅ <strong>Core Web Vitals Simulation</strong> - Simulates LCP, FID, CLS metrics</li>
+            <li>✅ <strong>Performance Scoring</strong> - 0-100 score with letter grades (A-F)</li>
+            <li>✅ <strong>Smart Recommendations</strong> - Actionable optimization suggestions</li>
+            <li>✅ <strong>Content Analysis</strong> - Checks for performance issues in HTML</li>
+            <li>✅ <strong>Header Optimization</strong> - Analyzes caching and compression headers</li>
+            <li>✅ <strong>Performance Trends</strong> - Historical performance tracking</li>
+        </ul>
+    </div>
+
+    <script>
+        async function testPerformanceAPI() {
+            const resultsDiv = document.getElementById('testResults');
+            resultsDiv.innerHTML = '<div class="loading"><div class="spinner"></div>Testing performance API...</div>';
+            
+            try {
+                const testUrl = 'https://www.google.com';
+                const response = await fetch('/api/performance-check', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        url: testUrl,
+                        gtmId: 'TEST-GTM-123'
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                
+                resultsDiv.innerHTML = `
+                    <div class="result">
+                        <h3>✅ Performance Check Successful!</h3>
+                        <p><strong>Test URL:</strong> ${testUrl}</p>
+                        <p><strong>Response Time:</strong> ${data.basicMetrics?.responseTime || 'N/A'}ms</p>
+                        <p><strong>Page Size:</strong> ${formatBytes(data.basicMetrics?.contentLength || 0)}</p>
+                        <p><strong>Performance Score:</strong> ${data.performanceScore || 'N/A'}/100 (Grade: ${data.performanceGrade || 'N/A'})</p>
+                        <p><strong>HTTP Status:</strong> ${data.basicMetrics?.httpStatus || 'N/A'}</p>
+                        <p><strong>Compression:</strong> ${data.basicMetrics?.compression || 'none'}</p>
+                        <p><strong>Cache Control:</strong> ${data.basicMetrics?.cacheControl || 'none'}</p>
+                        
+                        ${data.recommendations && data.recommendations.length > 0 ? `
+                            <h4>💡 Recommendations:</h4>
+                            <ul>
+                                ${data.recommendations.map(rec => `<li><strong>${rec.title}:</strong> ${rec.description}</li>`).join('')}
+                            </ul>
+                        ` : ''}
+                        
+                        <h4>📊 Core Web Vitals (Simulated):</h4>
+                        <p>LCP: ${Math.round(data.coreWebVitals?.lcp || 0)}ms | FID: ${Math.round(data.coreWebVitals?.fid || 0)}ms | CLS: ${(data.coreWebVitals?.cls || 0).toFixed(3)}</p>
+                    </div>
+                `;
+                
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <div class="result error">
+                        <h3>❌ Performance Check Failed</h3>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                        <p>Make sure the server is running on localhost:9000</p>
+                    </div>
+                `;
+            }
+        }
+        
+        async function testServerStatus() {
+            const resultsDiv = document.getElementById('testResults');
+            resultsDiv.innerHTML = '<div class="loading"><div class="spinner"></div>Testing server status...</div>';
+            
+            try {
+                const response = await fetch('/api/data.json');
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                
+                resultsDiv.innerHTML = `
+                    <div class="result">
+                        <h3>✅ Server Status: Online</h3>
+                        <p><strong>Server Response:</strong> ${response.status} ${response.statusText}</p>
+                        <p><strong>Data Endpoint:</strong> Working correctly</p>
+                        <p><strong>Performance API:</strong> Available at /api/performance-check</p>
+                        <p><strong>Performance History:</strong> Available at /api/performance-history</p>
+                    </div>
+                `;
+                
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <div class="result error">
+                        <h3>❌ Server Status: Offline</h3>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                        <p>Please start the server with: <code>node server.js</code></p>
+                    </div>
+                `;
+            }
+        }
+        
+        function formatBytes(bytes) {
+            if (bytes === 0) return '0 B';
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+        }
+        
+        // Auto-test on page load
+        window.addEventListener('load', () => {
+            setTimeout(testServerStatus, 1000);
+        });
+    </script>
+</body>
+</html>
