@@ -82,14 +82,22 @@
             const forms = document.querySelectorAll('form');
             
             forms.forEach((form, index) => {
+                // Intercept form submission BEFORE it gets processed
                 form.addEventListener('submit', function(event) {
-                    const formData = new FormData(form);
+                    console.log('🚨 Form submission intercepted!');
+                    
+                    // Get all input fields from the form
+                    const inputs = form.querySelectorAll('input, textarea, select');
                     const data = {};
                     
-                    // Extract form data
-                    for (let [key, value] of formData.entries()) {
-                        data[key] = value;
-                    }
+                    inputs.forEach(input => {
+                        if (input.name && input.value) {
+                            data[input.name] = input.value;
+                            console.log(`📝 Captured field: ${input.name} = ${input.value}`);
+                        }
+                    });
+                    
+                    console.log('🔍 All captured form data:', data);
                     
                     // Check if this is a test lead
                     const isTestLead = isTestSubmission(data);
@@ -129,7 +137,7 @@
                     } else {
                         showRealLeadFeedback();
                     }
-                });
+                }, true); // Use capture phase to intercept before other handlers
             });
         }
         
