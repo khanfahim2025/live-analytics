@@ -1276,8 +1276,18 @@ class RealTimeDataFetcher {
             row.innerHTML = `
                 <td>${index + 1}</td>
                 <td>
-                    <div style="font-weight: 600;">${site.name}</div>
-                    <div style="font-size: 0.75rem; color: #718096;">${site.url}</div>
+                    <div style="font-weight: 600;">
+                        <a href="${site.url}" target="_blank" class="table-website-link" title="Visit ${site.name}">
+                            ${site.name}
+                            <i class="fas fa-external-link-alt"></i>
+                        </a>
+                    </div>
+                    <div style="font-size: 0.75rem; color: #718096;">
+                        <a href="${site.url}" target="_blank" class="table-url-link" title="Open ${site.url}">
+                            ${site.url}
+                            <i class="fas fa-external-link-alt"></i>
+                        </a>
+                    </div>
                 </td>
                 <td>${site.visitors.toLocaleString()}</td>
                 <td>${site.leads.toLocaleString()}</td>
@@ -1324,7 +1334,12 @@ class RealTimeDataFetcher {
             const card = document.createElement('div');
             card.className = `website-status-card ${site.status}`;
             card.innerHTML = `
-                <div class="website-name">${site.name}</div>
+                <div class="website-name">
+                    <a href="${site.url}" target="_blank" class="website-link" title="Visit ${site.name}">
+                        ${site.name}
+                        <i class="fas fa-external-link-alt"></i>
+                    </a>
+                </div>
                 <div class="website-status">
                     <span class="status-${site.status}">
                         ${site.status === 'online' ? '🟢 ONLINE' : 
@@ -1332,13 +1347,28 @@ class RealTimeDataFetcher {
                     </span>
                 </div>
                 <div class="website-metrics">
-                    Response: ${site.responseTime}ms | Uptime: ${site.uptime}%<br>
-                    Visitors: ${site.visitors.toLocaleString()} | Leads: ${site.leads.toLocaleString()}<br>
-                    ${site.domainStatus ? `<span style="color: ${site.domainStatus === 'critical' ? '#e53e3e' : site.domainStatus === 'warning' ? '#d69e2e' : '#38a169'};">
-                        ${site.domainStatus === 'critical' ? '🔴 Domain expires in ' + site.domainDaysLeft + ' days' :
-                          site.domainStatus === 'warning' ? '🟡 Domain expires in ' + site.domainDaysLeft + ' days' :
-                          site.domainStatus === 'ok' ? '✅ Domain OK (' + site.domainDaysLeft + ' days)' : ''}
-                    </span>` : ''}
+                    <div class="metric-row">
+                        <span class="metric-label">Response:</span> ${site.responseTime}ms | 
+                        <span class="metric-label">Uptime:</span> ${site.uptime}%
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Visitors:</span> ${site.visitors.toLocaleString()} | 
+                        <span class="metric-label">Leads:</span> ${site.leads.toLocaleString()}
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">URL:</span> 
+                        <a href="${site.url}" target="_blank" class="url-link" title="Open ${site.url}">
+                            ${site.url}
+                            <i class="fas fa-external-link-alt"></i>
+                        </a>
+                    </div>
+                    ${site.domainStatus ? `<div class="metric-row">
+                        <span style="color: ${site.domainStatus === 'critical' ? '#e53e3e' : site.domainStatus === 'warning' ? '#d69e2e' : '#38a169'};">
+                            ${site.domainStatus === 'critical' ? '🔴 Domain expires in ' + site.domainDaysLeft + ' days' :
+                              site.domainStatus === 'warning' ? '🟡 Domain expires in ' + site.domainDaysLeft + ' days' :
+                              site.domainStatus === 'ok' ? '✅ Domain OK (' + site.domainDaysLeft + ' days)' : ''}
+                        </span>
+                    </div>` : ''}
                 </div>
             `;
             grid.appendChild(card);

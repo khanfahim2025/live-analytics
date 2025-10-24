@@ -501,6 +501,99 @@ body {
     margin-bottom: 8px;
 }
 
+.website-link {
+    color: #3182ce;
+    text-decoration: none;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+}
+
+.website-link:hover {
+    color: #2c5282;
+    text-decoration: underline;
+}
+
+.website-link i {
+    font-size: 0.8em;
+    opacity: 0.7;
+}
+
+.url-link {
+    color: #3182ce;
+    text-decoration: none;
+    font-size: 0.875rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    transition: all 0.2s ease;
+    word-break: break-all;
+}
+
+.url-link:hover {
+    color: #2c5282;
+    text-decoration: underline;
+}
+
+.url-link i {
+    font-size: 0.7em;
+    opacity: 0.7;
+}
+
+.metric-row {
+    margin-bottom: 4px;
+    font-size: 0.875rem;
+    color: #718096;
+}
+
+.metric-label {
+    font-weight: 500;
+    color: #4a5568;
+}
+
+.table-website-link {
+    color: #3182ce;
+    text-decoration: none;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    transition: all 0.2s ease;
+}
+
+.table-website-link:hover {
+    color: #2c5282;
+    text-decoration: underline;
+}
+
+.table-website-link i {
+    font-size: 0.7em;
+    opacity: 0.7;
+}
+
+.table-url-link {
+    color: #3182ce;
+    text-decoration: none;
+    font-size: 0.75rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    transition: all 0.2s ease;
+    word-break: break-all;
+}
+
+.table-url-link:hover {
+    color: #2c5282;
+    text-decoration: underline;
+}
+
+.table-url-link i {
+    font-size: 0.6em;
+    opacity: 0.7;
+}
+
 .website-status {
     display: flex;
     align-items: center;
