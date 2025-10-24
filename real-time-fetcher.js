@@ -824,6 +824,9 @@ class RealTimeDataFetcher {
         
         // Update performance metrics
         this.updatePerformanceMetrics();
+        
+        // Check for alerts
+        this.checkAlerts();
     }
 
     // Trigger realistic PageSpeed analysis with multiple fallbacks
@@ -1382,6 +1385,109 @@ class RealTimeDataFetcher {
         document.getElementById('uptime').textContent = avgUptime.toFixed(1) + '%';
         document.getElementById('concurrentUsers').textContent = totalConcurrentUsers;
         document.getElementById('pageLoadSpeed').textContent = (avgPageLoadSpeed / 1000).toFixed(1) + 's';
+    }
+
+    // Check for alerts and display them
+    checkAlerts() {
+        const alerts = [];
+        const now = new Date();
+        const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+        
+        this.microsites.forEach(site => {
+            // Check for low visitors (less than 15 in 24 hours)
+            if (site.visitors < 15) {
+                alerts.push({
+                    type: 'low-visitors',
+                    website: site.name,
+                    url: site.url,
+                    visitors: site.visitors,
+                    message: `Low visitor count: only ${site.visitors} visitors in the last 24 hours`,
+                    icon: 'fas fa-users',
+                    severity: 'warning'
+                });
+            }
+            
+            // Check for no leads in 24 hours
+            if (site.leads === 0) {
+                alerts.push({
+                    type: 'no-leads',
+                    website: site.name,
+                    url: site.url,
+                    leads: site.leads,
+                    message: `No leads generated in the last 24 hours`,
+                    icon: 'fas fa-exclamation-triangle',
+                    severity: 'warning'
+                });
+            }
+            
+            // Critical alert: both low visitors and no leads
+            if (site.visitors < 15 && site.leads === 0) {
+                alerts.push({
+                    type: 'critical',
+                    website: site.name,
+                    url: site.url,
+                    visitors: site.visitors,
+                    leads: site.leads,
+                    message: `Critical: Only ${site.visitors} visitors and no leads in 24 hours`,
+                    icon: 'fas fa-exclamation-circle',
+                    severity: 'critical'
+                });
+            }
+        });
+        
+        this.displayAlerts(alerts);
+    }
+
+    // Display alerts in the UI
+    displayAlerts(alerts) {
+        const noAlertsDiv = document.getElementById('noAlerts');
+        const alertsListDiv = document.getElementById('alertsList');
+        
+        if (alerts.length === 0) {
+            noAlertsDiv.style.display = 'flex';
+            alertsListDiv.style.display = 'none';
+            return;
+        }
+        
+        noAlertsDiv.style.display = 'none';
+        alertsListDiv.style.display = 'block';
+        
+        // Clear existing alerts
+        alertsListDiv.innerHTML = '';
+        
+        // Add new alerts
+        alerts.forEach(alert => {
+            const alertElement = document.createElement('div');
+            alertElement.className = `alert-item ${alert.type}`;
+            
+            const timeAgo = this.getTimeAgo(new Date());
+            
+            alertElement.innerHTML = `
+                <div class="alert-icon">
+                    <i class="${alert.icon}"></i>
+                </div>
+                <div class="alert-content">
+                    <div class="alert-title">
+                        <a href="${alert.url}" target="_blank" class="alert-website">${alert.website}</a>
+                    </div>
+                    <div class="alert-message">${alert.message}</div>
+                    <div class="alert-time">Alert generated ${timeAgo}</div>
+                </div>
+            `;
+            
+            alertsListDiv.appendChild(alertElement);
+        });
+    }
+
+    // Helper function to get time ago string
+    getTimeAgo(date) {
+        const now = new Date();
+        const diffInSeconds = Math.floor((now - date) / 1000);
+        
+        if (diffInSeconds < 60) return 'just now';
+        if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} minutes ago`;
+        if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`;
+        return `${Math.floor(diffInSeconds / 86400)} days ago`;
     }
 
     // Add new microsite
