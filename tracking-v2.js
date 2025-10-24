@@ -85,15 +85,31 @@
                 // Intercept form submission BEFORE it gets processed
                 form.addEventListener('submit', function(event) {
                     console.log('🚨 Form submission intercepted!');
+                    console.log('🔍 Form element:', form);
+                    console.log('🔍 Form HTML:', form.outerHTML);
                     
                     // Get all input fields from the form
                     const inputs = form.querySelectorAll('input, textarea, select');
+                    console.log('🔍 Found inputs:', inputs.length);
+                    
                     const data = {};
                     
-                    inputs.forEach(input => {
-                        if (input.name && input.value) {
-                            data[input.name] = input.value;
-                            console.log(`📝 Captured field: ${input.name} = ${input.value}`);
+                    inputs.forEach((input, index) => {
+                        console.log(`🔍 Input ${index}:`, {
+                            tagName: input.tagName,
+                            type: input.type,
+                            name: input.name,
+                            id: input.id,
+                            className: input.className,
+                            value: input.value,
+                            placeholder: input.placeholder
+                        });
+                        
+                        // Try different ways to get the field name
+                        const fieldName = input.name || input.id || input.className || `field_${index}`;
+                        if (input.value) {
+                            data[fieldName] = input.value;
+                            console.log(`📝 Captured field: ${fieldName} = ${input.value}`);
                         }
                     });
                     
@@ -176,33 +192,20 @@
         function isTestSubmission(data) {
             console.log('🔍 Checking for test lead in data:', data);
             console.log('🔍 All form fields:', Object.keys(data));
-            console.log('🔍 Name field value:', data.name);
-            console.log('🔍 Name field type:', typeof data.name);
             
-            // SIMPLE TEST LEAD DETECTION: Just check if name field contains "test"
-            if (data.name && typeof data.name === 'string' && data.name.trim() !== '') {
-                const name = data.name.toLowerCase().trim();
-                console.log('🔍 Name after processing:', name);
-                if (name.includes('test')) {
-                    console.log('🧪 Test lead detected - name contains "test":', { name: data.name });
-                    return true;
-                }
-            }
-            
-            // Check other possible name fields
-            const nameFields = ['name', 'firstName', 'fullName', 'contactName', 'customerName', 'userName'];
-            for (const field of nameFields) {
-                if (data[field] && typeof data[field] === 'string' && data[field].trim() !== '') {
-                    const name = data[field].toLowerCase().trim();
-                    console.log(`🔍 Checking field "${field}":`, name);
-                    if (name.includes('test')) {
-                        console.log(`🧪 Test lead detected - field "${field}" contains "test":`, { field: field, value: data[field] });
+            // Check ALL fields for "test" keyword
+            for (const [fieldName, fieldValue] of Object.entries(data)) {
+                if (typeof fieldValue === 'string' && fieldValue.trim() !== '') {
+                    const value = fieldValue.toLowerCase().trim();
+                    console.log(`🔍 Checking field "${fieldName}":`, value);
+                    if (value.includes('test')) {
+                        console.log(`🧪 Test lead detected - field "${fieldName}" contains "test":`, { field: fieldName, value: fieldValue });
                         return true;
                     }
                 }
             }
             
-            console.log('✅ Real lead detected - no name field contains "test"');
+            console.log('✅ Real lead detected - no field contains "test"');
             return false;
         }
         
