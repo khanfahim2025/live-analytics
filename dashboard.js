@@ -524,6 +524,139 @@ function addMicrosite() {
     }
 }
 
+// Domain search functionality
+function filterByDomain() {
+    const searchTerm = document.getElementById('domainSearch').value.toLowerCase().trim();
+    const statusDiv = document.getElementById('domainSearchStatus');
+    
+    if (!searchTerm) {
+        // Clear search - show all sites
+        clearDomainSearch();
+        return;
+    }
+    
+    // Filter the performance table
+    if (window.realTimeFetcher && window.realTimeFetcher.microsites) {
+        const filteredSites = window.realTimeFetcher.microsites.filter(site => {
+            const siteName = site.name.toLowerCase();
+            const siteUrl = site.url.toLowerCase();
+            return siteName.includes(searchTerm) || siteUrl.includes(searchTerm);
+        });
+        
+        // Update the performance table with filtered results
+        updatePerformanceTableWithFilter(filteredSites);
+        
+        // Show search status
+        if (filteredSites.length > 0) {
+            statusDiv.innerHTML = `<i class="fas fa-check-circle"></i> Showing ${filteredSites.length} site(s) matching "${searchTerm}"`;
+            statusDiv.className = 'domain-search-status active';
+            statusDiv.style.display = 'block';
+        } else {
+            statusDiv.innerHTML = `<i class="fas fa-exclamation-circle"></i> No sites found matching "${searchTerm}"`;
+            statusDiv.className = 'domain-search-status no-results';
+            statusDiv.style.display = 'block';
+        }
+    }
+}
+
+function clearDomainSearch() {
+    document.getElementById('domainSearch').value = '';
+    document.getElementById('domainSearchStatus').style.display = 'none';
+    
+    // Restore full performance table
+    if (window.realTimeFetcher) {
+        window.realTimeFetcher.updatePerformanceTable();
+    }
+}
+
+// Update performance table with filtered results
+function updatePerformanceTableWithFilter(filteredSites) {
+    const tbody = document.getElementById('performanceTableBody');
+    if (!tbody) return;
+    
+    tbody.innerHTML = '';
+
+    filteredSites.forEach((site, index) => {
+        const row = document.createElement('tr');
+        
+        // Check for PageSpeed analysis status
+        const sessionKey = `pagespeed_${site.id || site.url}`;
+        const cachedAnalysis = sessionStorage.getItem(sessionKey);
+        const analyzingKey = `analyzing_${site.id || site.url}`;
+        const isAnalyzing = sessionStorage.getItem(analyzingKey);
+        
+        let performanceDisplay = '';
+        let performanceClass = 'poor';
+        
+        if (cachedAnalysis) {
+            const analysis = JSON.parse(cachedAnalysis);
+            const performanceScore = analysis.performanceScore;
+            performanceClass = performanceScore >= 90 ? 'excellent' : 
+                             performanceScore >= 75 ? 'good' : 
+                             performanceScore >= 50 ? 'warning' : 'poor';
+            performanceDisplay = `<div class="performance-score ${performanceClass}">${performanceScore}%</div>`;
+        } else if (isAnalyzing) {
+            performanceDisplay = `
+                <div class="performance-analyzing">
+                    <div class="analyzing-spinner"></div>
+                    <div class="analyzing-text">Analyzing...</div>
+                </div>
+            `;
+        } else {
+            performanceDisplay = `
+                <div class="performance-analyzing">
+                    <div class="analyzing-spinner"></div>
+                    <div class="analyzing-text">Starting...</div>
+                </div>
+            `;
+        }
+
+        row.innerHTML = `
+            <td>${index + 1}</td>
+            <td>
+                <div style="font-weight: 600;">${site.name}</div>
+                <div style="font-size: 0.75rem; color: #718096;">
+                    <a href="${site.url}" target="_blank" class="table-url-link" title="Open ${site.url}">
+                        ${site.url}
+                        <i class="fas fa-external-link-alt"></i>
+                    </a>
+                </div>
+            </td>
+            <td>${site.visitors.toLocaleString()}</td>
+            <td>${site.leads.toLocaleString()}</td>
+            <td><span style="color: #d69e2e; font-weight: 600;">${(site.testLeads || 0).toLocaleString()}</span></td>
+            <td>${site.conversion}%</td>
+            <td>
+                <div class="performance-cell">
+                    ${performanceDisplay}
+                </div>
+            </td>
+            <td>
+                <span class="status-${site.status}">
+                    ${site.status === 'online' ? '🟢 ONLINE' : 
+                      site.status === 'warning' ? '🟡 WARNING' : '🔴 OFFLINE'}
+                </span>
+            </td>
+            <td>
+                <span class="form-status-${site.formStatus}">
+                    ${site.formStatus === 'working' ? '✅ Working' : '❌ Issues'}
+                </span>
+            </td>
+            <td>
+                <div class="action-buttons">
+                    <button onclick="editMicrosite(${site.id})" class="btn-edit" title="Edit">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button onclick="removeMicrosite(${site.id})" class="btn-remove" title="Remove">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </td>
+        `;
+        tbody.appendChild(row);
+    });
+}
+
 function saveMicrosite() {
     if (window.dashboard) {
         window.dashboard.saveMicrosite();

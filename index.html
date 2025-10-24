@@ -126,6 +126,20 @@
                         </button>
                     </div>
                     
+                    <!-- Domain Search Controls -->
+                    <div class="domain-search-controls">
+                        <div class="search-header">
+                            <h4><i class="fas fa-search"></i> Search by Domain</h4>
+                            <div class="search-input-group">
+                                <input type="text" id="domainSearch" class="domain-search-input" placeholder="Search by domain (e.g., www.xyz.com)" onkeyup="filterByDomain()">
+                                <button onclick="clearDomainSearch()" class="btn-clear-search" title="Clear search">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div id="domainSearchStatus" class="domain-search-status" style="display: none;"></div>
+                    </div>
+                    
                     <!-- Date Filter Controls -->
                     <div class="date-filter-controls">
                         <div class="filter-header">
