@@ -788,19 +788,19 @@ body {
 
 /* Professional Performance Section Styles */
 .performance-section {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border-radius: 20px;
-    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
-    overflow: hidden;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(20px);
+    background: transparent;
+    border-radius: 0;
+    box-shadow: none;
+    overflow: visible;
+    border: none;
+    backdrop-filter: none;
 }
 
 .performance-section .section-header {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(10px);
-    padding: 24px 32px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    background: transparent;
+    backdrop-filter: none;
+    padding: 0;
+    border-bottom: none;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -960,13 +960,13 @@ body {
 
 /* Controls Container */
 .controls-container {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(10px);
-    padding: 24px 32px;
+    background: transparent;
+    backdrop-filter: none;
+    padding: 0;
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 32px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    border-bottom: none;
 }
 
 .control-group {
