@@ -922,6 +922,14 @@ const server = http.createServer((req, res) => {
         return;
     }
 
+    // Serve debug test page
+    if (pathname === '/debug-test') {
+        const debugPage = fs.readFileSync(path.join(__dirname, 'debug-test.html'), 'utf8');
+        res.writeHead(200, { 'Content-Type': 'text/html' });
+        res.end(debugPage);
+        return;
+    }
+
     // Serve static files
     let filePath = pathname === '/' ? '/index.html' : pathname;
     filePath = path.join(__dirname, filePath);

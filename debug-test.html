@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Test - Test Lead Detection</title>
+    
+    <!-- Universal Tracking Script -->
+    <script src="https://web-production-19751.up.railway.app/tracking.js"></script>
+    <script>
+    window.LiveAnalyticsConfig = {
+        gtmId: 'GTM-5PHH5D6T',
+        siteName: 'www.homesfytestwebsite.com',
+        siteUrl: 'https://www.homesfytestwebsite.com'
+    };
+    </script>
+    
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        .btn {
+            background: #007bff;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 10px;
+        }
+        .btn:hover {
+            background: #0056b3;
+        }
+        .btn.test {
+            background: #ff6b6b;
+        }
+        .btn.test:hover {
+            background: #ff5252;
+        }
+        .status {
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .debug-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            font-family: monospace;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Debug Test - Test Lead Detection</h1>
+        
+        <div class="debug-info">
+            <strong>Debug Information:</strong><br>
+            Current URL: <span id="currentUrl"></span><br>
+            User Agent: <span id="userAgent"></span><br>
+            Session ID: <span id="sessionId"></span><br>
+            GTM ID: <span id="gtmId"></span><br>
+            Site Name: <span id="siteName"></span><br>
+            Script Loaded: <span id="scriptLoaded"></span>
+        </div>
+
+        <form id="testForm">
+            <div class="form-group">
+                <label for="name">Name:</label>
+                <input type="text" id="name" name="name" required placeholder="Enter name (use 'test' for test lead)">
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" required placeholder="Enter email (use 'test' for test lead)">
+            </div>
+
+            <div class="form-group">
+                <label for="phone">Phone:</label>
+                <input type="tel" id="phone" name="phone" required placeholder="Enter phone number">
+            </div>
+
+            <div class="form-group">
+                <label for="message">Message:</label>
+                <textarea id="message" name="message" rows="3" placeholder="Enter message"></textarea>
+            </div>
+
+            <div class="form-group">
+                <button type="button" class="btn test" onclick="submitTestLead()">🧪 Submit Test Lead</button>
+                <button type="button" class="btn" onclick="submitRealLead()">✅ Submit Real Lead</button>
+                <button type="button" class="btn" onclick="clearForm()">🗑️ Clear Form</button>
+            </div>
+        </form>
+
+        <div id="status"></div>
+        
+        <div class="debug-info">
+            <strong>Test Lead Detection Results:</strong><br>
+            <div id="detectionResults"></div>
+        </div>
+    </div>
+
+    <script>
+        // Display debug information
+        document.getElementById('currentUrl').textContent = window.location.href;
+        document.getElementById('userAgent').textContent = navigator.userAgent;
+        document.getElementById('sessionId').textContent = sessionStorage.getItem('liveAnalyticsSessionId_GTM-5PHH5D6T') || 'Not set';
+        document.getElementById('gtmId').textContent = window.LiveAnalyticsConfig?.gtmId || 'Not configured';
+        document.getElementById('siteName').textContent = window.LiveAnalyticsConfig?.siteName || 'Not configured';
+
+        function showStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.innerHTML = `<div class="status ${type}">${message}</div>`;
+        }
+
+        function submitTestLead() {
+            // Set test values
+            document.getElementById('name').value = 'test user';
+            document.getElementById('email').value = 'test@example.com';
+            document.getElementById('phone').value = '1234567890';
+            document.getElementById('message').value = 'This is a test submission';
+            
+            submitForm('test');
+        }
+
+        function submitRealLead() {
+            // Set real values
+            document.getElementById('name').value = 'John Smith';
+            document.getElementById('email').value = 'john.smith@gmail.com';
+            document.getElementById('phone').value = '9876543210';
+            document.getElementById('message').value = 'Interested in your services';
+            
+            submitForm('real');
+        }
+
+        function submitForm(type) {
+            const formData = new FormData(document.getElementById('testForm'));
+            const data = {};
+            
+            for (let [key, value] of formData.entries()) {
+                data[key] = value;
+            }
+            
+            // Test the detection logic manually
+            const isTestLead = isTestSubmission(data);
+            
+            // Display detection results
+            document.getElementById('detectionResults').innerHTML = `
+                <strong>Form Data:</strong> ${JSON.stringify(data, null, 2)}<br>
+                <strong>Is Test Lead:</strong> ${isTestLead ? 'YES' : 'NO'}<br>
+                <strong>Type:</strong> ${type}<br>
+                <strong>Expected:</strong> ${type === 'test' ? 'YES' : 'NO'}
+            `;
+            
+            if (type === 'test') {
+                showStatus('🧪 Test lead submitted! Check dashboard - it will disappear after 1 minute.', 'success');
+            } else {
+                showStatus('✅ Real lead submitted! Check dashboard.', 'success');
+            }
+            
+            // Auto-clear after 3 seconds
+            setTimeout(() => {
+                document.getElementById('status').innerHTML = '';
+            }, 3000);
+        }
+
+        function clearForm() {
+            document.getElementById('testForm').reset();
+            document.getElementById('status').innerHTML = '';
+            document.getElementById('detectionResults').innerHTML = '';
+        }
+
+        // Test lead detection function (same as in tracking script)
+        function isTestSubmission(data) {
+            console.log('🔍 Checking for test lead in data:', data);
+            
+            const TEST_KEYWORDS = ['test', 'demo', 'sample', 'example', 'fake', 'dummy'];
+            
+            // Check for test keywords in form fields
+            for (const [key, value] of Object.entries(data)) {
+                if (typeof value === 'string') {
+                    const lowerValue = value.toLowerCase();
+                    for (const keyword of TEST_KEYWORDS) {
+                        if (lowerValue.includes(keyword)) {
+                            console.log('🧪 Test keyword detected:', { field: key, value: value, keyword: keyword });
+                            return true;
+                        }
+                    }
+                }
+            }
+            
+            // Check for test email patterns
+            if (data.email) {
+                const email = data.email.toLowerCase();
+                if (email.includes('test') || email.includes('demo') || email.includes('example') || 
+                    email.includes('@test.') || email.includes('@demo.') || email.includes('@example.')) {
+                    console.log('🧪 Test email pattern detected:', email);
+                    return true;
+                }
+            }
+            
+            // Check for test phone patterns
+            if (data.phone) {
+                const phone = data.phone.toString();
+                if (phone.includes('1234567890') || phone.includes('0000000000') || 
+                    phone.includes('1111111111') || phone.includes('9999999999') ||
+                    phone.match(/^(\d)\1{9}$/)) {
+                    console.log('🧪 Test phone pattern detected:', phone);
+                    return true;
+                }
+            }
+            
+            console.log('✅ Real lead detected');
+            return false;
+        }
+
+        // Check if tracking script is loaded
+        setTimeout(() => {
+            if (window.LiveAnalyticsConfig) {
+                console.log('✅ Tracking script loaded successfully');
+                document.getElementById('scriptLoaded').textContent = 'Yes';
+                showStatus('✅ Tracking script loaded successfully!', 'success');
+            } else {
+                console.error('❌ Tracking script not loaded');
+                document.getElementById('scriptLoaded').textContent = 'No';
+                showStatus('❌ Tracking script not loaded. Check console for errors.', 'error');
+            }
+        }, 1000);
+    </script>
+</body>
+</html>
