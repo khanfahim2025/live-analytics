@@ -537,11 +537,18 @@ function filterByDomain() {
     
     // Filter the performance table
     if (window.realTimeFetcher && window.realTimeFetcher.microsites) {
+        console.log('🔍 Searching for:', searchTerm);
+        console.log('🔍 Total sites:', window.realTimeFetcher.microsites.length);
+        
         const filteredSites = window.realTimeFetcher.microsites.filter(site => {
             const siteName = site.name.toLowerCase();
             const siteUrl = site.url.toLowerCase();
-            return siteName.includes(searchTerm) || siteUrl.includes(searchTerm);
+            const matches = siteName.includes(searchTerm) || siteUrl.includes(searchTerm);
+            console.log(`🔍 Site: ${site.name} (${site.url}) - Matches: ${matches}`);
+            return matches;
         });
+        
+        console.log('🔍 Filtered sites:', filteredSites.length);
         
         // Update the performance table with ONLY filtered results
         updatePerformanceTableWithFilter(filteredSites);
@@ -584,7 +591,12 @@ function clearDomainSearch() {
 // Update performance table with filtered results (shows ONLY matching sites)
 function updatePerformanceTableWithFilter(filteredSites) {
     const tbody = document.getElementById('performanceTableBody');
-    if (!tbody) return;
+    if (!tbody) {
+        console.error('❌ Table body not found!');
+        return;
+    }
+    
+    console.log('🔍 Filtering table with', filteredSites.length, 'sites');
     
     // Clear the table completely - this will hide all non-matching sites
     tbody.innerHTML = '';
