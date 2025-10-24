@@ -281,36 +281,46 @@ body {
 /* Table Styles */
 .table-container {
     overflow-x: auto;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    margin-top: 20px;
 }
 
 .performance-table {
     width: 100%;
     border-collapse: collapse;
     font-size: 0.875rem;
+    background: white;
 }
 
 .performance-table th {
-    background: #f7fafc;
-    padding: 12px;
+    background: #f8fafc;
+    padding: 16px 12px;
     text-align: left;
     font-weight: 600;
-    color: #4a5568;
+    color: #2d3748;
     border-bottom: 2px solid #e2e8f0;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .performance-table td {
-    padding: 12px;
-    border-bottom: 1px solid #e2e8f0;
+    padding: 16px 12px;
+    border-bottom: 1px solid #f1f5f9;
+    background: white;
 }
 
 .performance-table tr:hover {
-    background: #f7fafc;
+    background: #f8fafc;
     transform: translateY(-1px);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .performance-table tr {
     transition: all 0.2s ease;
+    background: white;
 }
 
 .performance-table td {
@@ -828,9 +838,17 @@ body {
     display: flex;
     align-items: center;
     gap: 8px;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
     transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
+    text-decoration: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .btn-action::before {
@@ -840,23 +858,51 @@ body {
     left: -100%;
     width: 100%;
     height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
     transition: left 0.5s;
 }
 
 .btn-action:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
 }
 
 .btn-action:hover::before {
     left: 100%;
 }
-    padding: 12px 20px;
-    border: none;
-    border-radius: 10px;
-    font-weight: 600;
-    font-size: 0.9rem;
+
+.btn-action:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Button Variants */
+.btn-export {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.btn-export:hover {
+    background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+}
+
+.btn-add {
+    background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+    color: white;
+}
+
+.btn-add:hover {
+    background: linear-gradient(135deg, #3ea16a 0%, #2f855a 100%);
+}
+
+.btn-load {
+    background: linear-gradient(135deg, #ed8936 0%, #dd6b20 100%);
+    color: white;
+}
+
+.btn-load:hover {
+    background: linear-gradient(135deg, #e0782a 0%, #c05621 100%);
+}
     cursor: pointer;
     transition: all 0.3s ease;
     text-decoration: none;
@@ -1305,16 +1351,17 @@ body {
 
 /* Table Filter Indicator */
 .table-filter-indicator {
-    background: #e6fffa;
-    border: 1px solid #81e6d9;
+    background: #f0f9ff;
+    border: 1px solid #0ea5e9;
     border-radius: 8px;
     padding: 12px 16px;
     margin-bottom: 16px;
     display: flex;
     align-items: center;
     gap: 12px;
-    color: #234e52;
+    color: #0c4a6e;
     font-weight: 500;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .table-filter-indicator i {
@@ -1322,7 +1369,7 @@ body {
 }
 
 .btn-clear-filter {
-    background: #38a169;
+    background: #0ea5e9;
     color: white;
     border: none;
     border-radius: 6px;
@@ -1331,11 +1378,13 @@ body {
     transition: all 0.2s ease;
     font-size: 0.8rem;
     margin-left: auto;
+    font-weight: 500;
 }
 
 .btn-clear-filter:hover {
-    background: #2f855a;
+    background: #0284c7;
     transform: scale(1.05);
+    box-shadow: 0 2px 8px rgba(14, 165, 233, 0.3);
 }
 
 /* Date Filter Styles */
