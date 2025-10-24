@@ -145,13 +145,22 @@
                         }
                     };
                     
+                    // Send to dashboard immediately
                     sendToDashboard(payload);
                     
                     // Show user feedback
                     if (isTestLead) {
                         showTestLeadFeedback();
+                        // For test leads, prevent the form from submitting to the website's API
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        console.log('🚫 Test lead detected - preventing form submission to website API');
+                        return false;
                     } else {
                         showRealLeadFeedback();
+                        // For real leads, allow the form to proceed normally
+                        console.log('✅ Real lead - allowing form submission to proceed');
                     }
                 }, true); // Use capture phase to intercept before other handlers
             });
