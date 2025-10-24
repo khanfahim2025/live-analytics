@@ -938,6 +938,14 @@ const server = http.createServer((req, res) => {
         return;
     }
 
+    // Serve simple test page
+    if (pathname === '/simple-test') {
+        const simplePage = fs.readFileSync(path.join(__dirname, 'simple-test.html'), 'utf8');
+        res.writeHead(200, { 'Content-Type': 'text/html' });
+        res.end(simplePage);
+        return;
+    }
+
     // Serve static files
     let filePath = pathname === '/' ? '/index.html' : pathname;
     filePath = path.join(__dirname, filePath);
