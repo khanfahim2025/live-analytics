@@ -442,6 +442,82 @@ function refreshData() {
     }
 }
 
+// Clear all data with confirmation
+async function clearAllData() {
+    // Show confirmation dialog
+    const confirmed = confirm(
+        '⚠️ WARNING: This will permanently delete ALL data!\n\n' +
+        'This includes:\n' +
+        '• All visitor counts\n' +
+        '• All lead counts (real and test)\n' +
+        '• All historical data\n' +
+        '• All site analytics\n\n' +
+        'This action cannot be undone!\n\n' +
+        'Are you absolutely sure you want to continue?'
+    );
+
+    if (!confirmed) {
+        console.log('❌ Data clearing cancelled by user');
+        return;
+    }
+
+    // Double confirmation for safety
+    const doubleConfirmed = confirm(
+        '🚨 FINAL WARNING!\n\n' +
+        'You are about to permanently delete ALL analytics data.\n' +
+        'This will reset everything to zero.\n\n' +
+        'Click OK to proceed with deletion, or Cancel to abort.'
+    );
+
+    if (!doubleConfirmed) {
+        console.log('❌ Data clearing cancelled by user (double confirmation)');
+        return;
+    }
+
+    try {
+        console.log('🧹 Clearing all data from dashboard...');
+        
+        // Show loading state
+        const clearBtn = document.querySelector('.clear-btn');
+        const originalText = clearBtn.innerHTML;
+        clearBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Clearing...';
+        clearBtn.disabled = true;
+
+        // Call the dashboard clear endpoint
+        const response = await fetch('/api/dashboard-clear', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            console.log('✅ All data cleared successfully');
+            
+            // Show success message
+            alert('✅ All data has been cleared successfully!\n\nThe dashboard will now show fresh data.');
+            
+            // Refresh the dashboard
+            if (window.realTimeFetcher) {
+                window.realTimeFetcher.refreshData();
+            }
+        } else {
+            throw new Error(result.message || 'Failed to clear data');
+        }
+
+    } catch (error) {
+        console.error('❌ Error clearing data:', error);
+        alert('❌ Error clearing data: ' + error.message);
+    } finally {
+        // Restore button state
+        const clearBtn = document.querySelector('.clear-btn');
+        clearBtn.innerHTML = '<i class="fas fa-trash-alt"></i> Clear All Data';
+        clearBtn.disabled = false;
+    }
+}
+
 function addMicrosite() {
     if (window.dashboard) {
         window.dashboard.addMicrosite();

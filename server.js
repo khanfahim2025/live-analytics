@@ -517,24 +517,76 @@ const server = http.createServer((req, res) => {
         return;
     }
 
-    // API endpoint to clear all data (for Railway deployment)
+    // API endpoint to clear all data (ONLY when explicitly requested from dashboard)
     if (pathname === '/api/clear-data' && method === 'POST') {
+        try {
+            // Parse request body to check if this is an explicit clear request
+            let body = '';
+            req.on('data', chunk => {
+                body += chunk.toString();
+            });
+            
+            req.on('end', () => {
+                try {
+                    const requestData = body ? JSON.parse(body) : {};
+                    
+                    // Only clear if explicitly requested with clearAll: true
+                    if (requestData.clearAll === true) {
+                        siteCounts = {};
+                        trackingData = [];
+                        testLeadTimers = {};
+                        fs.writeFileSync(DATA_FILE, JSON.stringify(siteCounts, null, 2));
+                        console.log('🧹 Explicitly cleared all data from dashboard');
+                        res.writeHead(200, { 'Content-Type': 'application/json' });
+                        res.end(JSON.stringify({ 
+                            message: 'All data cleared successfully from dashboard', 
+                            success: true,
+                            cleared: true
+                        }));
+                    } else {
+                        // Just return current data without clearing
+                        console.log('📊 Data preservation requested - no clearing performed');
+                        res.writeHead(200, { 'Content-Type': 'application/json' });
+                        res.end(JSON.stringify({ 
+                            message: 'Data preserved - historical data maintained', 
+                            success: true,
+                            preserved: true,
+                            sites: Object.keys(siteCounts).length
+                        }));
+                    }
+                } catch (error) {
+                    console.error('❌ Error processing clear request:', error);
+                    res.writeHead(500, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({ message: 'Error processing request', error: error.message }));
+                }
+            });
+            return;
+        } catch (error) {
+            console.error('❌ Error in clear-data endpoint:', error);
+            res.writeHead(500, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ message: 'Error in clear-data endpoint', error: error.message }));
+            return;
+        }
+    }
+
+    // API endpoint for dashboard-initiated data clearing
+    if (pathname === '/api/dashboard-clear' && method === 'POST') {
         try {
             siteCounts = {};
             trackingData = [];
             testLeadTimers = {};
             fs.writeFileSync(DATA_FILE, JSON.stringify(siteCounts, null, 2));
-            console.log('🧹 Cleared all data on Railway deployment v10.0 - Universal Script Ready');
+            console.log('🧹 Dashboard cleared all data - fresh start');
             res.writeHead(200, { 'Content-Type': 'application/json' });
             res.end(JSON.stringify({ 
-                message: 'All data cleared successfully - Universal tracking script ready v10.0', 
+                message: 'All data cleared successfully from dashboard', 
                 success: true,
-                version: '10.0',
-                features: ['Universal tracking script', 'Test lead auto-cleanup', 'Multi-site support', 'Cache busting']
+                cleared: true,
+                timestamp: new Date().toISOString()
             }));
             return;
         } catch (error) {
-            console.error('❌ Error clearing data:', error);
+            console.error('❌ Error clearing data from dashboard:', error);
             res.writeHead(500, { 'Content-Type': 'application/json' });
             res.end(JSON.stringify({ message: 'Error clearing data', error: error.message }));
             return;

@@ -3,11 +3,9 @@
 echo "🚀 Deploying Live Analytics with Universal Tracking Script v10.0"
 echo "================================================================"
 
-# Clear all data
-echo "🧹 Clearing all existing data..."
-curl -X POST https://web-production-19751.up.railway.app/api/clear-data \
-  -H "Content-Type: application/json" \
-  -d '{}' || echo "⚠️ Could not clear data via API (server might not be running yet)"
+# Preserve existing data (no automatic clearing)
+echo "📊 Preserving existing data - historical data maintained..."
+echo "ℹ️  Data will only be cleared when explicitly requested from dashboard"
 
 # Clear local cache
 echo "🧹 Clearing local cache..."
@@ -26,7 +24,7 @@ git push origin main
 echo "✅ Deployment complete!"
 echo "📊 Dashboard: https://web-production-19751.up.railway.app"
 echo "📊 Tracking script: https://web-production-19751.up.railway.app/tracking.js"
-echo "🧹 Clear data: https://web-production-19751.up.railway.app/api/clear-data"
+echo "🧹 Clear data: https://web-production-19751.up.railway.app/api/dashboard-clear (from dashboard only)"
 
 echo ""
 echo "🎯 Universal Script Setup for Your Microsites:"
