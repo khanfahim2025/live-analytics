@@ -687,6 +687,41 @@ body {
     margin-top: 4px;
 }
 
+.alert-close {
+    flex-shrink: 0;
+    margin-left: 12px;
+}
+
+.btn-close-alert {
+    background: rgba(0, 0, 0, 0.1);
+    border: none;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: #718096;
+    font-size: 0.8rem;
+}
+
+.btn-close-alert:hover {
+    background: rgba(0, 0, 0, 0.2);
+    color: #2d3748;
+    transform: scale(1.1);
+}
+
+.btn-close-alert:active {
+    transform: scale(0.95);
+}
+
+/* Alert animation for dismissal */
+.alert-item {
+    transition: all 0.3s ease;
+}
+
 /* Performance Metrics */
 .performance-metrics {
     display: grid;

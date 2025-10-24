@@ -452,6 +452,33 @@ function addMicrosite() {
 // Global variable to track if table is filtered
 window.isTableFiltered = false;
 
+// Dismiss alert function
+function dismissAlert(alertKey) {
+    const dismissedAlerts = JSON.parse(localStorage.getItem('dismissedAlerts') || '[]');
+    
+    if (!dismissedAlerts.includes(alertKey)) {
+        dismissedAlerts.push(alertKey);
+        localStorage.setItem('dismissedAlerts', JSON.stringify(dismissedAlerts));
+        
+        // Remove the alert from the UI immediately
+        const alertElement = document.querySelector(`[data-alert-key="${alertKey}"]`);
+        if (alertElement) {
+            alertElement.style.opacity = '0';
+            alertElement.style.transform = 'translateX(100%)';
+            setTimeout(() => {
+                alertElement.remove();
+                
+                // Check if no alerts remain
+                const remainingAlerts = document.querySelectorAll('.alert-item');
+                if (remainingAlerts.length === 0) {
+                    document.getElementById('noAlerts').style.display = 'flex';
+                    document.getElementById('alertsList').style.display = 'none';
+                }
+            }, 300);
+        }
+    }
+}
+
 // Domain search functionality
 function filterByDomain() {
     const searchTerm = document.getElementById('domainSearch').value.toLowerCase().trim();

@@ -1403,7 +1403,8 @@ class RealTimeDataFetcher {
                     visitors: site.visitors,
                     message: `Low visitor count: only ${site.visitors} visitors in the last 24 hours`,
                     icon: 'fas fa-users',
-                    severity: 'warning'
+                    severity: 'warning',
+                    siteId: site.id || site.url
                 });
             }
             
@@ -1416,7 +1417,8 @@ class RealTimeDataFetcher {
                     leads: site.leads,
                     message: `No leads generated in the last 24 hours`,
                     icon: 'fas fa-exclamation-triangle',
-                    severity: 'warning'
+                    severity: 'warning',
+                    siteId: site.id || site.url
                 });
             }
             
@@ -1430,10 +1432,14 @@ class RealTimeDataFetcher {
                     leads: site.leads,
                     message: `Critical: Only ${site.visitors} visitors and no leads in 24 hours`,
                     icon: 'fas fa-exclamation-circle',
-                    severity: 'critical'
+                    severity: 'critical',
+                    siteId: site.id || site.url
                 });
             }
         });
+        
+        // Clear dismissed alerts that are no longer active
+        this.clearDismissedAlerts();
         
         this.displayAlerts(alerts);
     }
@@ -1443,7 +1449,16 @@ class RealTimeDataFetcher {
         const noAlertsDiv = document.getElementById('noAlerts');
         const alertsListDiv = document.getElementById('alertsList');
         
-        if (alerts.length === 0) {
+        // Get dismissed alerts from localStorage
+        const dismissedAlerts = JSON.parse(localStorage.getItem('dismissedAlerts') || '[]');
+        
+        // Filter out dismissed alerts
+        const activeAlerts = alerts.filter(alert => {
+            const alertKey = `${alert.siteId}_${alert.type}`;
+            return !dismissedAlerts.includes(alertKey);
+        });
+        
+        if (activeAlerts.length === 0) {
             noAlertsDiv.style.display = 'flex';
             alertsListDiv.style.display = 'none';
             return;
@@ -1456,9 +1471,10 @@ class RealTimeDataFetcher {
         alertsListDiv.innerHTML = '';
         
         // Add new alerts
-        alerts.forEach(alert => {
+        activeAlerts.forEach(alert => {
             const alertElement = document.createElement('div');
             alertElement.className = `alert-item ${alert.type}`;
+            alertElement.setAttribute('data-alert-key', `${alert.siteId}_${alert.type}`);
             
             const timeAgo = this.getTimeAgo(new Date());
             
@@ -1472,6 +1488,11 @@ class RealTimeDataFetcher {
                     </div>
                     <div class="alert-message">${alert.message}</div>
                     <div class="alert-time">Alert generated ${timeAgo}</div>
+                </div>
+                <div class="alert-close">
+                    <button class="btn-close-alert" onclick="dismissAlert('${alert.siteId}_${alert.type}')" title="Dismiss alert">
+                        <i class="fas fa-times"></i>
+                    </button>
                 </div>
             `;
             
@@ -1488,6 +1509,28 @@ class RealTimeDataFetcher {
         if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} minutes ago`;
         if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`;
         return `${Math.floor(diffInSeconds / 86400)} days ago`;
+    }
+
+    // Clear dismissed alerts when conditions are no longer met
+    clearDismissedAlerts() {
+        const dismissedAlerts = JSON.parse(localStorage.getItem('dismissedAlerts') || '[]');
+        const currentAlerts = [];
+        
+        this.microsites.forEach(site => {
+            if (site.visitors < 15) {
+                currentAlerts.push(`${site.id || site.url}_low-visitors`);
+            }
+            if (site.leads === 0) {
+                currentAlerts.push(`${site.id || site.url}_no-leads`);
+            }
+            if (site.visitors < 15 && site.leads === 0) {
+                currentAlerts.push(`${site.id || site.url}_critical`);
+            }
+        });
+        
+        // Remove dismissed alerts that are no longer active
+        const stillActive = dismissedAlerts.filter(alertKey => currentAlerts.includes(alertKey));
+        localStorage.setItem('dismissedAlerts', JSON.stringify(stillActive));
     }
 
     // Add new microsite
