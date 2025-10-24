@@ -10,6 +10,9 @@ let trackingData = [];
 // Site counts - server-side counting (dynamically handles multiple sites)
 let siteCounts = {};
 
+// Test lead cleanup tracking
+let testLeadTimers = {};
+
 // PERSISTENT STORAGE FUNCTIONS
 const DATA_FILE = path.join(__dirname, 'data', 'siteCounts.json');
 
@@ -442,6 +445,24 @@ function isTestLead(data) {
     return false;
 }
 
+// Function to schedule test lead cleanup after 1 minute
+function scheduleTestLeadCleanup(gtmId) {
+    // Clear any existing timer for this site
+    if (testLeadTimers[gtmId]) {
+        clearTimeout(testLeadTimers[gtmId]);
+    }
+    
+    // Set new timer to clean up test leads after 1 minute
+    testLeadTimers[gtmId] = setTimeout(() => {
+        if (siteCounts[gtmId] && siteCounts[gtmId].testLeads > 0) {
+            console.log(`🧹 Auto-cleaning test leads for ${siteCounts[gtmId].siteName} after 1 minute`);
+            siteCounts[gtmId].testLeads = 0;
+            savePersistentData();
+        }
+        delete testLeadTimers[gtmId];
+    }, 60000); // 1 minute = 60000ms
+}
+
 // Function to initialize a new site if it doesn't exist
 function initializeSite(gtmId, siteName, siteUrl) {
     if (!siteCounts[gtmId]) {
@@ -501,9 +522,9 @@ const server = http.createServer((req, res) => {
         try {
             siteCounts = {};
             fs.writeFileSync(DATA_FILE, JSON.stringify(siteCounts, null, 2));
-            console.log('🧹 Cleared all data on Railway deployment');
+            console.log('🧹 Cleared all data on Railway deployment v6.0');
             res.writeHead(200, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({ message: 'All data cleared successfully', success: true }));
+            res.end(JSON.stringify({ message: 'All data cleared successfully - Fresh start v6.0', success: true }));
             return;
         } catch (error) {
             console.error('❌ Error clearing data:', error);
@@ -549,6 +570,8 @@ const server = http.createServer((req, res) => {
                             if (isTestLead(data)) {
                                 siteCounts[gtmId].testLeads++;
                                 console.log('🧪 Test lead detected and counted:', data.data);
+                                // Schedule cleanup after 1 minute
+                                scheduleTestLeadCleanup(gtmId);
                             } else {
                                 siteCounts[gtmId].leads++;
                                 console.log('✅ Real lead counted:', data.data);
@@ -859,10 +882,10 @@ const server = http.createServer((req, res) => {
 });
 
 const PORT = process.env.PORT || 9000;
-server.listen(PORT, '0.0.0.0', () => {
-    console.log(`🚀 Server running on port ${PORT} - Railway deployment v5.0 - Test Lead Detection FINAL FIX`);
-    console.log(`📊 API endpoint: /api/receive`);
-    console.log(`📊 Data endpoint: /api/data.json`);
-    console.log(`📊 Counts endpoint: /api/counts.json`);
-    console.log(`💾 Persistent data file: ${DATA_FILE}`);
-});
+    server.listen(PORT, '0.0.0.0', () => {
+        console.log(`🚀 Server running on port ${PORT} - Railway deployment v6.0 - CACHE CLEARED FRESH START`);
+        console.log(`📊 API endpoint: /api/receive`);
+        console.log(`📊 Data endpoint: /api/data.json`);
+        console.log(`📊 Counts endpoint: /api/counts.json`);
+        console.log(`💾 Persistent data file: ${DATA_FILE}`);
+    });
