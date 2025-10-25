@@ -146,42 +146,47 @@
 
                 <!-- Search and Filter Controls -->
                 <div class="controls-container">
-                    <!-- Domain Search -->
-                    <div class="control-group search-group">
-                        <div class="control-header">
-                            <i class="fas fa-search"></i>
-                            <h4>Search Websites</h4>
-                        </div>
-                        <div class="search-container">
-                            <div class="search-input-wrapper">
-                                <input type="text" id="domainSearch" class="search-input" placeholder="Search by domain or website name..." onkeyup="filterByDomain()">
-                                <button onclick="clearDomainSearch()" class="search-clear" title="Clear search">
-                                    <i class="fas fa-times"></i>
-                                </button>
+                    <!-- Combined Search and Region Filter -->
+                    <div class="control-group combined-filter-group">
+                        <div class="filter-row">
+                            <!-- Domain Search -->
+                            <div class="filter-section search-section">
+                                <div class="control-header">
+                                    <i class="fas fa-search"></i>
+                                    <h4>Search Websites</h4>
+                                </div>
+                                <div class="search-container">
+                                    <div class="search-input-wrapper">
+                                        <input type="text" id="domainSearch" class="search-input" placeholder="Search by domain or website name..." onkeyup="filterByDomain()">
+                                        <button onclick="clearDomainSearch()" class="search-clear" title="Clear search">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div id="domainSearchStatus" class="search-status" style="display: none;"></div>
                             </div>
-                        </div>
-                        <div id="domainSearchStatus" class="search-status" style="display: none;"></div>
-                    </div>
 
-                    <!-- Region Filter -->
-                    <div class="control-group region-group">
-                        <div class="control-header">
-                            <i class="fas fa-map-marker-alt"></i>
-                            <h4>Filter by Region</h4>
-                        </div>
-                        <div class="region-container">
-                            <select id="regionFilter" class="region-select" onchange="filterByRegion()">
-                                <option value="all">All Regions</option>
-                                <option value="navi-mumbai">Navi Mumbai</option>
-                                <option value="thane">Thane</option>
-                                <option value="western-mumbai">Western Mumbai</option>
-                                <option value="soha-harbour">Soha Harbour</option>
-                                <option value="hyderabad">Hyderabad</option>
-                                <option value="pune">Pune</option>
-                                <option value="bangalore">Bangalore</option>
-                                <option value="noida">Noida</option>
-                            </select>
-                            <div class="region-status" id="regionStatus" style="display: none;"></div>
+                            <!-- Region Filter -->
+                            <div class="filter-section region-section">
+                                <div class="control-header">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    <h4>Filter by Region</h4>
+                                </div>
+                                <div class="region-container">
+                                    <select id="regionFilter" class="region-select" onchange="filterByRegion()">
+                                        <option value="all">All Regions</option>
+                                        <option value="navi-mumbai">Navi Mumbai</option>
+                                        <option value="thane">Thane</option>
+                                        <option value="western-mumbai">Western Mumbai</option>
+                                        <option value="soha-harbour">Soha Harbour</option>
+                                        <option value="hyderabad">Hyderabad</option>
+                                        <option value="pune">Pune</option>
+                                        <option value="bangalore">Bangalore</option>
+                                        <option value="noida">Noida</option>
+                                    </select>
+                                    <div class="region-status" id="regionStatus" style="display: none;"></div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
