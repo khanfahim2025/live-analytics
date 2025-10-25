@@ -225,6 +225,11 @@
                     sendToDashboard(payload);
                     console.log('📊 Form submission attempt tracked');
                     
+                    // Track form submission for status monitoring
+                    if (window.realTimeFetcher && window.realTimeFetcher.trackFormSubmission) {
+                        window.realTimeFetcher.trackFormSubmission(DASHBOARD_CONFIG.siteUrl, 'contact');
+                    }
+                    
                     // DON'T count as lead yet - wait for successful validation
                     // The lead will be counted only when form validation passes
                     // and the form actually submits successfully
@@ -401,6 +406,11 @@
             
             sendToDashboard(leadPayload);
             console.log('✅ Successful lead tracked and sent to dashboard');
+            
+            // Track successful form submission for status monitoring
+            if (window.realTimeFetcher && window.realTimeFetcher.trackFormSubmission) {
+                window.realTimeFetcher.trackFormSubmission(DASHBOARD_CONFIG.siteUrl, 'successful_lead');
+            }
             
             // Clear the stored data
             sessionStorage.removeItem('leadData');

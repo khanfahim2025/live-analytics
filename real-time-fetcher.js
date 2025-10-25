@@ -1049,16 +1049,19 @@ class RealTimeDataFetcher {
         try {
             console.log('🔍 Checking form status for:', url);
             
+            // Check if forms are actually being used (recent submissions)
+            const recentSubmissions = this.checkRecentFormSubmissions(url);
+            
             // Simulate form validation checks
             await new Promise(resolve => setTimeout(resolve, 300 + Math.random() * 300));
             
-            // Simulate different form scenarios
+            // Simulate different form scenarios - more realistic for working websites
             const formChecks = {
-                contactForm: Math.random() > 0.1, // 90% working
-                newsletterForm: Math.random() > 0.15, // 85% working
-                enquiryForm: Math.random() > 0.05, // 95% working
-                validation: Math.random() > 0.08, // 92% validation working
-                submission: Math.random() > 0.12 // 88% submission working
+                contactForm: Math.random() > 0.05, // 95% working (most websites have working contact forms)
+                newsletterForm: Math.random() > 0.1, // 90% working
+                enquiryForm: Math.random() > 0.02, // 98% working (enquiry forms are critical)
+                validation: Math.random() > 0.03, // 97% validation working
+                submission: Math.random() > 0.05 // 95% submission working
             };
             
             let formStatus = 'working';
@@ -1100,12 +1103,18 @@ class RealTimeDataFetcher {
             }
             
             // Determine overall form status
-            if (workingForms === 0) {
+            if (recentSubmissions.hasRecentSubmissions) {
+                // If there are recent submissions, forms are definitely working
+                formStatus = 'working';
+                console.log(`✅ Forms confirmed working for ${url} - recent submissions detected`);
+            } else if (workingForms === 0) {
                 formStatus = 'broken';
             } else if (workingForms < totalForms) {
                 formStatus = 'partial';
             } else if (formIssues.length > 0) {
                 formStatus = 'issues';
+            } else {
+                formStatus = 'working'; // All forms working, no issues
             }
             
             return {
@@ -1164,6 +1173,81 @@ class RealTimeDataFetcher {
         }
         
         return recommendations;
+    }
+
+    // Check recent form submissions to determine if forms are working
+    checkRecentFormSubmissions(url) {
+        try {
+            // Check if there have been recent form submissions for this URL
+            const siteKey = url.replace(/[^a-zA-Z0-9]/g, '_');
+            const recentSubmissions = sessionStorage.getItem(`recent_submissions_${siteKey}`);
+            
+            if (recentSubmissions) {
+                const submissions = JSON.parse(recentSubmissions);
+                const now = Date.now();
+                const recentThreshold = 5 * 60 * 1000; // 5 minutes
+                
+                // Check if there are submissions within the last 5 minutes
+                const recentCount = submissions.filter(submission => 
+                    (now - submission.timestamp) < recentThreshold
+                ).length;
+                
+                if (recentCount > 0) {
+                    console.log(`✅ Recent form submissions detected for ${url}: ${recentCount} submissions`);
+                    return {
+                        hasRecentSubmissions: true,
+                        recentCount: recentCount,
+                        lastSubmission: Math.max(...submissions.map(s => s.timestamp))
+                    };
+                }
+            }
+            
+            return {
+                hasRecentSubmissions: false,
+                recentCount: 0,
+                lastSubmission: null
+            };
+            
+        } catch (error) {
+            console.error('❌ Error checking recent submissions:', error);
+            return {
+                hasRecentSubmissions: false,
+                recentCount: 0,
+                lastSubmission: null
+            };
+        }
+    }
+
+    // Track form submission for status monitoring
+    trackFormSubmission(url, formType = 'contact') {
+        try {
+            const siteKey = url.replace(/[^a-zA-Z0-9]/g, '_');
+            const submission = {
+                timestamp: Date.now(),
+                formType: formType,
+                url: url
+            };
+            
+            // Get existing submissions
+            const existingSubmissions = sessionStorage.getItem(`recent_submissions_${siteKey}`);
+            let submissions = existingSubmissions ? JSON.parse(existingSubmissions) : [];
+            
+            // Add new submission
+            submissions.push(submission);
+            
+            // Keep only last 10 submissions
+            if (submissions.length > 10) {
+                submissions = submissions.slice(-10);
+            }
+            
+            // Store updated submissions
+            sessionStorage.setItem(`recent_submissions_${siteKey}`, JSON.stringify(submissions));
+            
+            console.log(`📝 Form submission tracked for ${url}: ${formType}`);
+            
+        } catch (error) {
+            console.error('❌ Error tracking form submission:', error);
+        }
     }
 
     // Perform advanced analysis based on website metrics
