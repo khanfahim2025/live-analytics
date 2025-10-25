@@ -14,7 +14,7 @@
     <title>🌐 Live Analytics Dashboard</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-          <link rel="stylesheet" href="styles.css?v=2024.1.6">
+          <link rel="stylesheet" href="styles.css?v=2024.1.7">
 </head>
 <body>
     <div class="dashboard-container">
@@ -149,89 +149,96 @@
 
                 <!-- Search and Filter Controls -->
                 <div class="controls-container">
-                    <!-- Combined Search and Region Filter -->
-                    <div class="control-group combined-filter-group">
-                        <div class="filter-row">
-                            <!-- Domain Search -->
-                            <div class="filter-section search-section">
+                    <!-- Unified Filter Row -->
+                    <div class="unified-filter-row">
+                        <!-- Date Range Filter (50%) -->
+                        <div class="filter-section date-section">
+                            <div class="control-group filter-group">
                                 <div class="control-header">
-                                    <i class="fas fa-search"></i>
-                                    <h4>Search Websites</h4>
+                                    <i class="fas fa-calendar-alt"></i>
+                                    <h4>Date Range Filter</h4>
                                 </div>
-                                <div class="search-container">
-                                    <div class="search-input-wrapper">
-                                        <input type="text" id="domainSearch" class="search-input" placeholder="Search by domain or website name..." onkeyup="filterByDomain()">
-                                        <button onclick="clearDomainSearch()" class="search-clear" title="Clear search">
+                                <div class="filter-container">
+                                    <div class="preset-buttons">
+                                        <button onclick="setDatePreset('today')" class="preset-btn active">Today</button>
+                                        <button onclick="setDatePreset('yesterday')" class="preset-btn">Yesterday</button>
+                                        <button onclick="setDatePreset('week')" class="preset-btn">This Week</button>
+                                        <button onclick="setDatePreset('month')" class="preset-btn">This Month</button>
+                                    </div>
+                                    <div class="date-inputs">
+                                        <div class="date-field">
+                                            <label for="dateFrom">From</label>
+                                            <input type="date" id="dateFrom" class="date-input">
+                                        </div>
+                                        <div class="date-field">
+                                            <label for="dateTo">To</label>
+                                            <input type="date" id="dateTo" class="date-input">
+                                        </div>
+                                    </div>
+                                    <div class="filter-actions">
+                                        <button onclick="applyDateFilter()" class="btn-filter">
+                                            <i class="fas fa-filter"></i>
+                                            <span>Apply</span>
+                                        </button>
+                                        <button onclick="clearDateFilter()" class="btn-clear">
                                             <i class="fas fa-times"></i>
+                                            <span>Clear</span>
+                                        </button>
+                                        <button onclick="exportFilteredData()" class="btn-export-filtered">
+                                            <i class="fas fa-download"></i>
+                                            <span>Export</span>
                                         </button>
                                     </div>
                                 </div>
-                                <div id="domainSearchStatus" class="search-status" style="display: none;"></div>
+                                <div id="dateFilterStatus" class="filter-status" style="display: none;"></div>
                             </div>
+                        </div>
 
-                            <!-- Region Filter -->
-                            <div class="filter-section region-section">
-                                <div class="control-header">
-                                    <i class="fas fa-map-marker-alt"></i>
-                                    <h4>Filter by Region</h4>
-                                </div>
-                                <div class="region-container">
-                                    <select id="regionFilter" class="region-select" onchange="filterByRegion()">
-                                        <option value="all">All Regions</option>
-                                        <option value="navi-mumbai">Navi Mumbai</option>
-                                        <option value="thane">Thane</option>
-                                        <option value="western-mumbai">Western Mumbai</option>
-                                        <option value="soha-harbour">Soha Harbour</option>
-                                        <option value="hyderabad">Hyderabad</option>
-                                        <option value="pune">Pune</option>
-                                        <option value="bangalore">Bangalore</option>
-                                        <option value="noida">Noida</option>
-                                    </select>
-                                    <div class="region-status" id="regionStatus" style="display: none;"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                        <!-- Combined Search and Region Filter (50%) -->
+                        <div class="filter-section combined-section">
+                            <div class="control-group combined-filter-group">
+                                <div class="filter-row">
+                                    <!-- Domain Search -->
+                                    <div class="filter-subsection search-subsection">
+                                        <div class="control-header">
+                                            <i class="fas fa-search"></i>
+                                            <h4>Search Websites</h4>
+                                        </div>
+                                        <div class="search-container">
+                                            <div class="search-input-wrapper">
+                                                <input type="text" id="domainSearch" class="search-input" placeholder="Search by domain or website name..." onkeyup="filterByDomain()">
+                                                <button onclick="clearDomainSearch()" class="search-clear" title="Clear search">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div id="domainSearchStatus" class="search-status" style="display: none;"></div>
+                                    </div>
 
-                    <!-- Date Filter -->
-                    <div class="control-group filter-group">
-                        <div class="control-header">
-                            <i class="fas fa-calendar-alt"></i>
-                            <h4>Date Range Filter</h4>
-                        </div>
-                        <div class="filter-container">
-                            <div class="preset-buttons">
-                                <button onclick="setDatePreset('today')" class="preset-btn active">Today</button>
-                                <button onclick="setDatePreset('yesterday')" class="preset-btn">Yesterday</button>
-                                <button onclick="setDatePreset('week')" class="preset-btn">This Week</button>
-                                <button onclick="setDatePreset('month')" class="preset-btn">This Month</button>
-                            </div>
-                            <div class="date-inputs">
-                                <div class="date-field">
-                                    <label for="dateFrom">From</label>
-                                    <input type="date" id="dateFrom" class="date-input">
+                                    <!-- Region Filter -->
+                                    <div class="filter-subsection region-subsection">
+                                        <div class="control-header">
+                                            <i class="fas fa-map-marker-alt"></i>
+                                            <h4>Filter by Region</h4>
+                                        </div>
+                                        <div class="region-container">
+                                            <select id="regionFilter" class="region-select" onchange="filterByRegion()">
+                                                <option value="all">All Regions</option>
+                                                <option value="navi-mumbai">Navi Mumbai</option>
+                                                <option value="thane">Thane</option>
+                                                <option value="western-mumbai">Western Mumbai</option>
+                                                <option value="soha-harbour">Soha Harbour</option>
+                                                <option value="hyderabad">Hyderabad</option>
+                                                <option value="pune">Pune</option>
+                                                <option value="bangalore">Bangalore</option>
+                                                <option value="noida">Noida</option>
+                                            </select>
+                                            <div class="region-status" id="regionStatus" style="display: none;"></div>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="date-field">
-                                    <label for="dateTo">To</label>
-                                    <input type="date" id="dateTo" class="date-input">
-                                </div>
-                            </div>
-                            <div class="filter-actions">
-                                <button onclick="applyDateFilter()" class="btn-filter">
-                                    <i class="fas fa-filter"></i>
-                                    <span>Apply</span>
-                                </button>
-                                <button onclick="clearDateFilter()" class="btn-clear">
-                                    <i class="fas fa-times"></i>
-                                    <span>Clear</span>
-                                </button>
-                                <button onclick="exportFilteredData()" class="btn-export-filtered">
-                                    <i class="fas fa-download"></i>
-                                    <span>Export</span>
-                                </button>
                             </div>
                         </div>
-                        <div id="dateFilterStatus" class="filter-status" style="display: none;"></div>
                     </div>
                 </div>
 
@@ -368,7 +375,7 @@
           <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
           <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
           <script src="api/track.js"></script>
-          <script src="real-time-fetcher.js?v=2024.1.6"></script>
-          <script src="dashboard.js?v=2024.1.6"></script>
+          <script src="real-time-fetcher.js?v=2024.1.7"></script>
+          <script src="dashboard.js?v=2024.1.7"></script>
 </body>
 </html>

@@ -1209,24 +1209,11 @@ body {
     background: transparent;
     backdrop-filter: none;
     padding: 0;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 32px;
     border-bottom: none;
 }
 
-/* Combined Filter Group */
-.combined-filter-group {
-    background: #f8fafc;
-    border-radius: 12px;
-    padding: 20px;
-    border: 1px solid #e2e8f0;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-    transition: all 0.3s ease;
-    grid-column: 1 / -1; /* Span full width */
-}
-
-.filter-row {
+/* Unified Filter Row */
+.unified-filter-row {
     display: flex;
     gap: 20px;
     align-items: flex-start;
@@ -1237,13 +1224,42 @@ body {
     min-width: 0;
 }
 
-.search-section {
-    border-right: 1px solid #e2e8f0;
-    padding-right: 20px;
+.date-section {
+    flex: 1; /* 50% width */
 }
 
-.region-section {
-    padding-left: 20px;
+.combined-section {
+    flex: 1; /* 50% width */
+}
+
+/* Combined Filter Group */
+.combined-filter-group {
+    background: #f8fafc;
+    border-radius: 12px;
+    padding: 20px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+}
+
+.filter-row {
+    display: flex;
+    gap: 15px;
+    align-items: flex-start;
+}
+
+.filter-subsection {
+    flex: 1;
+    min-width: 0;
+}
+
+.search-subsection {
+    border-right: 1px solid #e2e8f0;
+    padding-right: 15px;
+}
+
+.region-subsection {
+    padding-left: 15px;
 }
 
 .control-group {
@@ -1502,9 +1518,12 @@ body {
 /* Responsive Design */
 @media (max-width: 768px) {
     .controls-container {
-        grid-template-columns: 1fr;
-        gap: 20px;
         padding: 20px;
+    }
+    
+    .unified-filter-row {
+        flex-direction: column;
+        gap: 20px;
     }
     
     .filter-row {
@@ -1512,14 +1531,14 @@ body {
         gap: 15px;
     }
     
-    .search-section {
+    .search-subsection {
         border-right: none;
         border-bottom: 1px solid #e2e8f0;
         padding-right: 0;
         padding-bottom: 15px;
     }
     
-    .region-section {
+    .region-subsection {
         padding-left: 0;
         padding-top: 15px;
     }
