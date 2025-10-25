@@ -1544,6 +1544,14 @@ class RealTimeDataFetcher {
         if (score >= 60) return 'D';
         return 'F';
     }
+
+    // Get performance color based on score
+    getPerformanceColor(score) {
+        if (score >= 90) return '#10b981'; // Green
+        if (score >= 75) return '#f59e0b'; // Yellow
+        if (score >= 50) return '#f97316'; // Orange
+        return '#ef4444'; // Red
+    }
     
     // Extract recommendations from Google PageSpeed results
     extractRecommendations(audits) {
