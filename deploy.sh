@@ -1,11 +1,14 @@
 #!/bin/bash
 
-echo "🚀 Deploying Live Analytics with Universal Tracking Script v10.0"
-echo "================================================================"
+echo "🚀 Deploying Live Analytics - FRESH DEPLOYMENT v11.0"
+echo "===================================================="
 
-# Preserve existing data (no automatic clearing)
-echo "📊 Preserving existing data - historical data maintained..."
-echo "ℹ️  Data will only be cleared when explicitly requested from dashboard"
+# FORCE FRESH DEPLOYMENT - Clear all data
+echo "🧹 FORCING FRESH DEPLOYMENT - Clearing ALL existing data..."
+rm -rf data/siteCounts.json
+rm -rf data/siteCounts.json.backup
+echo "{}" > data/siteCounts.json
+echo "✅ All historical data cleared - starting completely fresh"
 
 # Clear local cache
 echo "🧹 Clearing local cache..."
@@ -16,9 +19,9 @@ rm -rf .cache
 echo "📱 Cache busting enabled for tracking script"
 
 # Deploy to Railway
-echo "🚀 Deploying to Railway..."
+echo "🚀 Deploying FRESH to Railway..."
 git add .
-git commit -m "Deploy v10.0: Universal tracking script with cache busting and test lead auto-cleanup"
+git commit -m "FRESH DEPLOY v11.0: Complete data reset - starting fresh with no historical data"
 git push origin main
 
 echo "✅ Deployment complete!"

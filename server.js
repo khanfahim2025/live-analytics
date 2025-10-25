@@ -21,34 +21,33 @@ if (!fs.existsSync(path.join(__dirname, 'data'))) {
     fs.mkdirSync(path.join(__dirname, 'data'));
 }
 
-// Load existing data on server start
+// Load existing data on server start - FRESH DEPLOYMENT MODE
 function loadPersistentData() {
     try {
-        if (fs.existsSync(DATA_FILE)) {
-            const data = fs.readFileSync(DATA_FILE, 'utf8');
-            siteCounts = JSON.parse(data);
-            console.log('📊 Loaded persistent data:', Object.keys(siteCounts).length, 'sites');
-            
-            // Log each site's data for verification
-            Object.keys(siteCounts).forEach(gtmId => {
-                const site = siteCounts[gtmId];
-                console.log(`📊 Site: ${site.siteName} (${gtmId}) - Visitors: ${site.visitors}, Leads: ${site.leads}, Test Leads: ${site.testLeads}`);
-            });
-        } else {
-            console.log('📊 No existing data found, starting fresh');
-            // Create empty data file to ensure directory structure
-            fs.writeFileSync(DATA_FILE, JSON.stringify({}, null, 2));
-            console.log('📊 Created empty data file for future persistence');
-        }
-    } catch (error) {
-        console.error('❌ Error loading persistent data:', error);
+        // FORCE FRESH START - Always start with empty data
+        console.log('🆕 FRESH DEPLOYMENT MODE - Starting with completely empty data');
         siteCounts = {};
-        // Create backup data file
+        
+        // Create fresh empty data file
+        fs.writeFileSync(DATA_FILE, JSON.stringify({}, null, 2));
+        console.log('✅ Fresh data file created - no historical data loaded');
+        
+        // Clear any existing backup files
+        const backupFile = DATA_FILE + '.backup';
+        if (fs.existsSync(backupFile)) {
+            fs.unlinkSync(backupFile);
+            console.log('🧹 Removed old backup data file');
+        }
+        
+    } catch (error) {
+        console.error('❌ Error in fresh deployment setup:', error);
+        siteCounts = {};
+        // Create fresh data file even if there's an error
         try {
             fs.writeFileSync(DATA_FILE, JSON.stringify({}, null, 2));
-            console.log('📊 Created backup data file');
+            console.log('📊 Created fresh data file after error');
         } catch (backupError) {
-            console.error('❌ Error creating backup data file:', backupError);
+            console.error('❌ Error creating fresh data file:', backupError);
         }
     }
 }
@@ -1058,14 +1057,16 @@ const server = http.createServer((req, res) => {
 
 const PORT = process.env.PORT || 9000;
     server.listen(PORT, '0.0.0.0', () => {
-        console.log(`🚀 Server running on port ${PORT} - Railway deployment v10.0 - UNIVERSAL TRACKING SCRIPT READY`);
+        console.log(`🚀 Server running on port ${PORT} - FRESH DEPLOYMENT v11.0 - COMPLETELY NEW START`);
+        console.log(`🆕 FRESH DEPLOYMENT: All historical data cleared - starting from zero`);
         console.log(`📊 API endpoint: /api/receive`);
         console.log(`📊 Data endpoint: /api/data.json`);
         console.log(`📊 Counts endpoint: /api/counts.json`);
         console.log(`📊 Tracking script: /tracking.js`);
         console.log(`🧹 Clear data endpoint: /api/clear-data`);
-        console.log(`💾 Persistent data file: ${DATA_FILE}`);
+        console.log(`💾 Fresh data file: ${DATA_FILE}`);
         console.log(`🎯 Universal script supports unlimited websites with different GTM IDs`);
         console.log(`🧪 Test lead auto-cleanup: 1 minute per GTM ID`);
         console.log(`📱 Cache busting enabled for tracking script`);
+        console.log(`✅ READY FOR FRESH TRACKING - NO OLD DATA PRESERVED`);
     });
