@@ -722,6 +722,25 @@ body {
     transition: all 0.3s ease;
 }
 
+/* Danger button styles */
+.btn-danger {
+    background: linear-gradient(135deg, #e53e3e 0%, #c53030 100%);
+    color: white;
+    border: 1px solid #e53e3e;
+    box-shadow: 0 2px 4px rgba(229, 62, 62, 0.2);
+}
+
+.btn-danger:hover {
+    background: linear-gradient(135deg, #c53030 0%, #9c2626 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(229, 62, 62, 0.3);
+}
+
+.btn-danger:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(229, 62, 62, 0.2);
+}
+
 /* Performance Metrics */
 .performance-metrics {
     display: grid;

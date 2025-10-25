@@ -28,22 +28,64 @@ function loadPersistentData() {
             const data = fs.readFileSync(DATA_FILE, 'utf8');
             siteCounts = JSON.parse(data);
             console.log('📊 Loaded persistent data:', Object.keys(siteCounts).length, 'sites');
+            
+            // Log each site's data for verification
+            Object.keys(siteCounts).forEach(gtmId => {
+                const site = siteCounts[gtmId];
+                console.log(`📊 Site: ${site.siteName} (${gtmId}) - Visitors: ${site.visitors}, Leads: ${site.leads}, Test Leads: ${site.testLeads}`);
+            });
         } else {
             console.log('📊 No existing data found, starting fresh');
+            // Create empty data file to ensure directory structure
+            fs.writeFileSync(DATA_FILE, JSON.stringify({}, null, 2));
+            console.log('📊 Created empty data file for future persistence');
         }
     } catch (error) {
         console.error('❌ Error loading persistent data:', error);
         siteCounts = {};
+        // Create backup data file
+        try {
+            fs.writeFileSync(DATA_FILE, JSON.stringify({}, null, 2));
+            console.log('📊 Created backup data file');
+        } catch (backupError) {
+            console.error('❌ Error creating backup data file:', backupError);
+        }
     }
 }
 
 // Save data to file
 function savePersistentData() {
     try {
+        // Create backup before saving
+        if (fs.existsSync(DATA_FILE)) {
+            const backupFile = DATA_FILE + '.backup';
+            fs.copyFileSync(DATA_FILE, backupFile);
+        }
+        
+        // Save current data
         fs.writeFileSync(DATA_FILE, JSON.stringify(siteCounts, null, 2));
-        console.log('💾 Saved persistent data');
+        console.log('💾 Saved persistent data:', Object.keys(siteCounts).length, 'sites');
+        
+        // Verify the save was successful
+        const savedData = JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
+        if (JSON.stringify(savedData) === JSON.stringify(siteCounts)) {
+            console.log('✅ Data save verified successfully');
+        } else {
+            console.error('❌ Data save verification failed');
+        }
     } catch (error) {
         console.error('❌ Error saving persistent data:', error);
+        
+        // Try to restore from backup if save failed
+        const backupFile = DATA_FILE + '.backup';
+        if (fs.existsSync(backupFile)) {
+            try {
+                fs.copyFileSync(backupFile, DATA_FILE);
+                console.log('🔄 Restored data from backup');
+            } catch (restoreError) {
+                console.error('❌ Error restoring from backup:', restoreError);
+            }
+        }
     }
 }
 
@@ -708,6 +750,29 @@ const server = http.createServer((req, res) => {
     if (pathname === '/api/counts.json' && method === 'GET') {
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify(siteCounts));
+        return;
+    }
+
+    // API endpoint to get data persistence status
+    if (pathname === '/api/data-status' && method === 'GET') {
+        const dataStatus = {
+            totalSites: Object.keys(siteCounts).length,
+            dataFile: DATA_FILE,
+            dataFileExists: fs.existsSync(DATA_FILE),
+            dataFileSize: fs.existsSync(DATA_FILE) ? fs.statSync(DATA_FILE).size : 0,
+            lastModified: fs.existsSync(DATA_FILE) ? fs.statSync(DATA_FILE).mtime : null,
+            sites: Object.keys(siteCounts).map(gtmId => ({
+                gtmId,
+                siteName: siteCounts[gtmId].siteName,
+                visitors: siteCounts[gtmId].visitors,
+                leads: siteCounts[gtmId].leads,
+                testLeads: siteCounts[gtmId].testLeads,
+                lastUpdated: siteCounts[gtmId].lastUpdated
+            }))
+        };
+        
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify(dataStatus, null, 2));
         return;
     }
 

@@ -479,6 +479,90 @@ function dismissAlert(alertKey) {
     }
 }
 
+// Clear all data function
+async function clearAllData() {
+    // Show confirmation dialog
+    const confirmed = confirm(
+        '⚠️ WARNING: This will permanently delete ALL data!\n\n' +
+        'This includes:\n' +
+        '• All visitor counts\n' +
+        '• All lead data\n' +
+        '• All test lead data\n' +
+        '• All historical data\n\n' +
+        'This action CANNOT be undone!\n\n' +
+        'Are you sure you want to continue?'
+    );
+    
+    if (!confirmed) {
+        return;
+    }
+    
+    // Show second confirmation
+    const doubleConfirmed = confirm(
+        '🚨 FINAL WARNING 🚨\n\n' +
+        'You are about to PERMANENTLY DELETE ALL DATA!\n\n' +
+        'This will reset everything to zero and cannot be undone.\n\n' +
+        'Type "DELETE" in the next prompt to confirm.'
+    );
+    
+    if (!doubleConfirmed) {
+        return;
+    }
+    
+    // Final confirmation with text input
+    const userInput = prompt(
+        'Type "DELETE" to permanently clear all data:'
+    );
+    
+    if (userInput !== 'DELETE') {
+        alert('❌ Data clearing cancelled. No changes made.');
+        return;
+    }
+    
+    try {
+        // Show loading state
+        const button = document.querySelector('.btn-danger');
+        const originalText = button.innerHTML;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>Clearing...</span>';
+        button.disabled = true;
+        
+        // Call the API to clear all data
+        const response = await fetch('/api/dashboard-clear', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                clearAll: true,
+                confirmed: true
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            // Clear browser storage
+            localStorage.clear();
+            sessionStorage.clear();
+            
+            // Reload the page to show fresh state
+            alert('✅ All data has been permanently cleared!\n\nThe dashboard will now reload with fresh data.');
+            window.location.reload();
+        } else {
+            throw new Error(result.message || 'Failed to clear data');
+        }
+        
+    } catch (error) {
+        console.error('❌ Error clearing data:', error);
+        alert('❌ Error clearing data: ' + error.message);
+        
+        // Restore button state
+        const button = document.querySelector('.btn-danger');
+        button.innerHTML = '<i class="fas fa-trash-alt"></i> <span>Clear All Data</span>';
+        button.disabled = false;
+    }
+}
+
 // Domain search functionality
 function filterByDomain() {
     const searchTerm = document.getElementById('domainSearch').value.toLowerCase().trim();
