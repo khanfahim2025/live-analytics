@@ -873,6 +873,15 @@ class RealTimeDataFetcher {
         // Update performance table
         this.updatePerformanceTable();
         
+        // Reapply region filter if active
+        if (window.isRegionFiltered) {
+            setTimeout(() => {
+                if (typeof filterByRegion === 'function') {
+                    filterByRegion();
+                }
+            }, 100);
+        }
+        
         // Update website status grid
         // this.updateWebsiteStatusGrid(); // Removed - section no longer exists
         
@@ -1656,7 +1665,7 @@ class RealTimeDataFetcher {
     // Update performance table
     updatePerformanceTable() {
         // Check if table is currently filtered - if so, don't override
-        if (window.isTableFiltered) {
+        if (window.isTableFiltered || window.isRegionFiltered) {
             console.log('🔍 Table is filtered - skipping real-time update');
             return;
         }
@@ -1691,6 +1700,10 @@ class RealTimeDataFetcher {
                     console.log(`✅ Preserving working form status for ${site.url} - recent submissions detected`);
                 }
             }
+            
+            // Check if this row should be visible based on region filter
+            const shouldShowRow = !window.isRegionFiltered || 
+                (window.isRegionFiltered && this.shouldShowSiteInRegionFilter(site));
             
             const row = document.createElement('tr');
             // Check for PageSpeed analysis status
@@ -2093,3 +2106,13 @@ const realTimeFetcher = new RealTimeDataFetcher();
 // Export for use in other files
 window.RealTimeDataFetcher = RealTimeDataFetcher;
 window.realTimeFetcher = realTimeFetcher;
+
+// Helper function to check if site should be shown in region filter
+function shouldShowSiteInRegionFilter(site) {
+    if (!window.isRegionFiltered) return true;
+    
+    const selectedRegion = document.getElementById('regionFilter').value;
+    const siteRegion = site.region || 'unknown';
+    
+    return selectedRegion === 'all' || siteRegion === selectedRegion;
+}

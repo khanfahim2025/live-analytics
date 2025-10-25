@@ -1179,6 +1179,9 @@ function filterByRegion() {
     const rows = tableBody.querySelectorAll('tr');
     let visibleCount = 0;
     
+    // Set global flag to prevent real-time updates from overriding filter
+    window.isRegionFiltered = selectedRegion !== 'all';
+    
     rows.forEach(row => {
         const region = row.dataset.region || 'unknown';
         const shouldShow = selectedRegion === 'all' || region === selectedRegion;
@@ -1191,6 +1194,7 @@ function filterByRegion() {
     const regionStatus = document.getElementById('regionStatus');
     if (selectedRegion === 'all') {
         regionStatus.style.display = 'none';
+        window.isRegionFiltered = false;
     } else {
         regionStatus.style.display = 'block';
         const regionName = selectedRegion.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase());
