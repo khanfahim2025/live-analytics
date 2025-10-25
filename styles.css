@@ -1262,6 +1262,51 @@ body {
     padding-left: 15px;
 }
 
+/* Date Range Filter Inline Layout */
+.control-header-with-presets {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.preset-buttons-inline {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.preset-buttons-inline .preset-btn {
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 500;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
+    background: #f8fafc;
+    color: #4a5568;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.preset-buttons-inline .preset-btn:hover {
+    background: #e2e8f0;
+    border-color: #cbd5e0;
+}
+
+.preset-buttons-inline .preset-btn.active {
+    background: #4299e1;
+    border-color: #4299e1;
+    color: white;
+}
+
+.preset-buttons-inline .preset-btn.active:hover {
+    background: #3182ce;
+    border-color: #3182ce;
+}
+
 .control-group {
     background: #f8fafc;
     border-radius: 12px;
@@ -1541,6 +1586,17 @@ body {
     .region-subsection {
         padding-left: 0;
         padding-top: 15px;
+    }
+    
+    .control-header-with-presets {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+    
+    .preset-buttons-inline {
+        width: 100%;
+        justify-content: flex-start;
     }
     
     .performance-section .section-header {
