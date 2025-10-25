@@ -382,6 +382,24 @@ body {
     font-weight: 500;
 }
 
+/* Enhanced status cells */
+.website-status-cell, .form-status-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.status-details, .form-details {
+    font-size: 0.75rem;
+    color: #718096;
+    line-height: 1.2;
+}
+
+.status-details small, .form-details small {
+    display: block;
+    margin-top: 2px;
+}
+
 .status-online {
     color: #48bb78;
     font-weight: 600;
@@ -477,15 +495,27 @@ body {
 
 .performance-score {
     display: inline-flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    width: 50px;
-    height: 50px;
+    width: 60px;
+    height: 60px;
     border-radius: 10px;
     font-weight: 700;
-    font-size: 1.1rem;
     color: white;
     margin: 0 auto;
+    padding: 4px;
+}
+
+.score-main {
+    font-size: 1.1rem;
+    line-height: 1;
+}
+
+.score-mobile {
+    font-size: 0.75rem;
+    opacity: 0.9;
+    margin-top: 2px;
 }
 
 .performance-score.excellent {
