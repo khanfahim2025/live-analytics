@@ -1324,17 +1324,11 @@ class RealTimeDataFetcher {
                 <td>
                     <div class="metric-cell">
                         <span class="metric-value">${(site.googleAdsVisitors || 0).toLocaleString()}</span>
-                        <div class="metric-sub">
-                            <span class="google-ads-metric">🎯 Google Ads Only</span>
-                        </div>
                     </div>
                 </td>
                 <td>
                     <div class="metric-cell">
                         <span class="metric-value">${(site.googleAdsLeads || 0).toLocaleString()}</span>
-                        <div class="metric-sub">
-                            <span class="google-ads-metric">🎯 Google Ads Only</span>
-                        </div>
                     </div>
                 </td>
                 <td><span style="color: #d69e2e; font-weight: 600;">${(site.testLeads || 0).toLocaleString()}</span></td>
