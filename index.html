@@ -6,7 +6,7 @@
     <title>🌐 Live Analytics Dashboard</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css?v=2024.1.2">
+    <link rel="stylesheet" href="styles.css?v=2024.1.3">
 </head>
 <body>
     <div class="dashboard-container">
@@ -236,12 +236,6 @@
             <div class="content-section">
                 <div class="section-header">
                     <h2><i class="fas fa-bell"></i> Alerts & Notifications</h2>
-                    <div class="section-actions">
-                        <button class="btn-action btn-danger" onclick="clearAllData()" title="Clear all data - this action cannot be undone">
-                            <i class="fas fa-trash-alt"></i>
-                            <span>Clear All Data</span>
-                        </button>
-                    </div>
                 </div>
                 <div class="alerts-container" id="alertsContainer">
                     <div class="no-alerts" id="noAlerts">
@@ -339,7 +333,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
     <script src="api/track.js"></script>
-    <script src="real-time-fetcher.js?v=2024.1.2"></script>
-    <script src="dashboard.js?v=2024.1.2"></script>
+    <script src="real-time-fetcher.js?v=2024.1.3"></script>
+    <script src="dashboard.js?v=2024.1.3"></script>
 </body>
 </html>
