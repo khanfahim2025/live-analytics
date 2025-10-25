@@ -387,7 +387,9 @@ class RealTimeDataFetcher {
                 site.lastChecked = enhancedStatus.lastChecked;
                 
                 // Check form status with enhanced detection
-                site.formStatus = await this.checkFormStatus(site);
+                const formStatusResult = await this.checkFormStatus(site);
+                site.formStatus = formStatusResult.status; // Extract the status string
+                site.formStatusDetails = formStatusResult; // Store the full object for details
                 
                 console.log(`✅ ${site.name} status: ${site.status}, forms: ${site.formStatus}, domain: ${site.domainStatus}`);
                 
@@ -424,8 +426,9 @@ class RealTimeDataFetcher {
             }
 
             // Check form status
-            const formStatus = await this.checkFormStatus(site);
-            site.formStatus = formStatus;
+            const formStatusResult = await this.checkFormStatus(site);
+            site.formStatus = formStatusResult.status; // Extract the status string
+            site.formStatusDetails = formStatusResult; // Store the full object for details
 
         } catch (error) {
             throw new Error(`Failed to fetch data for ${site.name}: ${error.message}`);
@@ -1786,10 +1789,10 @@ class RealTimeDataFetcher {
                                 <small>Forms: ${preservedFormStatus.workingForms}/${preservedFormStatus.totalForms} | 
                                        Validation: ${preservedFormStatus.validation ? '✅' : '❌'}</small>
                             </div>
-                        ` : site.formStatus && typeof site.formStatus === 'object' ? `
+                        ` : site.formStatusDetails ? `
                             <div class="form-details">
-                                <small>Forms: ${site.formStatus.workingForms || 0}/${site.formStatus.totalForms || 0} | 
-                                       Validation: ${site.formStatus.validation ? '✅' : '❌'}</small>
+                                <small>Forms: ${site.formStatusDetails.workingForms || 0}/${site.formStatusDetails.totalForms || 0} | 
+                                       Validation: ${site.formStatusDetails.validation ? '✅' : '❌'}</small>
                             </div>
                         ` : site.lastChecked ? `<div style="font-size: 0.75rem; color: #718096;">Checked: ${new Date(site.lastChecked).toLocaleTimeString()}</div>` : ''}
                     </div>
