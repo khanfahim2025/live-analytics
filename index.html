@@ -6,7 +6,7 @@
     <title>🌐 Live Analytics Dashboard</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles.css?v=2024.1.1">
 </head>
 <body>
     <div class="dashboard-container">
@@ -40,7 +40,7 @@
         <div class="metrics-grid">
             <div class="metric-card">
                 <div class="metric-header">
-                    <h3>Google Ads Visitors</h3>
+                    <h3>Total Visitors</h3>
                     <span class="trend positive">↗️ +12%</span>
                 </div>
                 <div class="metric-value" id="totalVisitors">0</div>
@@ -54,7 +54,7 @@
 
             <div class="metric-card">
                 <div class="metric-header">
-                    <h3>Google Ads Leads</h3>
+                    <h3>Total Leads</h3>
                     <span class="trend positive">↗️ +8%</span>
                 </div>
                 <div class="metric-value" id="totalLeads">0</div>
@@ -213,8 +213,8 @@
                             <tr>
                                 <th>#</th>
                                 <th>Website</th>
-                                <th>Google Ads Visitors</th>
-                                <th>Google Ads Leads</th>
+                                <th>Visitors</th>
+                                <th>Leads</th>
                                 <th>Test Leads</th>
                                 <th>Conversion %</th>
                                 <th>Performance</th>
@@ -358,7 +358,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
     <script src="api/track.js"></script>
-    <script src="real-time-fetcher.js"></script>
-    <script src="dashboard.js"></script>
+    <script src="real-time-fetcher.js?v=2024.1.1"></script>
+    <script src="dashboard.js?v=2024.1.1"></script>
 </body>
 </html>
