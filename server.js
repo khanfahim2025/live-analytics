@@ -506,22 +506,25 @@ function initializeLiveMicrosites() {
         {
             gtmId: 'GTM-5PHH5D6T',
             siteName: 'Homesfy Test Website',
-            siteUrl: 'https://www.homesfytestwebsite.com'
+            siteUrl: 'https://www.homesfytestwebsite.com',
+            region: 'noida'
         },
         {
             gtmId: 'GTM-WLQ7HBKH',
             siteName: 'Green Reserve Noida',
-            siteUrl: 'https://www.green-reserve-noida.in'
+            siteUrl: 'https://www.green-reserve-noida.in',
+            region: 'noida'
         },
         {
             gtmId: 'GTM-52V739V6',
             siteName: 'Sewri New Launch',
-            siteUrl: 'https://www.sewri-newlaunch.com'
+            siteUrl: 'https://www.sewri-newlaunch.com',
+            region: 'western-mumbai'
         }
     ];
 
     liveSites.forEach(site => {
-        initializeSite(site.gtmId, site.siteName, site.siteUrl);
+        initializeSite(site.gtmId, site.siteName, site.siteUrl, site.region || 'unknown');
     });
 
     console.log('🚀 Initialized all live microsites:', liveSites.length);
@@ -683,6 +686,7 @@ const server = http.createServer((req, res) => {
                 // Update region if provided in tracking data
                 if (data.region && data.region !== 'unknown') {
                     siteCounts[gtmId].region = data.region;
+                    console.log('🗺️ Updated region for', siteCounts[gtmId].siteName, 'to:', data.region);
                 }
                 
                 if (siteCounts[gtmId]) {
@@ -766,16 +770,17 @@ const server = http.createServer((req, res) => {
                     
                     siteCounts[gtmId].lastUpdated = new Date().toISOString();
                     
-                    console.log('📊 Updated counts for', data.siteName, ':', {
-                        visitors: siteCounts[gtmId].visitors,
-                        leads: siteCounts[gtmId].leads,
-                        testLeads: siteCounts[gtmId].testLeads,
-                        conversionRate: siteCounts[gtmId].conversionRate,
-                        // NEW: Google Ads metrics
-                        googleAdsVisitors: siteCounts[gtmId].googleAdsVisitors,
-                        googleAdsLeads: siteCounts[gtmId].googleAdsLeads,
-                        googleAdsConversionRate: siteCounts[gtmId].googleAdsConversionRate
-                    });
+                console.log('📊 Updated counts for', data.siteName, ':', {
+                    visitors: siteCounts[gtmId].visitors,
+                    leads: siteCounts[gtmId].leads,
+                    testLeads: siteCounts[gtmId].testLeads,
+                    conversionRate: siteCounts[gtmId].conversionRate,
+                    region: siteCounts[gtmId].region, // NEW: Log region
+                    // NEW: Google Ads metrics
+                    googleAdsVisitors: siteCounts[gtmId].googleAdsVisitors,
+                    googleAdsLeads: siteCounts[gtmId].googleAdsLeads,
+                    googleAdsConversionRate: siteCounts[gtmId].googleAdsConversionRate
+                });
                     
                     // Save data after each update
                     savePersistentData();

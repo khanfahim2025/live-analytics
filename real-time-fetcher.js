@@ -280,6 +280,7 @@ class RealTimeDataFetcher {
                         site.visitors = data.visitors || 0;
                         site.leads = data.leads || 0;
                         site.testLeads = data.testLeads || 0;
+                        site.region = data.region || 'unknown'; // NEW: Update region
                         // NEW: Update Google Ads metrics
                         site.googleAdsVisitors = data.googleAdsVisitors || 0;
                         site.googleAdsLeads = data.googleAdsLeads || 0;
