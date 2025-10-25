@@ -822,7 +822,7 @@ class RealTimeDataFetcher {
 
     // Update dashboard display
     updateDashboard() {
-        // Update metric cards - Show Google Ads data instead of total data
+        // Update metric cards - Show ONLY Google Ads data (no total counts)
         document.getElementById('totalVisitors').textContent = (this.analytics.googleAdsVisitors || 0).toLocaleString();
         document.getElementById('totalLeads').textContent = (this.analytics.googleAdsLeads || 0).toLocaleString();
         document.getElementById('totalTestLeads').textContent = (this.analytics.testLeads || 0).toLocaleString();
@@ -832,16 +832,16 @@ class RealTimeDataFetcher {
         document.getElementById('workingForms').textContent = this.analytics.workingForms;
         document.getElementById('formStatus').textContent = this.analytics.workingForms === this.analytics.totalWebsites ? 'All Working' : 'Some Issues';
         
-        // NEW: Update Google Ads subtitles
+        // Update subtitles to show only Google Ads focus
         const googleAdsVisitorsElement = document.getElementById('googleAdsVisitors');
         const googleAdsLeadsElement = document.getElementById('googleAdsLeads');
         
         if (googleAdsVisitorsElement) {
-            googleAdsVisitorsElement.textContent = `Total: ${this.analytics.visitors} | Google Ads: ${this.analytics.googleAdsVisitors || 0}`;
+            googleAdsVisitorsElement.textContent = `🎯 Google Ads Campaign Traffic Only`;
         }
         
         if (googleAdsLeadsElement) {
-            googleAdsLeadsElement.textContent = `Total: ${this.analytics.leads} | Google Ads: ${this.analytics.googleAdsLeads || 0}`;
+            googleAdsLeadsElement.textContent = `🎯 Google Ads Campaign Leads Only`;
         }
 
         // Update performance table
@@ -1325,7 +1325,7 @@ class RealTimeDataFetcher {
                     <div class="metric-cell">
                         <span class="metric-value">${(site.googleAdsVisitors || 0).toLocaleString()}</span>
                         <div class="metric-sub">
-                            <span class="total-metric">Total: ${site.visitors.toLocaleString()}</span>
+                            <span class="google-ads-metric">🎯 Google Ads Only</span>
                         </div>
                     </div>
                 </td>
@@ -1333,7 +1333,7 @@ class RealTimeDataFetcher {
                     <div class="metric-cell">
                         <span class="metric-value">${(site.googleAdsLeads || 0).toLocaleString()}</span>
                         <div class="metric-sub">
-                            <span class="total-metric">Total: ${site.leads.toLocaleString()}</span>
+                            <span class="google-ads-metric">🎯 Google Ads Only</span>
                         </div>
                     </div>
                 </td>
