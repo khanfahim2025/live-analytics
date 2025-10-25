@@ -133,6 +133,13 @@
             const forms = document.querySelectorAll('form');
             
             forms.forEach((form, index) => {
+                // Track successful form submissions
+                form.addEventListener('submit', function(event) {
+                    // Let the form submit naturally first
+                    setTimeout(() => {
+                        checkForSuccessfulSubmission(form, index);
+                    }, 1000); // Wait 1 second for form processing
+                });
                 // Intercept form submission BEFORE it gets processed
                 form.addEventListener('submit', function(event) {
                     console.log('🚨 Form submission intercepted!');
@@ -214,36 +221,13 @@
                         timestamp: Date.now()
                     }));
                     
-                    // Send to dashboard immediately
+                    // Send to dashboard immediately (form submission attempt)
                     sendToDashboard(payload);
+                    console.log('📊 Form submission attempt tracked');
                     
-                    // Send lead confirmation immediately (when form is submitted successfully)
-                    const leadPayload = {
-                        gtmId: DASHBOARD_CONFIG.gtmId,
-                        siteName: DASHBOARD_CONFIG.siteName,
-                        siteUrl: DASHBOARD_CONFIG.siteUrl,
-                        eventType: 'gtm.thankYouPage',
-                        timestamp: Date.now(),
-                        url: window.location.href,
-                        referrer: document.referrer,
-                        sessionId: getSessionId(),
-                        isMobile: /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent),
-                        deviceType: getDeviceType(),
-                        userAgent: navigator.userAgent,
-                        // NEW: Google Ads tracking data
-                        googleAds: googleAdsData,
-                        isGoogleAdsVisitor: googleAdsData.isGoogleAds,
-                        trafficSource: googleAdsData.trafficSource,
-                        data: {
-                            ...data,
-                            isFormSubmission: true,
-                            isTestLead: isTestLead,
-                            thankYouPage: true
-                        }
-                    };
-                    
-                    sendToDashboard(leadPayload);
-                    console.log('📊 Lead confirmation sent immediately');
+                    // DON'T count as lead yet - wait for successful validation
+                    // The lead will be counted only when form validation passes
+                    // and the form actually submits successfully
                     
                     // Log form submission (no user notifications)
                     if (isTestLead) {
@@ -308,6 +292,118 @@
             
             console.log('✅ Real lead detected - no field contains "test"');
             return false;
+        }
+
+        // Check for successful form submission
+        function checkForSuccessfulSubmission(form, index) {
+            console.log('🔍 Checking for successful form submission...');
+            
+            // Check if form is still on the page (not redirected)
+            if (!document.contains(form)) {
+                console.log('✅ Form no longer on page - likely successful submission');
+                trackSuccessfulLead(form, index);
+                return;
+            }
+            
+            // Check for success indicators
+            const successIndicators = [
+                'success', 'thank', 'submitted', 'received', 'confirmation',
+                'thank you', 'enquiry received', 'form submitted'
+            ];
+            
+            const pageText = document.body.textContent.toLowerCase();
+            const hasSuccessIndicator = successIndicators.some(indicator => 
+                pageText.includes(indicator)
+            );
+            
+            if (hasSuccessIndicator) {
+                console.log('✅ Success indicator found on page');
+                trackSuccessfulLead(form, index);
+                return;
+            }
+            
+            // Check for error indicators
+            const errorIndicators = [
+                'error', 'invalid', 'required', 'failed', 'try again',
+                'please enter', 'incorrect', 'validation'
+            ];
+            
+            const hasErrorIndicator = errorIndicators.some(indicator => 
+                pageText.includes(indicator)
+            );
+            
+            if (hasErrorIndicator) {
+                console.log('❌ Error indicator found - form submission failed');
+                return;
+            }
+            
+            // If no clear indicators, check if form fields are cleared (success)
+            const inputs = form.querySelectorAll('input, textarea, select');
+            const allFieldsEmpty = Array.from(inputs).every(input => 
+                !input.value || input.value.trim() === ''
+            );
+            
+            if (allFieldsEmpty) {
+                console.log('✅ Form fields cleared - likely successful submission');
+                trackSuccessfulLead(form, index);
+            } else {
+                console.log('⚠️ Form still has values - submission may have failed');
+            }
+        }
+
+        // Track successful lead
+        function trackSuccessfulLead(form, index) {
+            console.log('🎉 Tracking successful lead submission!');
+            
+            // Get Google Ads data
+            const googleAdsData = detectGoogleAdsTraffic();
+            
+            // Get form data from session storage
+            const leadData = sessionStorage.getItem('leadData');
+            let formData = {};
+            let isTestLead = false;
+            
+            if (leadData) {
+                try {
+                    const data = JSON.parse(leadData);
+                    formData = data;
+                    isTestLead = data.isTestLead || false;
+                } catch (error) {
+                    console.error('❌ Error parsing lead data:', error);
+                }
+            }
+            
+            // Send successful lead confirmation
+            const leadPayload = {
+                gtmId: DASHBOARD_CONFIG.gtmId,
+                siteName: DASHBOARD_CONFIG.siteName,
+                siteUrl: DASHBOARD_CONFIG.siteUrl,
+                eventType: 'gtm.thankYouPage',
+                timestamp: Date.now(),
+                url: window.location.href,
+                referrer: document.referrer,
+                sessionId: getSessionId(),
+                isMobile: /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent),
+                deviceType: getDeviceType(),
+                userAgent: navigator.userAgent,
+                // NEW: Google Ads tracking data
+                googleAds: googleAdsData,
+                isGoogleAdsVisitor: googleAdsData.isGoogleAds,
+                trafficSource: googleAdsData.trafficSource,
+                data: {
+                    ...formData,
+                    isFormSubmission: true,
+                    isTestLead: isTestLead,
+                    thankYouPage: true,
+                    successfulSubmission: true
+                }
+            };
+            
+            sendToDashboard(leadPayload);
+            console.log('✅ Successful lead tracked and sent to dashboard');
+            
+            // Clear the stored data
+            sessionStorage.removeItem('leadData');
         }
         
         // Track thank you page visits

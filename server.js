@@ -676,26 +676,33 @@ const server = http.createServer((req, res) => {
                             }
                             break;
                         case 'gtm.formSubmit':
-                            // Don't count leads yet - just track form submission
+                            // Track form submission attempt (not a lead yet)
                             siteCounts[gtmId].formSubmissions++;
-                            console.log('📝 Form submission tracked for:', siteCounts[gtmId].siteName);
+                            console.log('📝 Form submission attempt tracked for:', siteCounts[gtmId].siteName);
+                            console.log('⚠️ NOT counting as lead yet - waiting for successful validation');
                             break;
                         case 'gtm.thankYouPage':
-                            // Count leads only when they reach thank you page (after validation)
-                            if (isTestLead(data)) {
-                                siteCounts[gtmId].testLeads++;
-                                console.log('🧪 Test lead confirmed on thank you page for:', siteCounts[gtmId].siteName);
-                                // Schedule cleanup after 1 minute
-                                scheduleTestLeadCleanup(gtmId);
-                            } else {
-                                siteCounts[gtmId].leads++;
-                                console.log('✅ Real lead confirmed on thank you page for:', siteCounts[gtmId].siteName);
+                            // Only count leads if this is a successful submission
+                            if (data.data && data.data.successfulSubmission) {
+                                console.log('✅ Successful form submission confirmed - counting as lead');
                                 
-                                // NEW: Track Google Ads leads separately
-                                if (data.isGoogleAdsVisitor) {
-                                    siteCounts[gtmId].googleAdsLeads = (siteCounts[gtmId].googleAdsLeads || 0) + 1;
-                                    console.log('🎯 Google Ads lead confirmed for:', siteCounts[gtmId].siteName);
+                                if (isTestLead(data)) {
+                                    siteCounts[gtmId].testLeads++;
+                                    console.log('🧪 Test lead confirmed on successful submission for:', siteCounts[gtmId].siteName);
+                                    // Schedule cleanup after 1 minute
+                                    scheduleTestLeadCleanup(gtmId);
+                                } else {
+                                    siteCounts[gtmId].leads++;
+                                    console.log('✅ Real lead confirmed on successful submission for:', siteCounts[gtmId].siteName);
+                                    
+                                    // NEW: Track Google Ads leads separately
+                                    if (data.isGoogleAdsVisitor) {
+                                        siteCounts[gtmId].googleAdsLeads = (siteCounts[gtmId].googleAdsLeads || 0) + 1;
+                                        console.log('🎯 Google Ads lead confirmed for:', siteCounts[gtmId].siteName);
+                                    }
                                 }
+                            } else {
+                                console.log('⚠️ Form submission not confirmed as successful - not counting as lead');
                             }
                             break;
                         case 'gtm.conversion':
