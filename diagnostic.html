@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tracking Diagnostic</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 20px; border: 1px solid #ccc; }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Live Analytics Tracking Diagnostic</h1>
+    
+    <div class="test-section">
+        <h3>1. Configuration Test</h3>
+        <div id="configStatus">Checking configuration...</div>
+    </div>
+    
+    <div class="test-section">
+        <h3>2. Script Loading Test</h3>
+        <div id="scriptStatus">Loading tracking script...</div>
+    </div>
+    
+    <div class="test-section">
+        <h3>3. API Connection Test</h3>
+        <div id="apiStatus">Testing API connection...</div>
+    </div>
+    
+    <div class="test-section">
+        <h3>4. Page View Tracking Test</h3>
+        <div id="pageViewStatus">Testing page view tracking...</div>
+    </div>
+    
+    <div class="test-section">
+        <h3>5. Form Tracking Test</h3>
+        <form id="testForm">
+            <input type="text" name="name" placeholder="Your name" required>
+            <input type="text" name="phone" placeholder="Your phone" required>
+            <button type="submit">Submit Test Form</button>
+        </form>
+        <div id="formStatus">Form tracking will be tested on submission...</div>
+    </div>
+    
+    <div class="test-section">
+        <h3>6. Console Logs</h3>
+        <div id="consoleLogs">Check browser console for detailed logs...</div>
+    </div>
+
+    <!-- Configuration -->
+    <script>
+        window.LiveAnalyticsConfig = {
+            gtmId: 'GTM-DIAGNOSTIC',
+            siteName: 'Diagnostic Test Site',
+            siteUrl: 'https://diagnostic-test.com',
+            region: 'noida'
+        };
+        
+        // Test configuration
+        document.getElementById('configStatus').innerHTML = 
+            '<span class="success">✅ Configuration loaded: ' + JSON.stringify(window.LiveAnalyticsConfig) + '</span>';
+    </script>
+    
+    <!-- Load tracking script -->
+    <script src="https://web-production-19751.up.railway.app/tracking.js"></script>
+    
+    <script>
+        // Test API connection
+        async function testAPIConnection() {
+            try {
+                const response = await fetch('https://web-production-19751.up.railway.app/api/receive', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        gtmId: 'GTM-DIAGNOSTIC',
+                        siteName: 'Diagnostic Test',
+                        siteUrl: 'https://diagnostic-test.com',
+                        region: 'noida',
+                        eventType: 'test',
+                        timestamp: Date.now()
+                    })
+                });
+                
+                if (response.ok) {
+                    document.getElementById('apiStatus').innerHTML = 
+                        '<span class="success">✅ API connection successful (Status: ' + response.status + ')</span>';
+                } else {
+                    document.getElementById('apiStatus').innerHTML = 
+                        '<span class="error">❌ API connection failed (Status: ' + response.status + ')</span>';
+                }
+            } catch (error) {
+                document.getElementById('apiStatus').innerHTML = 
+                    '<span class="error">❌ API connection error: ' + error.message + '</span>';
+            }
+        }
+        
+        // Test page view tracking
+        function testPageViewTracking() {
+            document.getElementById('pageViewStatus').innerHTML = 
+                '<span class="info">ℹ️ Page view tracking should be automatic. Check console for logs.</span>';
+        }
+        
+        // Test form tracking
+        document.getElementById('testForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            document.getElementById('formStatus').innerHTML = 
+                '<span class="info">ℹ️ Form submitted. Check console for tracking logs.</span>';
+        });
+        
+        // Run tests
+        setTimeout(() => {
+            testAPIConnection();
+            testPageViewTracking();
+        }, 2000);
+        
+        // Monitor console logs
+        const originalLog = console.log;
+        const originalError = console.error;
+        const logs = [];
+        
+        console.log = function(...args) {
+            logs.push('LOG: ' + args.join(' '));
+            originalLog.apply(console, args);
+            updateConsoleLogs();
+        };
+        
+        console.error = function(...args) {
+            logs.push('ERROR: ' + args.join(' '));
+            originalError.apply(console, args);
+            updateConsoleLogs();
+        };
+        
+        function updateConsoleLogs() {
+            const recentLogs = logs.slice(-10).join('<br>');
+            document.getElementById('consoleLogs').innerHTML = recentLogs;
+        }
+    </script>
+</body>
+</html>

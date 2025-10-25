@@ -641,13 +641,28 @@ const server = http.createServer((req, res) => {
 
     // API endpoints
     if (pathname === '/api/receive' && method === 'POST') {
+        // Add CORS headers
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+        res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+        
+        // Handle preflight requests
+        if (method === 'OPTIONS') {
+            res.writeHead(200);
+            res.end();
+            return;
+        }
+        
         let body = '';
         req.on('data', chunk => {
             body += chunk.toString();
         });
         req.on('end', () => {
             try {
+                console.log('📥 Received tracking data:', body);
                 const data = JSON.parse(body);
+                console.log('📊 Parsed tracking data:', data);
+                
                 trackingData.push({
                     timestamp: new Date().toISOString(),
                     data: data

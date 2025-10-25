@@ -32,7 +32,8 @@
             gtmId: config.gtmId,
             siteName: config.siteName,
             dashboardUrl: config.dashboardUrl || 'https://web-production-19751.up.railway.app',
-            siteUrl: config.siteUrl
+            siteUrl: config.siteUrl,
+            region: config.region || 'unknown' // NEW: Region support
         };
 
         // Test lead detection keywords
@@ -476,6 +477,9 @@
         
         // Send data to dashboard
         function sendToDashboard(payload) {
+            console.log('🚀 Sending data to dashboard:', payload);
+            console.log('🌐 Dashboard URL:', `${DASHBOARD_CONFIG.dashboardUrl}/api/receive`);
+            
             fetch(`${DASHBOARD_CONFIG.dashboardUrl}/api/receive`, {
                 method: 'POST',
                 headers: {
@@ -483,12 +487,18 @@
                 },
                 body: JSON.stringify(payload)
             })
-            .then(response => response.json())
+            .then(response => {
+                console.log('📡 Response status:', response.status);
+                console.log('📡 Response headers:', response.headers);
+                return response.json();
+            })
             .then(result => {
-                console.log('📊 Data sent to dashboard:', result);
+                console.log('✅ Data sent to dashboard successfully:', result);
             })
             .catch(error => {
                 console.error('❌ Error sending data to dashboard:', error);
+                console.error('❌ Error details:', error.message);
+                console.error('❌ Stack trace:', error.stack);
             });
         }
         
