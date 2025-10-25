@@ -182,15 +182,13 @@
                     sendToDashboard(leadPayload);
                     console.log('📊 Lead confirmation sent immediately');
                     
-                    // Show user feedback
+                    // Log form submission (no user notifications)
                     if (isTestLead) {
-                        showTestLeadFeedback();
                         console.log('🧪 Test lead detected - allowing form to proceed with validation');
                         // For test leads, allow the form to proceed but mark it as test lead
                         // The website's validation will handle phone number validation
                         // We'll track it when it reaches the thank you page
                     } else {
-                        showRealLeadFeedback();
                         console.log('✅ Real lead - allowing form submission to proceed');
                     }
                 }, true); // Use capture phase to intercept before other handlers
@@ -339,37 +337,7 @@
             }
         }
         
-        // Show test lead feedback
-        function showTestLeadFeedback() {
-            const feedback = document.createElement('div');
-            feedback.innerHTML = `
-                <div style="position: fixed; top: 20px; right: 20px; background: #ff6b6b; color: white; padding: 15px; border-radius: 8px; z-index: 10000; font-family: Arial, sans-serif; box-shadow: 0 4px 12px rgba(0,0,0,0.3); max-width: 300px;">
-                    <strong>🧪 Test Lead Submitted!</strong><br>
-                    <small>This will disappear from dashboard after 1 minute</small>
-                </div>
-            `;
-            document.body.appendChild(feedback);
-            
-            setTimeout(() => {
-                feedback.remove();
-            }, 5000);
-        }
-        
-        // Show real lead feedback
-        function showRealLeadFeedback() {
-            const feedback = document.createElement('div');
-            feedback.innerHTML = `
-                <div style="position: fixed; top: 20px; right: 20px; background: #28a745; color: white; padding: 15px; border-radius: 8px; z-index: 10000; font-family: Arial, sans-serif; box-shadow: 0 4px 12px rgba(0,0,0,0.3); max-width: 300px;">
-                    <strong>✅ Lead Submitted Successfully!</strong><br>
-                    <small>Thank you for your interest in ${DASHBOARD_CONFIG.siteName}</small>
-                </div>
-            `;
-            document.body.appendChild(feedback);
-            
-            setTimeout(() => {
-                feedback.remove();
-            }, 5000);
-        }
+        // Notification functions removed - no user notifications will be shown
         
         // Initialize when DOM is ready
         if (document.readyState === 'loading') {
