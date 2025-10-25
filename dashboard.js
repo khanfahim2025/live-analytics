@@ -1171,3 +1171,37 @@ style.textContent = `
     }
 `;
 document.head.appendChild(style);
+
+// Region filtering functions
+function filterByRegion() {
+    const selectedRegion = document.getElementById('regionFilter').value;
+    const tableBody = document.getElementById('performanceTableBody');
+    const rows = tableBody.querySelectorAll('tr');
+    let visibleCount = 0;
+    
+    rows.forEach(row => {
+        const region = row.dataset.region || 'unknown';
+        const shouldShow = selectedRegion === 'all' || region === selectedRegion;
+        
+        row.style.display = shouldShow ? '' : 'none';
+        if (shouldShow) visibleCount++;
+    });
+    
+    // Update region status
+    const regionStatus = document.getElementById('regionStatus');
+    if (selectedRegion === 'all') {
+        regionStatus.style.display = 'none';
+    } else {
+        regionStatus.style.display = 'block';
+        const regionName = selectedRegion.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase());
+        regionStatus.textContent = `Showing ${visibleCount} websites from ${regionName}`;
+    }
+    
+    console.log(`🗺️ Filtered by region: ${selectedRegion}, showing ${visibleCount} websites`);
+}
+
+// Clear region filter
+function clearRegionFilter() {
+    document.getElementById('regionFilter').value = 'all';
+    filterByRegion();
+}

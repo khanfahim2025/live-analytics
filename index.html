@@ -163,6 +163,28 @@
                         <div id="domainSearchStatus" class="search-status" style="display: none;"></div>
                     </div>
 
+                    <!-- Region Filter -->
+                    <div class="control-group region-group">
+                        <div class="control-header">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <h4>Filter by Region</h4>
+                        </div>
+                        <div class="region-container">
+                            <select id="regionFilter" class="region-select" onchange="filterByRegion()">
+                                <option value="all">All Regions</option>
+                                <option value="navi-mumbai">Navi Mumbai</option>
+                                <option value="thane">Thane</option>
+                                <option value="western-mumbai">Western Mumbai</option>
+                                <option value="soha-harbour">Soha Harbour</option>
+                                <option value="hyderabad">Hyderabad</option>
+                                <option value="pune">Pune</option>
+                                <option value="bangalore">Bangalore</option>
+                                <option value="noida">Noida</option>
+                            </select>
+                            <div class="region-status" id="regionStatus" style="display: none;"></div>
+                        </div>
+                    </div>
+
                     <!-- Date Filter -->
                     <div class="control-group filter-group">
                         <div class="control-header">

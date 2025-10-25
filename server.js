@@ -475,11 +475,12 @@ function scheduleTestLeadCleanup(gtmId) {
 }
 
 // Function to initialize a new site if it doesn't exist
-function initializeSite(gtmId, siteName, siteUrl) {
+function initializeSite(gtmId, siteName, siteUrl, region = 'unknown') {
     if (!siteCounts[gtmId]) {
         siteCounts[gtmId] = {
             siteName: siteName,
             siteUrl: siteUrl,
+            region: region, // NEW: Region support
             visitors: 0,
             leads: 0,
             testLeads: 0,
@@ -494,7 +495,7 @@ function initializeSite(gtmId, siteName, siteUrl) {
             conversionRate: '0.0',
             lastUpdated: new Date().toISOString()
         };
-        console.log('🆕 Initialized new site:', siteName, 'with GTM ID:', gtmId);
+        console.log('🆕 Initialized new site:', siteName, 'with GTM ID:', gtmId, 'Region:', region);
         savePersistentData(); // Save immediately when new site is added
     }
 }
@@ -660,8 +661,14 @@ const server = http.createServer((req, res) => {
                 // Count events on server side
                 const gtmId = data.gtmId;
                 
-                // Initialize site if it doesn't exist
-                initializeSite(gtmId, data.siteName, data.siteUrl);
+                // Initialize site if it doesn't exist (with region support)
+                const region = data.region || 'unknown';
+                initializeSite(gtmId, data.siteName, data.siteUrl, region);
+                
+                // Update region if provided in tracking data
+                if (data.region && data.region !== 'unknown') {
+                    siteCounts[gtmId].region = data.region;
+                }
                 
                 if (siteCounts[gtmId]) {
                     switch (data.eventType) {

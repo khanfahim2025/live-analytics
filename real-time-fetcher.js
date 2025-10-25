@@ -96,6 +96,7 @@ class RealTimeDataFetcher {
                     url: data.siteUrl,
                     gtmId: gtmId,
                     status: "online",
+                    region: data.region || 'unknown', // NEW: Region support
                     visitors: data.visitors || 0,
                     leads: data.leads || 0,
                     testLeads: data.testLeads || 0,
@@ -1729,10 +1730,18 @@ class RealTimeDataFetcher {
                 this.triggerPageSpeedAnalysis(site);
             }
 
+            // Add region badge
+            const regionBadge = site.region && site.region !== 'unknown' 
+                ? `<span class="region-badge region-${site.region}">${site.region.replace('-', ' ').toUpperCase()}</span>`
+                : '';
+            
+            // Add region data to row for filtering
+            row.dataset.region = site.region || 'unknown';
+            
             row.innerHTML = `
                 <td>${index + 1}</td>
                 <td>
-                    <div style="font-weight: 600;">${site.name}</div>
+                    <div style="font-weight: 600;">${site.name} ${regionBadge}</div>
                     <div style="font-size: 0.75rem; color: #718096;">
                         <a href="${site.url}" target="_blank" class="table-url-link" title="Open ${site.url}">
                             ${site.url}

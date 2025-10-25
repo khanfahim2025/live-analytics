@@ -94,36 +94,37 @@
         function trackPageView() {
             const googleAdsData = detectGoogleAdsTraffic();
             
-            const payload = {
-                gtmId: DASHBOARD_CONFIG.gtmId,
-                siteName: DASHBOARD_CONFIG.siteName,
-                siteUrl: DASHBOARD_CONFIG.siteUrl,
-                eventType: 'gtm.pageView',
-                timestamp: Date.now(),
-                url: window.location.href,
-                referrer: document.referrer,
-                sessionId: getSessionId(),
-                isMobile: /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent),
-                deviceType: getDeviceType(),
-                userAgent: navigator.userAgent,
-                // NEW: Google Ads tracking data
-                googleAds: googleAdsData,
-                isGoogleAdsVisitor: googleAdsData.isGoogleAds,
-                trafficSource: googleAdsData.trafficSource,
-                data: {
-                    pageTitle: document.title,
-                    pagePath: window.location.pathname,
-                    pageSearch: window.location.search,
-                    pageHash: window.location.hash,
-                    // UTM parameters
-                    utmSource: googleAdsData.utmSource,
-                    utmMedium: googleAdsData.utmMedium,
-                    utmCampaign: googleAdsData.utmCampaign,
-                    utmTerm: googleAdsData.utmTerm,
-                    utmContent: googleAdsData.utmContent,
-                    gclid: googleAdsData.gclid
-                }
-            };
+    const payload = {
+        gtmId: DASHBOARD_CONFIG.gtmId,
+        siteName: DASHBOARD_CONFIG.siteName,
+        siteUrl: DASHBOARD_CONFIG.siteUrl,
+        region: DASHBOARD_CONFIG.region || 'unknown', // NEW: Region support
+        eventType: 'gtm.pageView',
+        timestamp: Date.now(),
+        url: window.location.href,
+        referrer: document.referrer,
+        sessionId: getSessionId(),
+        isMobile: /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent),
+        deviceType: getDeviceType(),
+        userAgent: navigator.userAgent,
+        // NEW: Google Ads tracking data
+        googleAds: googleAdsData,
+        isGoogleAdsVisitor: googleAdsData.isGoogleAds,
+        trafficSource: googleAdsData.trafficSource,
+        data: {
+            pageTitle: document.title,
+            pagePath: window.location.pathname,
+            pageSearch: window.location.search,
+            pageHash: window.location.hash,
+            // UTM parameters
+            utmSource: googleAdsData.utmSource,
+            utmMedium: googleAdsData.utmMedium,
+            utmCampaign: googleAdsData.utmCampaign,
+            utmTerm: googleAdsData.utmTerm,
+            utmContent: googleAdsData.utmContent,
+            gclid: googleAdsData.gclid
+        }
+    };
             
             sendToDashboard(payload);
         }
@@ -189,6 +190,7 @@
                         gtmId: DASHBOARD_CONFIG.gtmId,
                         siteName: DASHBOARD_CONFIG.siteName,
                         siteUrl: DASHBOARD_CONFIG.siteUrl,
+                        region: DASHBOARD_CONFIG.region || 'unknown', // NEW: Region support
                         eventType: 'gtm.formSubmit',
                         timestamp: Date.now(),
                         url: window.location.href,
@@ -383,6 +385,7 @@
                 gtmId: DASHBOARD_CONFIG.gtmId,
                 siteName: DASHBOARD_CONFIG.siteName,
                 siteUrl: DASHBOARD_CONFIG.siteUrl,
+                region: DASHBOARD_CONFIG.region || 'unknown', // NEW: Region support
                 eventType: 'gtm.thankYouPage',
                 timestamp: Date.now(),
                 url: window.location.href,
@@ -437,6 +440,7 @@
                             gtmId: DASHBOARD_CONFIG.gtmId,
                             siteName: DASHBOARD_CONFIG.siteName,
                             siteUrl: DASHBOARD_CONFIG.siteUrl,
+                            region: DASHBOARD_CONFIG.region || 'unknown', // NEW: Region support
                             eventType: 'gtm.thankYouPage',
                             timestamp: Date.now(),
                             url: window.location.href,
