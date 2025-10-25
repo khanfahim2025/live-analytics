@@ -483,6 +483,10 @@ function initializeSite(gtmId, siteName, siteUrl) {
             visitors: 0,
             leads: 0,
             testLeads: 0,
+            // NEW: Google Ads specific metrics
+            googleAdsVisitors: 0,
+            googleAdsLeads: 0,
+            googleAdsConversionRate: '0.0',
             conversions: 0,
             pageViews: 0,
             formSubmissions: 0,
@@ -664,6 +668,12 @@ const server = http.createServer((req, res) => {
                         case 'gtm.pageView':
                             siteCounts[gtmId].visitors++;
                             siteCounts[gtmId].pageViews++;
+                            
+                            // NEW: Track Google Ads visitors separately
+                            if (data.isGoogleAdsVisitor) {
+                                siteCounts[gtmId].googleAdsVisitors = (siteCounts[gtmId].googleAdsVisitors || 0) + 1;
+                                console.log('🎯 Google Ads visitor tracked for:', siteCounts[gtmId].siteName);
+                            }
                             break;
                         case 'gtm.formSubmit':
                             // Don't count leads yet - just track form submission
@@ -680,6 +690,12 @@ const server = http.createServer((req, res) => {
                             } else {
                                 siteCounts[gtmId].leads++;
                                 console.log('✅ Real lead confirmed on thank you page for:', siteCounts[gtmId].siteName);
+                                
+                                // NEW: Track Google Ads leads separately
+                                if (data.isGoogleAdsVisitor) {
+                                    siteCounts[gtmId].googleAdsLeads = (siteCounts[gtmId].googleAdsLeads || 0) + 1;
+                                    console.log('🎯 Google Ads lead confirmed for:', siteCounts[gtmId].siteName);
+                                }
                             }
                             break;
                         case 'gtm.conversion':
@@ -714,13 +730,22 @@ const server = http.createServer((req, res) => {
                         siteCounts[gtmId].conversionRate = ((siteCounts[gtmId].leads / siteCounts[gtmId].visitors) * 100).toFixed(1);
                     }
                     
+                    // NEW: Update Google Ads conversion rate
+                    if (siteCounts[gtmId].googleAdsVisitors > 0) {
+                        siteCounts[gtmId].googleAdsConversionRate = ((siteCounts[gtmId].googleAdsLeads / siteCounts[gtmId].googleAdsVisitors) * 100).toFixed(1);
+                    }
+                    
                     siteCounts[gtmId].lastUpdated = new Date().toISOString();
                     
                     console.log('📊 Updated counts for', data.siteName, ':', {
                         visitors: siteCounts[gtmId].visitors,
                         leads: siteCounts[gtmId].leads,
                         testLeads: siteCounts[gtmId].testLeads,
-                        conversionRate: siteCounts[gtmId].conversionRate
+                        conversionRate: siteCounts[gtmId].conversionRate,
+                        // NEW: Google Ads metrics
+                        googleAdsVisitors: siteCounts[gtmId].googleAdsVisitors,
+                        googleAdsLeads: siteCounts[gtmId].googleAdsLeads,
+                        googleAdsConversionRate: siteCounts[gtmId].googleAdsConversionRate
                     });
                     
                     // Save data after each update

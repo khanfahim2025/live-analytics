@@ -55,8 +55,45 @@
             trackThankYouPage();
         }
         
+        // Detect Google Ads traffic
+        function detectGoogleAdsTraffic() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const referrer = document.referrer;
+            
+            // Check for Google Ads UTM parameters
+            const utmSource = urlParams.get('utm_source');
+            const utmMedium = urlParams.get('utm_medium');
+            const utmCampaign = urlParams.get('utm_campaign');
+            const utmTerm = urlParams.get('utm_term');
+            const utmContent = urlParams.get('utm_content');
+            
+            // Check for Google Ads referrer
+            const isGoogleAdsReferrer = referrer.includes('google.com') && 
+                                       (referrer.includes('/ads/') || referrer.includes('gclid='));
+            
+            // Check for gclid parameter (Google Ads click ID)
+            const gclid = urlParams.get('gclid');
+            
+            return {
+                isGoogleAds: utmSource === 'google' && utmMedium === 'cpc' || 
+                             isGoogleAdsReferrer || 
+                             gclid !== null,
+                utmSource,
+                utmMedium,
+                utmCampaign,
+                utmTerm,
+                utmContent,
+                gclid,
+                referrer,
+                trafficSource: utmSource === 'google' && utmMedium === 'cpc' ? 'google_ads' : 
+                              isGoogleAdsReferrer ? 'google_ads_referrer' : 'organic'
+            };
+        }
+
         // Track page view
         function trackPageView() {
+            const googleAdsData = detectGoogleAdsTraffic();
+            
             const payload = {
                 gtmId: DASHBOARD_CONFIG.gtmId,
                 siteName: DASHBOARD_CONFIG.siteName,
@@ -69,11 +106,22 @@
                 isMobile: /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent),
                 deviceType: getDeviceType(),
                 userAgent: navigator.userAgent,
+                // NEW: Google Ads tracking data
+                googleAds: googleAdsData,
+                isGoogleAdsVisitor: googleAdsData.isGoogleAds,
+                trafficSource: googleAdsData.trafficSource,
                 data: {
                     pageTitle: document.title,
                     pagePath: window.location.pathname,
                     pageSearch: window.location.search,
-                    pageHash: window.location.hash
+                    pageHash: window.location.hash,
+                    // UTM parameters
+                    utmSource: googleAdsData.utmSource,
+                    utmMedium: googleAdsData.utmMedium,
+                    utmCampaign: googleAdsData.utmCampaign,
+                    utmTerm: googleAdsData.utmTerm,
+                    utmContent: googleAdsData.utmContent,
+                    gclid: googleAdsData.gclid
                 }
             };
             
@@ -90,6 +138,9 @@
                     console.log('🚨 Form submission intercepted!');
                     console.log('🔍 Form element:', form);
                     console.log('🔍 Form HTML:', form.outerHTML);
+                    
+                    // Get Google Ads data
+                    const googleAdsData = detectGoogleAdsTraffic();
                     
                     // Get all input fields from the form
                     const inputs = form.querySelectorAll('input, textarea, select');
@@ -125,6 +176,7 @@
                     console.log('🧪 Is test lead:', isTestLead);
                     console.log('🔍 Name field value:', data.name);
                     console.log('🔍 Phone field value:', data.phone);
+                    console.log('🎯 Google Ads data:', googleAdsData);
                     
                     const payload = {
                         gtmId: DASHBOARD_CONFIG.gtmId,
@@ -138,6 +190,10 @@
                         isMobile: /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent),
                         deviceType: getDeviceType(),
                         userAgent: navigator.userAgent,
+                        // NEW: Google Ads tracking data
+                        googleAds: googleAdsData,
+                        isGoogleAdsVisitor: googleAdsData.isGoogleAds,
+                        trafficSource: googleAdsData.trafficSource,
                         data: {
                             ...data,
                             formId: form.id || `form-${index}`,
@@ -152,6 +208,9 @@
                     sessionStorage.setItem('leadData', JSON.stringify({
                         ...data,
                         isTestLead: isTestLead,
+                        isGoogleAdsVisitor: googleAdsData.isGoogleAds,
+                        trafficSource: googleAdsData.trafficSource,
+                        googleAds: googleAdsData,
                         timestamp: Date.now()
                     }));
                     
@@ -171,6 +230,10 @@
                         isMobile: /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent),
                         deviceType: getDeviceType(),
                         userAgent: navigator.userAgent,
+                        // NEW: Google Ads tracking data
+                        googleAds: googleAdsData,
+                        isGoogleAdsVisitor: googleAdsData.isGoogleAds,
+                        trafficSource: googleAdsData.trafficSource,
                         data: {
                             ...data,
                             isFormSubmission: true,
@@ -276,6 +339,10 @@
                             isMobile: /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent),
                             deviceType: getDeviceType(),
                             userAgent: navigator.userAgent,
+                            // NEW: Google Ads tracking data
+                            googleAds: data.googleAds,
+                            isGoogleAdsVisitor: data.isGoogleAdsVisitor,
+                            trafficSource: data.trafficSource,
                             data: {
                                 ...data,
                                 isFormSubmission: true,

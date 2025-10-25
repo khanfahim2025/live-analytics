@@ -99,6 +99,10 @@ class RealTimeDataFetcher {
                     visitors: data.visitors || 0,
                     leads: data.leads || 0,
                     testLeads: data.testLeads || 0,
+                    // NEW: Google Ads specific metrics
+                    googleAdsVisitors: data.googleAdsVisitors || 0,
+                    googleAdsLeads: data.googleAdsLeads || 0,
+                    googleAdsConversionRate: data.googleAdsConversionRate || '0.0',
                     conversion: data.conversionRate || '0.0',
                     lastActivity: 'Just loaded',
                     formStatus: "working",
@@ -275,6 +279,10 @@ class RealTimeDataFetcher {
                         site.visitors = data.visitors || 0;
                         site.leads = data.leads || 0;
                         site.testLeads = data.testLeads || 0;
+                        // NEW: Update Google Ads metrics
+                        site.googleAdsVisitors = data.googleAdsVisitors || 0;
+                        site.googleAdsLeads = data.googleAdsLeads || 0;
+                        site.googleAdsConversionRate = data.googleAdsConversionRate || '0.0';
                         site.conversion = data.conversionRate || '0.0';
                         site.lastActivity = 'Just updated';
                         site.lastUpdated = data.lastUpdated;
@@ -795,6 +803,9 @@ class RealTimeDataFetcher {
         this.analytics.visitors = this.microsites.reduce((sum, site) => sum + site.visitors, 0);
         this.analytics.leads = this.microsites.reduce((sum, site) => sum + site.leads, 0);
         this.analytics.testLeads = this.microsites.reduce((sum, site) => sum + (site.testLeads || 0), 0);
+        // NEW: Google Ads analytics
+        this.analytics.googleAdsVisitors = this.microsites.reduce((sum, site) => sum + (site.googleAdsVisitors || 0), 0);
+        this.analytics.googleAdsLeads = this.microsites.reduce((sum, site) => sum + (site.googleAdsLeads || 0), 0);
         this.analytics.totalWebsites = this.microsites.length;
         this.analytics.activeWebsites = this.microsites.filter(site => site.status === 'online').length;
         this.analytics.workingForms = this.microsites.filter(site => site.formStatus === 'working').length;
@@ -802,19 +813,36 @@ class RealTimeDataFetcher {
         if (this.analytics.visitors > 0) {
             this.analytics.conversions = ((this.analytics.leads / this.analytics.visitors) * 100).toFixed(1);
         }
+        
+        // NEW: Google Ads conversion rate
+        if (this.analytics.googleAdsVisitors > 0) {
+            this.analytics.googleAdsConversions = ((this.analytics.googleAdsLeads / this.analytics.googleAdsVisitors) * 100).toFixed(1);
+        }
     }
 
     // Update dashboard display
     updateDashboard() {
-        // Update metric cards
-        document.getElementById('totalVisitors').textContent = this.analytics.visitors.toLocaleString();
-        document.getElementById('totalLeads').textContent = this.analytics.leads.toLocaleString();
+        // Update metric cards - Show Google Ads data instead of total data
+        document.getElementById('totalVisitors').textContent = (this.analytics.googleAdsVisitors || 0).toLocaleString();
+        document.getElementById('totalLeads').textContent = (this.analytics.googleAdsLeads || 0).toLocaleString();
         document.getElementById('totalTestLeads').textContent = (this.analytics.testLeads || 0).toLocaleString();
-        document.getElementById('conversionRate').textContent = this.analytics.conversions + '%';
+        document.getElementById('conversionRate').textContent = (this.analytics.googleAdsConversions || '0.0') + '%';
         document.getElementById('totalWebsites').textContent = this.analytics.totalWebsites;
         document.getElementById('activeWebsites').textContent = this.analytics.activeWebsites + ' Active';
         document.getElementById('workingForms').textContent = this.analytics.workingForms;
         document.getElementById('formStatus').textContent = this.analytics.workingForms === this.analytics.totalWebsites ? 'All Working' : 'Some Issues';
+        
+        // NEW: Update Google Ads subtitles
+        const googleAdsVisitorsElement = document.getElementById('googleAdsVisitors');
+        const googleAdsLeadsElement = document.getElementById('googleAdsLeads');
+        
+        if (googleAdsVisitorsElement) {
+            googleAdsVisitorsElement.textContent = `Total: ${this.analytics.visitors} | Google Ads: ${this.analytics.googleAdsVisitors || 0}`;
+        }
+        
+        if (googleAdsLeadsElement) {
+            googleAdsLeadsElement.textContent = `Total: ${this.analytics.leads} | Google Ads: ${this.analytics.googleAdsLeads || 0}`;
+        }
 
         // Update performance table
         this.updatePerformanceTable();
@@ -1293,10 +1321,29 @@ class RealTimeDataFetcher {
                         </a>
                     </div>
                 </td>
-                <td>${site.visitors.toLocaleString()}</td>
-                <td>${site.leads.toLocaleString()}</td>
+                <td>
+                    <div class="metric-cell">
+                        <span class="metric-value">${(site.googleAdsVisitors || 0).toLocaleString()}</span>
+                        <div class="metric-sub">
+                            <span class="total-metric">Total: ${site.visitors.toLocaleString()}</span>
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    <div class="metric-cell">
+                        <span class="metric-value">${(site.googleAdsLeads || 0).toLocaleString()}</span>
+                        <div class="metric-sub">
+                            <span class="total-metric">Total: ${site.leads.toLocaleString()}</span>
+                        </div>
+                    </div>
+                </td>
                 <td><span style="color: #d69e2e; font-weight: 600;">${(site.testLeads || 0).toLocaleString()}</span></td>
-                <td>${site.conversion}%</td>
+                <td>
+                    <div class="conversion-cell">
+                        <span class="conversion-rate">${site.googleAdsConversionRate || '0.0'}%</span>
+                        <div class="conversion-sub">Google Ads Rate</div>
+                    </div>
+                </td>
                 <td>
                     ${performanceDisplay}
                 </td>
