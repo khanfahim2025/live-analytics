@@ -848,7 +848,7 @@ class RealTimeDataFetcher {
         this.updatePerformanceTable();
         
         // Update website status grid
-        this.updateWebsiteStatusGrid();
+        // this.updateWebsiteStatusGrid(); // Removed - section no longer exists
         
         // Update performance metrics
         this.updatePerformanceMetrics();

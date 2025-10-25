@@ -52,7 +52,7 @@ class Dashboard {
         this.createVisitorsChart();
         this.createLeadsChart();
         this.createConversionChart();
-        this.createConversionTrendsChart();
+        // this.createConversionTrendsChart(); // Removed - section no longer exists
     }
 
     // Create visitors chart
