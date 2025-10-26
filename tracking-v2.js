@@ -538,11 +538,11 @@
                     const hasValidationErrors = errorMessages.length > 0;
                     
                     const errorTexts = [
-                        'invalid', 'error', 'required', 'invalid phone', 'invalid email', 
-                        'please enter', 'enter a valid', 'must be', 'should be',
-                        'invalid phone number', 'enter a valid 10-digit number',
+                        'invalid phone number', 'enter a valid 10-digit number starting with 6-9',
+                        'please enter a valid', 'must be a valid', 'should be a valid',
                         'failed to send', 'error sending', 'failed to fetch', 'cors policy',
-                        '409', 'conflict', 'validation failed', 'form validation'
+                        '409', 'conflict', 'validation failed', 'form validation',
+                        'required field', 'this field is required', 'please fill'
                     ];
                     
                     const formText = form.textContent.toLowerCase();
@@ -588,13 +588,13 @@
             const errorMessages = form.querySelectorAll('.error, .invalid, [class*="error"], [class*="invalid"], .field-error, .validation-error, .form-error');
             const hasValidationErrors = errorMessages.length > 0;
             
-            // Check for error text content (common validation messages)
+            // Check for specific error text content (more precise validation messages)
             const errorTexts = [
-                'invalid', 'error', 'required', 'invalid phone', 'invalid email', 
-                'please enter', 'enter a valid', 'must be', 'should be',
-                'invalid phone number', 'enter a valid 10-digit number',
+                'invalid phone number', 'enter a valid 10-digit number starting with 6-9',
+                'please enter a valid', 'must be a valid', 'should be a valid',
                 'failed to send', 'error sending', 'failed to fetch', 'cors policy',
-                '409', 'conflict', 'validation failed', 'form validation'
+                '409', 'conflict', 'validation failed', 'form validation',
+                'required field', 'this field is required', 'please fill'
             ];
             
             const formText = form.textContent.toLowerCase();
