@@ -529,7 +529,7 @@
                 checkForFormSuccess(form, index);
             }, 3000);
             
-            // Method 4: Fallback - track lead after 5 seconds if no success indicators found AND no validation errors
+            // Method 4: Fallback - track lead after 8 seconds if no success indicators found AND no validation errors
             setTimeout(() => {
                 const leadData = sessionStorage.getItem('leadData');
                 if (leadData) {
@@ -540,27 +540,46 @@
                     const errorTexts = [
                         'invalid', 'error', 'required', 'invalid phone', 'invalid email', 
                         'please enter', 'enter a valid', 'must be', 'should be',
-                        'invalid phone number', 'enter a valid 10-digit number'
+                        'invalid phone number', 'enter a valid 10-digit number',
+                        'failed to send', 'error sending', 'failed to fetch', 'cors policy',
+                        '409', 'conflict', 'validation failed', 'form validation'
                     ];
                     
                     const formText = form.textContent.toLowerCase();
-                    const hasErrorText = errorTexts.some(errorText => formText.includes(errorText));
+                    const pageText = document.body.textContent.toLowerCase();
+                    const hasErrorText = errorTexts.some(errorText => formText.includes(errorText) || pageText.includes(errorText));
                     
                     const invalidInputs = form.querySelectorAll('input:invalid, textarea:invalid, select:invalid');
                     const hasInvalidInputs = invalidInputs.length > 0;
                     
-                    if (!hasValidationErrors && !hasErrorText && !hasInvalidInputs) {
-                        console.log('⏰ Fallback: Tracking lead after 5 seconds (no success indicators found, no validation errors)');
+                    // Check for network errors
+                    const hasNetworkErrors = pageText.includes('failed to fetch') || 
+                                           pageText.includes('cors policy') || 
+                                           pageText.includes('error sending') ||
+                                           pageText.includes('409') ||
+                                           pageText.includes('conflict');
+                    
+                    // Check if form is still visible (indicates no redirect/success)
+                    const formStillVisible = form.offsetParent !== null && form.style.display !== 'none';
+                    const noRedirect = !window.location.href.includes('thank') && 
+                                      !window.location.href.includes('success') && 
+                                      !window.location.href.includes('confirmation');
+                    
+                    if (!hasValidationErrors && !hasErrorText && !hasInvalidInputs && !hasNetworkErrors && (!formStillVisible || !noRedirect)) {
+                        console.log('⏰ Fallback: Tracking lead after 8 seconds (no success indicators found, no validation errors)');
                         trackSuccessfulLead(form, index);
                     } else {
-                        console.log('⏰ Fallback: NOT tracking lead - validation errors detected:', {
+                        console.log('⏰ Fallback: NOT tracking lead - validation errors or form still visible:', {
                             hasValidationErrors,
                             hasErrorText,
-                            hasInvalidInputs
+                            hasInvalidInputs,
+                            hasNetworkErrors,
+                            formStillVisible,
+                            noRedirect
                         });
                     }
                 }
-            }, 5000);
+            }, 8000);
         }
 
         // Check for successful form submission
@@ -573,24 +592,43 @@
             const errorTexts = [
                 'invalid', 'error', 'required', 'invalid phone', 'invalid email', 
                 'please enter', 'enter a valid', 'must be', 'should be',
-                'invalid phone number', 'enter a valid 10-digit number'
+                'invalid phone number', 'enter a valid 10-digit number',
+                'failed to send', 'error sending', 'failed to fetch', 'cors policy',
+                '409', 'conflict', 'validation failed', 'form validation'
             ];
             
             const formText = form.textContent.toLowerCase();
-            const hasErrorText = errorTexts.some(errorText => formText.includes(errorText));
+            const pageText = document.body.textContent.toLowerCase();
+            const hasErrorText = errorTexts.some(errorText => formText.includes(errorText) || pageText.includes(errorText));
             
             // Check for form validation attributes
             const invalidInputs = form.querySelectorAll('input:invalid, textarea:invalid, select:invalid');
             const hasInvalidInputs = invalidInputs.length > 0;
             
+            // Check for network errors in console or page
+            const hasNetworkErrors = pageText.includes('failed to fetch') || 
+                                   pageText.includes('cors policy') || 
+                                   pageText.includes('error sending') ||
+                                   pageText.includes('409') ||
+                                   pageText.includes('conflict');
+            
+            // Check if form is still visible and not redirected (indicates validation failure)
+            const formStillVisible = form.offsetParent !== null && form.style.display !== 'none';
+            const noRedirect = !window.location.href.includes('thank') && 
+                              !window.location.href.includes('success') && 
+                              !window.location.href.includes('confirmation');
+            
             // If there are validation errors, don't track the lead
-            if (hasValidationErrors || hasErrorText || hasInvalidInputs) {
+            if (hasValidationErrors || hasErrorText || hasInvalidInputs || hasNetworkErrors) {
                 console.log('❌ Validation errors detected - NOT tracking lead:', {
                     hasValidationErrors,
                     hasErrorText,
                     hasInvalidInputs,
+                    hasNetworkErrors,
+                    formStillVisible,
+                    noRedirect,
                     errorMessages: Array.from(errorMessages).map(el => el.textContent),
-                    errorTexts: errorTexts.filter(text => formText.includes(text))
+                    errorTexts: errorTexts.filter(text => formText.includes(text) || pageText.includes(text))
                 });
                 return false;
             }
