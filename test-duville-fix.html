@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Duville Fix - Lead Tracking</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; background: #f5f5f5; }
+        .container { max-width: 600px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .form-section { margin: 20px 0; padding: 20px; background: #f8f9fa; border-radius: 6px; }
+        .status { margin: 10px 0; padding: 10px; border-radius: 4px; }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        button { background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; margin: 5px; }
+        button:hover { background: #0056b3; }
+        input, textarea { width: 100%; padding: 8px; margin: 5px 0; border: 1px solid #ddd; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Test Duville Fix - Lead Tracking</h1>
+        
+        <div class="status info">
+            <strong>Status:</strong> <span id="status">Initializing...</span>
+        </div>
+
+        <div class="form-section">
+            <h3>🧪 Test Form (Exact Copy from Duville Site)</h3>
+            <form class="quoteForm" id="ModalFormSlug4" onsubmit="event.preventDefault()">
+                <h3 class="quoteTitle">Get Luxury Walkthrough</h3>
+                <h2 class="quoteSubTitle">Tailored for You</h2>
+                <input id="dropEnquiry_Name1" placeholder="Name" class="quoteInput form-name" name="fname" pattern="[a-zA-Z ]{4,35}" required>
+                <div class="quotePhoneWrapper">
+                    <select id="dropEnquiry_CountryCode1" class="quoteSelect form-country" name="country_code" required aria-label="Select Country Code">
+                        <option value="+91">+91</option>
+                    </select>
+                    <input id="dropEnquiry_Number1" type="tel" name="number" placeholder="Mobile Number" class="quotePhoneInput form-number" required>
+                </div>
+                <label class="quoteCheckboxWrapper" for="consent_checkbox">
+                    <input type="checkbox" id="consent_checkbox" required checked>
+                    <span>I consent to the use of provided data in accordance with the privacy policy</span>
+                </label>
+                <button data-track-lead="true" type="submit" class="quoteSubmit" id="submitBtn">
+                    <span class="quoteIcon"></span> Get It Now
+                </button>
+            </form>
+        </div>
+
+        <div class="form-section">
+            <h3>🔍 Test Buttons</h3>
+            <button onclick="testWithTestData()">Test with "test" data</button>
+            <button onclick="testWithRealData()">Test with real data</button>
+            <button onclick="checkDashboard()">Check Dashboard</button>
+        </div>
+
+        <div class="form-section">
+            <h3>📊 Debug Log</h3>
+            <div id="debugLog" style="background: #f8f9fa; padding: 10px; border-radius: 4px; max-height: 300px; overflow-y: auto; font-family: monospace; font-size: 12px;"></div>
+        </div>
+    </div>
+
+    <!-- Live Analytics Tracking Script -->
+    <script src="https://web-production-19751.up.railway.app/tracking.js"></script>
+    <script>
+        // Configuration for Duville Riverdale Grand
+        window.LiveAnalyticsConfig = {
+            gtmId: 'GTM-N98TWLGG',
+            siteName: 'www.duvilleriverdalegrand.com',
+            siteUrl: 'https://www.duvilleriverdalegrand.com',
+            region: 'pune',
+            dashboardUrl: 'https://web-production-19751.up.railway.app'
+        };
+    </script>
+
+    <!-- Lead Tracking Fix -->
+    <script src="https://web-production-19751.up.railway.app/duville-fix.js"></script>
+
+    <script>
+        // Update status
+        function updateStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = type;
+        }
+
+        // Add to debug log
+        function addToLog(message) {
+            const logDiv = document.getElementById('debugLog');
+            const timestamp = new Date().toLocaleTimeString();
+            logDiv.innerHTML += `<div>[${timestamp}] ${message}</div>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        // Test with "test" data
+        function testWithTestData() {
+            addToLog('🧪 Testing with "test" data...');
+            const form = document.getElementById('ModalFormSlug4');
+            form.querySelector('input[name="fname"]').value = 'test user';
+            form.querySelector('input[name="number"]').value = '9876543210';
+            
+            // Trigger form submission
+            const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
+            form.dispatchEvent(submitEvent);
+            
+            addToLog('✅ Form submitted with test data');
+        }
+
+        // Test with real data
+        function testWithRealData() {
+            addToLog('🧪 Testing with real data...');
+            const form = document.getElementById('ModalFormSlug4');
+            form.querySelector('input[name="fname"]').value = 'John Doe';
+            form.querySelector('input[name="number"]').value = '9876543210';
+            
+            // Trigger form submission
+            const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
+            form.dispatchEvent(submitEvent);
+            
+            addToLog('✅ Form submitted with real data');
+        }
+
+        // Check dashboard
+        function checkDashboard() {
+            addToLog('🔍 Checking dashboard data...');
+            fetch('https://web-production-19751.up.railway.app/api/counts.json')
+                .then(response => response.json())
+                .then(data => {
+                    const siteData = data['GTM-N98TWLGG'];
+                    if (siteData) {
+                        addToLog(`📊 Dashboard Data: Visitors: ${siteData.visitors}, Leads: ${siteData.leads}, Test Leads: ${siteData.testLeads}`);
+                        updateStatus(`Dashboard: ${siteData.leads} leads, ${siteData.testLeads} test leads`, 'success');
+                    } else {
+                        addToLog('❌ No data found for GTM-N98TWLGG');
+                        updateStatus('No data found', 'error');
+                    }
+                })
+                .catch(error => {
+                    addToLog('❌ Error checking dashboard: ' + error.message);
+                    updateStatus('Error checking dashboard', 'error');
+                });
+        }
+
+        // Check if tracking is loaded
+        setTimeout(() => {
+            if (window.LiveAnalytics) {
+                updateStatus('✅ Live Analytics loaded successfully!', 'success');
+                addToLog('✅ Live Analytics loaded successfully!');
+            } else {
+                updateStatus('❌ Live Analytics failed to load', 'error');
+                addToLog('❌ Live Analytics failed to load');
+            }
+        }, 3000);
+
+        // Log all tracking events
+        const originalConsoleLog = console.log;
+        console.log = function(...args) {
+            originalConsoleLog.apply(console, args);
+            if (args[0] && typeof args[0] === 'string' && (args[0].includes('🚀') || args[0].includes('📝') || args[0].includes('✅') || args[0].includes('❌') || args[0].includes('🔧') || args[0].includes('🎉'))) {
+                addToLog(args.join(' '));
+            }
+        };
+    </script>
+</body>
+</html>
