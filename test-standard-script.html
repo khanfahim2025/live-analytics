@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Standard Script Test - Test Lead Detection</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; background: #f5f5f5; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .form-section { margin: 20px 0; padding: 20px; background: #f8f9fa; border-radius: 6px; }
+        .status { margin: 10px 0; padding: 10px; border-radius: 4px; }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        button { background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; margin: 5px; }
+        button:hover { background: #0056b3; }
+        input, textarea { width: 100%; padding: 8px; margin: 5px 0; border: 1px solid #ddd; border-radius: 4px; }
+        .test-result { margin: 10px 0; padding: 10px; border-radius: 4px; font-weight: bold; }
+        .test-pass { background: #d4edda; color: #155724; }
+        .test-fail { background: #f8d7da; color: #721c24; }
+        .debug-log { background: #f8f9fa; padding: 10px; border-radius: 4px; max-height: 300px; overflow-y: auto; font-family: monospace; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Standard Script Test - Test Lead Detection</h1>
+        
+        <div class="status info">
+            <strong>Testing:</strong> Standard microsite script format with test lead detection
+        </div>
+
+        <div class="form-section">
+            <h3>📝 Test Form - Standard Format</h3>
+            <form id="testForm" onsubmit="event.preventDefault()">
+                <input type="text" name="name" placeholder="Name" required>
+                <input type="email" name="email" placeholder="Email" required>
+                <input type="tel" name="phone" placeholder="Phone" required>
+                <button type="submit">Submit Form</button>
+            </form>
+        </div>
+
+        <div class="form-section">
+            <h3>🧪 Test Buttons</h3>
+            <button onclick="testTestLead()">Test Lead (name: "test user")</button>
+            <button onclick="testRealLead()">Real Lead (name: "John Doe")</button>
+            <button onclick="checkDashboard()">Check Dashboard</button>
+            <button onclick="clearLogs()">Clear Logs</button>
+        </div>
+
+        <div class="form-section">
+            <h3>📊 Test Results</h3>
+            <div id="testResults"></div>
+        </div>
+
+        <div class="form-section">
+            <h3>📋 Debug Log</h3>
+            <div id="debugLog" class="debug-log"></div>
+        </div>
+    </div>
+
+    <!-- Standard Microsite Script Format -->
+    <script src="https://web-production-19751.up.railway.app/tracking.js"></script>
+    <script>
+        window.LiveAnalyticsConfig = {
+            gtmId: 'GTM-5PHH5D6T',
+            siteName: 'www.homesfytestwebsite.com',
+            siteUrl: 'https://www.homesfytestwebsite.com',
+            region: 'thane'
+        };
+    </script>
+
+    <script>
+        // Test functions
+        function testTestLead() {
+            addToLog('🧪 Testing test lead detection...');
+            
+            // Fill form with test data
+            document.querySelector('input[name="name"]').value = 'test user';
+            document.querySelector('input[name="email"]').value = 'test@example.com';
+            document.querySelector('input[name="phone"]').value = '9876543210';
+            
+            // Submit form
+            const form = document.getElementById('testForm');
+            const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
+            form.dispatchEvent(submitEvent);
+            
+            addToLog('✅ Form submitted with test data');
+            addTestResult('Test Lead Detection', true, 'Form submitted with test data');
+        }
+
+        function testRealLead() {
+            addToLog('🧪 Testing real lead detection...');
+            
+            // Fill form with real data
+            document.querySelector('input[name="name"]').value = 'John Doe';
+            document.querySelector('input[name="email"]').value = 'john@example.com';
+            document.querySelector('input[name="phone"]').value = '9876543210';
+            
+            // Submit form
+            const form = document.getElementById('testForm');
+            const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
+            form.dispatchEvent(submitEvent);
+            
+            addToLog('✅ Form submitted with real data');
+            addTestResult('Real Lead Detection', true, 'Form submitted with real data');
+        }
+
+        function checkDashboard() {
+            addToLog('🔍 Checking dashboard data...');
+            fetch('https://web-production-19751.up.railway.app/api/counts.json')
+                .then(response => response.json())
+                .then(data => {
+                    const siteData = data['GTM-5PHH5D6T'];
+                    if (siteData) {
+                        addToLog(`📊 Dashboard Data: Visitors: ${siteData.visitors}, Leads: ${siteData.leads}, Test Leads: ${siteData.testLeads}`);
+                        addToLog(`📊 Region: ${siteData.region}`);
+                        
+                        // Test results
+                        addTestResult('Test Lead Count', siteData.testLeads > 0, `${siteData.testLeads} test leads detected`);
+                        addTestResult('Real Lead Count', siteData.leads > 0, `${siteData.leads} real leads detected`);
+                        addTestResult('Region Detection', siteData.region === 'thane', `Region: ${siteData.region}`);
+                    } else {
+                        addToLog('❌ No data found for GTM-5PHH5D6T');
+                        addTestResult('Dashboard Data', false, 'No data found');
+                    }
+                })
+                .catch(error => {
+                    addToLog('❌ Error checking dashboard: ' + error.message);
+                    addTestResult('Dashboard Data', false, 'Error: ' + error.message);
+                });
+        }
+
+        function addToLog(message) {
+            const logDiv = document.getElementById('debugLog');
+            const timestamp = new Date().toLocaleTimeString();
+            logDiv.innerHTML += `<div>[${timestamp}] ${message}</div>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        function addTestResult(testName, passed, message) {
+            const resultsDiv = document.getElementById('testResults');
+            const resultClass = passed ? 'test-pass' : 'test-fail';
+            const status = passed ? '✅ PASS' : '❌ FAIL';
+            resultsDiv.innerHTML += `<div class="test-result ${resultClass}">${status} ${testName}: ${message}</div>`;
+        }
+
+        function clearLogs() {
+            document.getElementById('debugLog').innerHTML = '';
+            document.getElementById('testResults').innerHTML = '';
+        }
+
+        // Check if tracking is loaded
+        setTimeout(() => {
+            if (window.LiveAnalytics) {
+                addToLog('✅ Standard script loaded successfully!');
+                addToLog('🌐 Available functions: ' + Object.keys(window.LiveAnalytics).join(', '));
+                addToLog('🔧 Config: ' + JSON.stringify(window.LiveAnalyticsConfig));
+                addTestResult('Script Load', true, 'Standard script loaded');
+            } else {
+                addToLog('❌ Standard script failed to load');
+                addTestResult('Script Load', false, 'Script not loaded');
+            }
+        }, 3000);
+
+        // Log all tracking events
+        const originalConsoleLog = console.log;
+        console.log = function(...args) {
+            originalConsoleLog.apply(console, args);
+            if (args[0] && typeof args[0] === 'string' && (args[0].includes('🚀') || args[0].includes('📝') || args[0].includes('✅') || args[0].includes('❌') || args[0].includes('🔧') || args[0].includes('🎉') || args[0].includes('🌐') || args[0].includes('🔍') || args[0].includes('🧪') || args[0].includes('⏰'))) {
+                addToLog(args.join(' '));
+            }
+        };
+    </script>
+</body>
+</html>
