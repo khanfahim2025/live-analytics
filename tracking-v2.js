@@ -284,24 +284,23 @@
             });
         }
         
-        // Check if submission is a test lead
+        // Check if submission is a test lead (exactly like your validation)
         function isTestSubmission(data) {
             console.log('🔍 Checking for test lead in data:', data);
             console.log('🔍 All form fields:', Object.keys(data));
             
-            // Check ALL fields for "test" keyword
-            for (const [fieldName, fieldValue] of Object.entries(data)) {
-                if (typeof fieldValue === 'string' && fieldValue.trim() !== '') {
-                    const value = fieldValue.toLowerCase().trim();
-                    console.log(`🔍 Checking field "${fieldName}":`, value);
-                    if (value.includes('test')) {
-                        console.log(`🧪 Test lead detected - field "${fieldName}" contains "test":`, { field: fieldName, value: fieldValue });
-                        return true;
-                    }
+            // Check name field for "test" keyword (exactly like your logic)
+            const nameField = data.name || data.fname || data['form-name'] || '';
+            if (typeof nameField === 'string' && nameField.trim() !== '') {
+                const nameValue = nameField.toLowerCase().trim();
+                console.log(`🔍 Checking name field:`, nameValue);
+                if (nameValue.includes('test')) {
+                    console.log(`🧪 Test lead detected - name contains "test":`, { field: 'name', value: nameField });
+                    return true;
                 }
             }
             
-            console.log('✅ Real lead detected - no field contains "test"');
+            console.log('✅ Real lead detected - name does not contain "test"');
             return false;
         }
 
@@ -538,11 +537,10 @@
                     const hasValidationErrors = errorMessages.length > 0;
                     
                     const errorTexts = [
-                        'invalid phone number', 'enter a valid 10-digit number starting with 6-9',
-                        'please enter a valid', 'must be a valid', 'should be a valid',
+                        'invalid phone number. for indian numbers, enter a valid 10-digit number starting with 6-9',
+                        'invalid otp',
                         'failed to send', 'error sending', 'failed to fetch', 'cors policy',
-                        '409', 'conflict', 'validation failed', 'form validation',
-                        'required field', 'this field is required', 'please fill'
+                        '409', 'conflict', 'validation failed', 'form validation'
                     ];
                     
                     const formText = form.textContent.toLowerCase();
@@ -588,13 +586,12 @@
             const errorMessages = form.querySelectorAll('.error, .invalid, [class*="error"], [class*="invalid"], .field-error, .validation-error, .form-error');
             const hasValidationErrors = errorMessages.length > 0;
             
-            // Check for specific error text content (more precise validation messages)
+            // Check for specific error text content (exactly like your validation)
             const errorTexts = [
-                'invalid phone number', 'enter a valid 10-digit number starting with 6-9',
-                'please enter a valid', 'must be a valid', 'should be a valid',
+                'invalid phone number. for indian numbers, enter a valid 10-digit number starting with 6-9',
+                'invalid otp',
                 'failed to send', 'error sending', 'failed to fetch', 'cors policy',
-                '409', 'conflict', 'validation failed', 'form validation',
-                'required field', 'this field is required', 'please fill'
+                '409', 'conflict', 'validation failed', 'form validation'
             ];
             
             const formText = form.textContent.toLowerCase();
