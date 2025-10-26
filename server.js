@@ -698,6 +698,42 @@ const server = http.createServer((req, res) => {
         }
     }
 
+    // API endpoint to force initialize all microsites
+    if (pathname === '/api/force-init' && method === 'POST') {
+        try {
+            console.log('🚀 Force initializing all microsites...');
+            
+            // Force initialize all microsites
+            initializeLiveMicrosites();
+            
+            // Save to persistent storage
+            savePersistentData();
+            
+            console.log('✅ Force initialization complete:', Object.keys(siteCounts).length, 'sites initialized');
+            
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ 
+                message: 'All microsites force initialized successfully', 
+                success: true,
+                initialized: true,
+                sitesCount: Object.keys(siteCounts).length,
+                sites: Object.keys(siteCounts).map(gtmId => ({
+                    gtmId: gtmId,
+                    siteName: siteCounts[gtmId].siteName,
+                    siteUrl: siteCounts[gtmId].siteUrl,
+                    region: siteCounts[gtmId].region
+                })),
+                timestamp: new Date().toISOString()
+            }));
+            return;
+        } catch (error) {
+            console.error('❌ Error force initializing microsites:', error);
+            res.writeHead(500, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ message: 'Error force initializing microsites', error: error.message }));
+            return;
+        }
+    }
+
     // API endpoints
     if (pathname === '/api/receive' && method === 'POST') {
         // Add CORS headers
