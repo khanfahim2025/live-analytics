@@ -609,9 +609,13 @@
             const formDisabled = form.disabled || form.style.display === 'none' || form.style.visibility === 'hidden';
             
             // Check for URL changes (redirect to thank you page)
-            const urlChanged = window.location.href.includes('thank') || 
-                              window.location.href.includes('success') || 
-                              window.location.href.includes('confirmation');
+            const currentUrl = window.location.href.toLowerCase();
+            const thankYouPatterns = [
+                'thankyou', 'thank-you', 'thank_you', 'thank you',
+                'success', 'confirmation', 'submitted', 'received',
+                'enquiry-received', 'lead-received', 'form-submitted'
+            ];
+            const urlChanged = thankYouPatterns.some(pattern => currentUrl.includes(pattern));
             
             // Check for success indicators in the page
             const pageSuccessIndicators = document.querySelectorAll('[class*="success"], [id*="success"], [class*="thank"], [id*="thank"]');
@@ -645,8 +649,17 @@
         
         // Track thank you page visits
         function trackThankYouPage() {
-            // Check if we're on the thank you page
-            if (window.location.href.includes('thankyou.html') || window.location.href.includes('thank-you')) {
+            // Check if we're on the thank you page (multiple patterns)
+            const currentUrl = window.location.href.toLowerCase();
+            const thankYouPatterns = [
+                'thankyou', 'thank-you', 'thank_you', 'thank you',
+                'success', 'confirmation', 'submitted', 'received',
+                'enquiry-received', 'lead-received', 'form-submitted'
+            ];
+            
+            const isThankYouPage = thankYouPatterns.some(pattern => currentUrl.includes(pattern));
+            
+            if (isThankYouPage) {
                 console.log('🎉 Thank you page detected!');
                 
                 // Get the lead data from session storage (stored during form submission)
