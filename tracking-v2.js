@@ -528,6 +528,15 @@
             setTimeout(() => {
                 checkForFormSuccess(form, index);
             }, 3000);
+            
+            // Method 4: Fallback - track lead after 5 seconds if no success indicators found
+            setTimeout(() => {
+                const leadData = sessionStorage.getItem('leadData');
+                if (leadData) {
+                    console.log('⏰ Fallback: Tracking lead after 5 seconds (no success indicators found)');
+                    trackSuccessfulLead(form, index);
+                }
+            }, 5000);
         }
 
         // Check for successful form submission
@@ -554,16 +563,31 @@
             const pageSuccessIndicators = document.querySelectorAll('[class*="success"], [id*="success"], [class*="thank"], [id*="thank"]');
             const hasPageSuccess = pageSuccessIndicators.length > 0;
             
+            // Check for form submission button being disabled (common after submission)
+            const submitButtons = form.querySelectorAll('button[type="submit"], input[type="submit"]');
+            const submitButtonDisabled = Array.from(submitButtons).some(button => button.disabled);
+            
+            // Check for loading states
+            const loadingIndicators = document.querySelectorAll('[class*="loading"], [class*="spinner"], [class*="processing"]');
+            const hasLoadingState = loadingIndicators.length > 0;
+            
+            // Check for form validation success (no error messages)
+            const errorMessages = form.querySelectorAll('.error, .invalid, [class*="error"], [class*="invalid"]');
+            const hasNoErrors = errorMessages.length === 0;
+            
             console.log('🔍 Success detection check:', {
                 allFieldsEmpty,
                 hasSuccessMessage,
                 formDisabled,
                 urlChanged,
-                hasPageSuccess
+                hasPageSuccess,
+                submitButtonDisabled,
+                hasLoadingState,
+                hasNoErrors
             });
             
             // If any success indicator is found, track the lead
-            if (allFieldsEmpty || hasSuccessMessage || formDisabled || urlChanged || hasPageSuccess) {
+            if (allFieldsEmpty || hasSuccessMessage || formDisabled || urlChanged || hasPageSuccess || submitButtonDisabled) {
                 console.log('✅ Success indicators detected - tracking lead');
                 trackSuccessfulLead(form, index);
                 return true;
@@ -678,12 +702,35 @@
         
         // Notification functions removed - no user notifications will be shown
         
+        // Manual lead tracking function for websites to call
+        function manualTrackLead(formData = {}) {
+            console.log('🔧 Manual lead tracking called with data:', formData);
+            
+            // Check if this is a test lead
+            const isTestLead = isTestSubmission(formData);
+            
+            // Store lead data in session storage
+            sessionStorage.setItem('leadData', JSON.stringify({
+                ...formData,
+                isTestLead: isTestLead,
+                isGoogleAdsVisitor: detectGoogleAdsTraffic().isGoogleAds,
+                trafficSource: detectGoogleAdsTraffic().trafficSource,
+                googleAds: detectGoogleAdsTraffic(),
+                timestamp: Date.now(),
+                manualTracking: true
+            }));
+            
+            // Track the lead immediately
+            trackSuccessfulLead(null, 0);
+        }
+
         // Expose tracking functions globally
         window.LiveAnalytics = {
             trackPageView: trackPageView,
             trackFormSubmission: trackFormSubmission,
             trackSuccessfulLead: trackSuccessfulLead,
-            setupUniversalLeadTracking: setupUniversalLeadTracking
+            setupUniversalLeadTracking: setupUniversalLeadTracking,
+            manualTrackLead: manualTrackLead
         };
         
         // Initialize when DOM is ready
