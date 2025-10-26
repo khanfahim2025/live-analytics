@@ -727,7 +727,6 @@
         // Expose tracking functions globally
         window.LiveAnalytics = {
             trackPageView: trackPageView,
-            trackFormSubmission: trackFormSubmission,
             trackSuccessfulLead: trackSuccessfulLead,
             setupUniversalLeadTracking: setupUniversalLeadTracking,
             manualTrackLead: manualTrackLead
