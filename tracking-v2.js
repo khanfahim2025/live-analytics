@@ -52,6 +52,9 @@
             // Set up button click tracking
             setupButtonTracking();
             
+            // Set up universal successful lead tracking
+            setupUniversalLeadTracking();
+            
             // Track thank you page visits
             trackThankYouPage();
         }
@@ -419,6 +422,155 @@
             // Clear the stored data
             sessionStorage.removeItem('leadData');
         }
+
+        // Universal Lead Tracking - Automatically detect successful form submissions
+        function setupUniversalLeadTracking() {
+            console.log('🌐 Setting up universal lead tracking...');
+            
+            // Track all forms on the page
+            const allForms = document.querySelectorAll('form');
+            console.log(`🔍 Found ${allForms.length} forms on the page`);
+            
+            allForms.forEach((form, index) => {
+                console.log(`🔧 Setting up universal tracking for form ${index + 1}:`, form.id || form.className);
+                
+                // Add event listener for form submission
+                form.addEventListener('submit', function(e) {
+                    console.log('📝 Universal form submission detected:', form.id || form.className);
+                    
+                    // Store form data immediately
+                    const formData = {};
+                    const inputs = form.querySelectorAll('input, textarea, select');
+                    
+                    inputs.forEach((input, inputIndex) => {
+                        const fieldName = input.name || input.id || input.className || `field_${inputIndex}`;
+                        if (input.value) {
+                            formData[fieldName] = input.value;
+                        }
+                    });
+                    
+                    // Check if this is a test lead
+                    const isTestLead = isTestSubmission(formData);
+                    
+                    // Store lead data in session storage
+                    sessionStorage.setItem('leadData', JSON.stringify({
+                        ...formData,
+                        isTestLead: isTestLead,
+                        isGoogleAdsVisitor: detectGoogleAdsTraffic().isGoogleAds,
+                        trafficSource: detectGoogleAdsTraffic().trafficSource,
+                        googleAds: detectGoogleAdsTraffic(),
+                        timestamp: Date.now()
+                    }));
+                    
+                    console.log('💾 Form data stored for universal tracking');
+                    
+                    // Set up multiple detection methods for successful submission
+                    setupSuccessDetection(form, index);
+                }, true); // Use capture phase
+            });
+            
+            // Also track buttons with data-track-lead="true"
+            const leadButtons = document.querySelectorAll('button[data-track-lead="true"]');
+            console.log(`🔘 Found ${leadButtons.length} buttons with data-track-lead="true"`);
+            
+            leadButtons.forEach((button, index) => {
+                button.addEventListener('click', function(e) {
+                    console.log('🔘 Lead tracking button clicked:', button.textContent);
+                    
+                    // Find associated form
+                    const form = button.closest('form');
+                    if (form) {
+                        console.log('📝 Associated form found for button:', form.id || form.className);
+                        setupSuccessDetection(form, index);
+                    }
+                });
+            });
+        }
+
+        // Set up multiple detection methods for successful form submission
+        function setupSuccessDetection(form, index) {
+            console.log('🔍 Setting up success detection for form:', form.id || form.className);
+            
+            // Method 1: DOM Mutation Observer - Watch for form changes
+            const observer = new MutationObserver((mutations) => {
+                mutations.forEach((mutation) => {
+                    if (mutation.type === 'childList' || mutation.type === 'attributes') {
+                        checkForFormSuccess(form, index);
+                    }
+                });
+            });
+            
+            observer.observe(form, {
+                childList: true,
+                subtree: true,
+                attributes: true,
+                attributeFilter: ['class', 'style', 'disabled']
+            });
+            
+            // Method 2: Periodic check for form state changes
+            let checkCount = 0;
+            const maxChecks = 20; // Check for 10 seconds (20 * 500ms)
+            
+            const successChecker = setInterval(() => {
+                checkCount++;
+                
+                if (checkForFormSuccess(form, index) || checkCount >= maxChecks) {
+                    clearInterval(successChecker);
+                    observer.disconnect();
+                }
+            }, 500);
+            
+            // Method 3: Check for success indicators
+            setTimeout(() => {
+                checkForFormSuccess(form, index);
+            }, 1000);
+            
+            setTimeout(() => {
+                checkForFormSuccess(form, index);
+            }, 3000);
+        }
+
+        // Check for successful form submission
+        function checkForFormSuccess(form, index) {
+            // Check if form fields are cleared (common success indicator)
+            const inputs = form.querySelectorAll('input[type="text"], input[type="email"], input[type="tel"], textarea');
+            const allFieldsEmpty = Array.from(inputs).every(input => 
+                !input.value || input.value.trim() === ''
+            );
+            
+            // Check for success messages
+            const successMessages = document.querySelectorAll('.success, .thank-you, .success-message, [class*="success"], [class*="thank"]');
+            const hasSuccessMessage = successMessages.length > 0;
+            
+            // Check for form being disabled or hidden
+            const formDisabled = form.disabled || form.style.display === 'none' || form.style.visibility === 'hidden';
+            
+            // Check for URL changes (redirect to thank you page)
+            const urlChanged = window.location.href.includes('thank') || 
+                              window.location.href.includes('success') || 
+                              window.location.href.includes('confirmation');
+            
+            // Check for success indicators in the page
+            const pageSuccessIndicators = document.querySelectorAll('[class*="success"], [id*="success"], [class*="thank"], [id*="thank"]');
+            const hasPageSuccess = pageSuccessIndicators.length > 0;
+            
+            console.log('🔍 Success detection check:', {
+                allFieldsEmpty,
+                hasSuccessMessage,
+                formDisabled,
+                urlChanged,
+                hasPageSuccess
+            });
+            
+            // If any success indicator is found, track the lead
+            if (allFieldsEmpty || hasSuccessMessage || formDisabled || urlChanged || hasPageSuccess) {
+                console.log('✅ Success indicators detected - tracking lead');
+                trackSuccessfulLead(form, index);
+                return true;
+            }
+            
+            return false;
+        }
         
         // Track thank you page visits
         function trackThankYouPage() {
@@ -525,6 +677,14 @@
         }
         
         // Notification functions removed - no user notifications will be shown
+        
+        // Expose tracking functions globally
+        window.LiveAnalytics = {
+            trackPageView: trackPageView,
+            trackFormSubmission: trackFormSubmission,
+            trackSuccessfulLead: trackSuccessfulLead,
+            setupUniversalLeadTracking: setupUniversalLeadTracking
+        };
         
         // Initialize when DOM is ready
         if (document.readyState === 'loading') {
