@@ -27,8 +27,20 @@ function loadPersistentData() {
         if (fs.existsSync(DATA_FILE)) {
             const data = fs.readFileSync(DATA_FILE, 'utf8');
             if (data.trim()) {
-                siteCounts = JSON.parse(data);
-                console.log('📊 Loaded existing data:', Object.keys(siteCounts).length, 'sites');
+                const parsedData = JSON.parse(data);
+                // Remove metadata if present
+                siteCounts = {};
+                Object.keys(parsedData).forEach(key => {
+                    if (key !== '_metadata') {
+                        siteCounts[key] = parsedData[key];
+                    }
+                });
+                console.log('📊 Loaded historical data:', Object.keys(siteCounts).length, 'sites');
+                
+                // Log historical data summary
+                Object.entries(siteCounts).forEach(([gtmId, data]) => {
+                    console.log(`📈 ${data.siteName}: ${data.visitors} visitors, ${data.leads} leads, ${data.testLeads} test leads`);
+                });
             } else {
                 siteCounts = {};
                 console.log('📊 Empty data file - starting fresh');
@@ -38,7 +50,7 @@ function loadPersistentData() {
             console.log('📊 No data file found - starting fresh');
         }
         
-        // Initialize live microsites if not already present
+        // Initialize live microsites if not already present (preserve existing data)
         initializeLiveMicrosites();
         
     } catch (error) {
@@ -63,16 +75,25 @@ function savePersistentData() {
             fs.copyFileSync(DATA_FILE, backupFile);
         }
         
-        // Save current data
-        fs.writeFileSync(DATA_FILE, JSON.stringify(siteCounts, null, 2));
-        console.log('💾 Saved persistent data:', Object.keys(siteCounts).length, 'sites');
+        // Save current data with metadata
+        const dataToSave = {
+            ...siteCounts,
+            _metadata: {
+                lastSaved: new Date().toISOString(),
+                totalSites: Object.keys(siteCounts).length,
+                version: "1.0"
+            }
+        };
+        
+        fs.writeFileSync(DATA_FILE, JSON.stringify(dataToSave, null, 2));
+        console.log('💾 Saved historical data:', Object.keys(siteCounts).length, 'sites');
         
         // Verify the save was successful
         const savedData = JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
-        if (JSON.stringify(savedData) === JSON.stringify(siteCounts)) {
-            console.log('✅ Data save verified successfully');
+        if (JSON.stringify(savedData) === JSON.stringify(dataToSave)) {
+            console.log('✅ Historical data save verified successfully');
         } else {
-            console.error('❌ Data save verification failed');
+            console.error('❌ Historical data save verification failed');
         }
     } catch (error) {
         console.error('❌ Error saving persistent data:', error);
@@ -522,14 +543,47 @@ function initializeLiveMicrosites() {
             siteName: 'Sewri New Launch',
             siteUrl: 'https://www.sewri-newlaunch.com',
             region: 'western-mumbai'
+        },
+        {
+            gtmId: 'GTM-N98TWLGG',
+            siteName: 'www.duvilleriverdalegrand.com',
+            siteUrl: 'https://www.duvilleriverdalegrand.com',
+            region: 'pune'
+        },
+        {
+            gtmId: 'GTM-59KXV4P6',
+            siteName: 'www.aranya-byculla.com',
+            siteUrl: 'https://www.aranya-byculla.com',
+            region: 'western-mumbai'
+        },
+        {
+            gtmId: 'GTM-T2HZBTML',
+            siteName: 'www.nivasaenchantedhanori.com',
+            siteUrl: 'https://www.nivasaenchantedhanori.com',
+            region: 'pune'
+        },
+        {
+            gtmId: 'GTM-MVSD7LP8',
+            siteName: 'www.huesofsky.com',
+            siteUrl: 'https://www.huesofsky.com',
+            region: 'pune'
         }
     ];
 
+    let newSitesAdded = 0;
     liveSites.forEach(site => {
-        initializeSite(site.gtmId, site.siteName, site.siteUrl, site.region || 'unknown');
+        if (!siteCounts[site.gtmId]) {
+            initializeSite(site.gtmId, site.siteName, site.siteUrl, site.region || 'unknown');
+            newSitesAdded++;
+        } else {
+            console.log(`📊 Preserving existing data for ${site.siteName}: ${siteCounts[site.gtmId].visitors} visitors, ${siteCounts[site.gtmId].leads} leads`);
+        }
     });
 
-    console.log('🚀 Initialized all live microsites:', liveSites.length);
+    console.log('🚀 Initialized microsites:', liveSites.length, 'total,', newSitesAdded, 'new');
+    
+    // Save to persistent storage immediately
+    savePersistentData();
 }
 
 // Load persistent data on startup
@@ -1119,7 +1173,7 @@ const server = http.createServer((req, res) => {
 const PORT = process.env.PORT || 9000;
     server.listen(PORT, '0.0.0.0', () => {
         console.log(`🚀 Server running on port ${PORT} - Live Analytics v11.0`);
-        console.log(`📊 Data persistence: ENABLED`);
+        console.log(`📊 Historical Data Persistence: ENABLED`);
         console.log(`📊 API endpoint: /api/receive`);
         console.log(`📊 Data endpoint: /api/data.json`);
         console.log(`📊 Counts endpoint: /api/counts.json`);
@@ -1129,5 +1183,6 @@ const PORT = process.env.PORT || 9000;
         console.log(`🎯 Universal script supports unlimited websites with different GTM IDs`);
         console.log(`🧪 Test lead auto-cleanup: 1 minute per GTM ID`);
         console.log(`📱 Cache busting enabled for tracking script`);
-        console.log(`✅ READY FOR TRACKING - DATA PERSISTENCE ENABLED`);
+        console.log(`📈 Historical data continues counting through deployments`);
+        console.log(`✅ READY FOR TRACKING - HISTORICAL DATA PERSISTENCE ENABLED`);
     });
