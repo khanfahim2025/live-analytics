@@ -284,15 +284,30 @@ class Dashboard {
         icon.classList.add('fa-spin');
         refreshBtn.disabled = true;
         
-        // Simulate API call
-        setTimeout(() => {
-            this.updateDashboard();
-            icon.classList.remove('fa-spin');
-            refreshBtn.disabled = false;
-            
-            // Show success message
-            this.showNotification('Data refreshed successfully!', 'success');
-        }, 1000);
+        // Force reload from server
+        if (window.realTimeFetcher) {
+            window.realTimeFetcher.initializeFromServerData().then(() => {
+                window.realTimeFetcher.updateDashboard();
+                icon.classList.remove('fa-spin');
+                refreshBtn.disabled = false;
+                
+                // Show success message
+                this.showNotification('Data refreshed successfully!', 'success');
+            }).catch(error => {
+                console.error('Error refreshing data:', error);
+                icon.classList.remove('fa-spin');
+                refreshBtn.disabled = false;
+                this.showNotification('Error refreshing data', 'error');
+            });
+        } else {
+            // Fallback
+            setTimeout(() => {
+                this.updateDashboard();
+                icon.classList.remove('fa-spin');
+                refreshBtn.disabled = false;
+                this.showNotification('Data refreshed successfully!', 'success');
+            }, 1000);
+        }
     }
 
     // Start real-time updates

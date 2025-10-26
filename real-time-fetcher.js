@@ -154,7 +154,7 @@ class RealTimeDataFetcher {
     // Auto-detect microsites from server data
     async autoDetectMicrosites() {
         try {
-            const response = await fetch('https://web-production-beea8.up.railway.app/api/counts.json');
+            const response = await fetch('/api/counts.json');
             const serverCounts = await response.json();
             
             console.log('🔍 Auto-detecting microsites from server...');
@@ -174,9 +174,15 @@ class RealTimeDataFetcher {
                         url: serverData.siteUrl || 'https://unknown-site.com',
                         gtmId: gtmId,
                         status: "online",
+                        region: serverData.region || 'unknown', // NEW: Region support
                         visitors: serverData.visitors || 0,
                         leads: serverData.leads || 0,
-                        conversion: serverData.conversionRate || 0,
+                        testLeads: serverData.testLeads || 0,
+                        // NEW: Google Ads specific metrics
+                        googleAdsVisitors: serverData.googleAdsVisitors || 0,
+                        googleAdsLeads: serverData.googleAdsLeads || 0,
+                        googleAdsConversionRate: serverData.googleAdsConversionRate || '0.0',
+                        conversion: serverData.conversionRate || '0.0',
                         lastActivity: "Just now",
                         formStatus: "working",
                         responseTime: 0,
