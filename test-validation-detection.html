@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Validation Error Detection Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; background: #f5f5f5; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .form-section { margin: 20px 0; padding: 20px; background: #f8f9fa; border-radius: 6px; }
+        .error { color: #dc3545; font-size: 12px; margin-top: 5px; }
+        .success { color: #28a745; font-size: 12px; margin-top: 5px; }
+        button { background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; margin: 5px; }
+        button:hover { background: #0056b3; }
+        input { width: 100%; padding: 8px; margin: 5px 0; border: 1px solid #ddd; border-radius: 4px; }
+        .test-result { margin: 10px 0; padding: 10px; border-radius: 4px; font-weight: bold; }
+        .test-pass { background: #d4edda; color: #155724; }
+        .test-fail { background: #f8d7da; color: #721c24; }
+        .debug-log { background: #f8f9fa; padding: 10px; border-radius: 4px; max-height: 300px; overflow-y: auto; font-family: monospace; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Validation Error Detection Test</h1>
+        
+        <div class="form-section">
+            <h3>📝 Test Form 1 - Invalid Phone Number (Should NOT track lead)</h3>
+            <form id="testForm1" onsubmit="event.preventDefault()">
+                <input type="text" name="name" placeholder="Name" value="test user" required>
+                <input type="email" name="email" placeholder="Email" value="test@example.com" required>
+                <input type="tel" name="phone" placeholder="Phone" value="123" required>
+                <div class="error" id="phoneError1">Invalid phone number. For Indian numbers, enter a valid 10-digit number starting with 6-9.</div>
+                <button type="submit">Submit Form</button>
+            </form>
+        </div>
+
+        <div class="form-section">
+            <h3>📝 Test Form 2 - Valid Data (Should track lead)</h3>
+            <form id="testForm2" onsubmit="event.preventDefault()">
+                <input type="text" name="name" placeholder="Name" value="test user" required>
+                <input type="email" name="email" placeholder="Email" value="test@example.com" required>
+                <input type="tel" name="phone" placeholder="Phone" value="9876543210" required>
+                <button type="submit">Submit Form</button>
+            </form>
+        </div>
+
+        <div class="form-section">
+            <h3>📝 Test Form 3 - Invalid Email (Should NOT track lead)</h3>
+            <form id="testForm3" onsubmit="event.preventDefault()">
+                <input type="text" name="name" placeholder="Name" value="test user" required>
+                <input type="email" name="email" placeholder="Email" value="invalid-email" required>
+                <input type="tel" name="phone" placeholder="Phone" value="9876543210" required>
+                <div class="error" id="emailError3">Please enter a valid email address</div>
+                <button type="submit">Submit Form</button>
+            </form>
+        </div>
+
+        <div class="form-section">
+            <h3>🧪 Test Buttons</h3>
+            <button onclick="testInvalidPhone()">Test Invalid Phone</button>
+            <button onclick="testValidData()">Test Valid Data</button>
+            <button onclick="testInvalidEmail()">Test Invalid Email</button>
+            <button onclick="checkDashboard()">Check Dashboard</button>
+            <button onclick="clearLogs()">Clear Logs</button>
+        </div>
+
+        <div class="form-section">
+            <h3>📊 Test Results</h3>
+            <div id="testResults"></div>
+        </div>
+
+        <div class="form-section">
+            <h3>📋 Debug Log</h3>
+            <div id="debugLog" class="debug-log"></div>
+        </div>
+    </div>
+
+    <!-- Live Analytics Tracking Script -->
+    <script src="https://web-production-19751.up.railway.app/tracking.js"></script>
+    <script>
+        window.LiveAnalyticsConfig = {
+            gtmId: 'GTM-VALIDATION-TEST',
+            siteName: 'Validation Detection Test',
+            siteUrl: 'https://web-production-19751.up.railway.app/test-validation-detection.html',
+            region: 'test-region'
+        };
+    </script>
+
+    <script>
+        function testInvalidPhone() {
+            addToLog('🧪 Testing invalid phone number...');
+            const form = document.getElementById('testForm1');
+            const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
+            form.dispatchEvent(submitEvent);
+            addToLog('✅ Form submitted with invalid phone number');
+            addTestResult('Invalid Phone Test', true, 'Form submitted with validation error');
+        }
+
+        function testValidData() {
+            addToLog('🧪 Testing valid data...');
+            const form = document.getElementById('testForm2');
+            const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
+            form.dispatchEvent(submitEvent);
+            addToLog('✅ Form submitted with valid data');
+            addTestResult('Valid Data Test', true, 'Form submitted with valid data');
+        }
+
+        function testInvalidEmail() {
+            addToLog('🧪 Testing invalid email...');
+            const form = document.getElementById('testForm3');
+            const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
+            form.dispatchEvent(submitEvent);
+            addToLog('✅ Form submitted with invalid email');
+            addTestResult('Invalid Email Test', true, 'Form submitted with validation error');
+        }
+
+        function checkDashboard() {
+            addToLog('🔍 Checking dashboard data...');
+            fetch('https://web-production-19751.up.railway.app/api/counts.json')
+                .then(response => response.json())
+                .then(data => {
+                    const siteData = data['GTM-VALIDATION-TEST'];
+                    if (siteData) {
+                        addToLog(`📊 Dashboard Data: Visitors: ${siteData.visitors}, Leads: ${siteData.leads}, Test Leads: ${siteData.testLeads}`);
+                        
+                        // Test results
+                        addTestResult('Test Lead Count', siteData.testLeads > 0, `${siteData.testLeads} test leads detected`);
+                        addTestResult('Real Lead Count', siteData.leads > 0, `${siteData.leads} real leads detected`);
+                    } else {
+                        addToLog('❌ No data found for GTM-VALIDATION-TEST');
+                        addTestResult('Dashboard Data', false, 'No data found');
+                    }
+                })
+                .catch(error => {
+                    addToLog('❌ Error checking dashboard: ' + error.message);
+                    addTestResult('Dashboard Data', false, 'Error: ' + error.message);
+                });
+        }
+
+        function addToLog(message) {
+            const logDiv = document.getElementById('debugLog');
+            const timestamp = new Date().toLocaleTimeString();
+            logDiv.innerHTML += `<div>[${timestamp}] ${message}</div>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        function addTestResult(testName, passed, message) {
+            const resultsDiv = document.getElementById('testResults');
+            const resultClass = passed ? 'test-pass' : 'test-fail';
+            const status = passed ? '✅ PASS' : '❌ FAIL';
+            resultsDiv.innerHTML += `<div class="test-result ${resultClass}">${status} ${testName}: ${message}</div>`;
+        }
+
+        function clearLogs() {
+            document.getElementById('debugLog').innerHTML = '';
+            document.getElementById('testResults').innerHTML = '';
+        }
+
+        // Check if tracking is loaded
+        setTimeout(() => {
+            if (window.LiveAnalytics) {
+                addToLog('✅ Validation detection test loaded successfully!');
+                addToLog('🌐 Available functions: ' + Object.keys(window.LiveAnalytics).join(', '));
+                addTestResult('Script Load', true, 'Validation test loaded');
+            } else {
+                addToLog('❌ Validation detection test failed to load');
+                addTestResult('Script Load', false, 'Script not loaded');
+            }
+        }, 3000);
+
+        // Log all tracking events
+        const originalConsoleLog = console.log;
+        console.log = function(...args) {
+            originalConsoleLog.apply(console, args);
+            if (args[0] && typeof args[0] === 'string' && (args[0].includes('🚀') || args[0].includes('📝') || args[0].includes('✅') || args[0].includes('❌') || args[0].includes('🔧') || args[0].includes('🎉') || args[0].includes('🌐') || args[0].includes('🔍') || args[0].includes('🧪') || args[0].includes('⏰'))) {
+                addToLog(args.join(' '));
+            }
+        };
+    </script>
+</body>
+</html>

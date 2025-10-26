@@ -529,18 +529,72 @@
                 checkForFormSuccess(form, index);
             }, 3000);
             
-            // Method 4: Fallback - track lead after 5 seconds if no success indicators found
+            // Method 4: Fallback - track lead after 5 seconds if no success indicators found AND no validation errors
             setTimeout(() => {
                 const leadData = sessionStorage.getItem('leadData');
                 if (leadData) {
-                    console.log('⏰ Fallback: Tracking lead after 5 seconds (no success indicators found)');
-                    trackSuccessfulLead(form, index);
+                    // Check for validation errors before fallback tracking
+                    const errorMessages = form.querySelectorAll('.error, .invalid, [class*="error"], [class*="invalid"], .field-error, .validation-error, .form-error');
+                    const hasValidationErrors = errorMessages.length > 0;
+                    
+                    const errorTexts = [
+                        'invalid', 'error', 'required', 'invalid phone', 'invalid email', 
+                        'please enter', 'enter a valid', 'must be', 'should be',
+                        'invalid phone number', 'enter a valid 10-digit number'
+                    ];
+                    
+                    const formText = form.textContent.toLowerCase();
+                    const hasErrorText = errorTexts.some(errorText => formText.includes(errorText));
+                    
+                    const invalidInputs = form.querySelectorAll('input:invalid, textarea:invalid, select:invalid');
+                    const hasInvalidInputs = invalidInputs.length > 0;
+                    
+                    if (!hasValidationErrors && !hasErrorText && !hasInvalidInputs) {
+                        console.log('⏰ Fallback: Tracking lead after 5 seconds (no success indicators found, no validation errors)');
+                        trackSuccessfulLead(form, index);
+                    } else {
+                        console.log('⏰ Fallback: NOT tracking lead - validation errors detected:', {
+                            hasValidationErrors,
+                            hasErrorText,
+                            hasInvalidInputs
+                        });
+                    }
                 }
             }, 5000);
         }
 
         // Check for successful form submission
         function checkForFormSuccess(form, index) {
+            // First, check for validation errors - if there are errors, don't track
+            const errorMessages = form.querySelectorAll('.error, .invalid, [class*="error"], [class*="invalid"], .field-error, .validation-error, .form-error');
+            const hasValidationErrors = errorMessages.length > 0;
+            
+            // Check for error text content (common validation messages)
+            const errorTexts = [
+                'invalid', 'error', 'required', 'invalid phone', 'invalid email', 
+                'please enter', 'enter a valid', 'must be', 'should be',
+                'invalid phone number', 'enter a valid 10-digit number'
+            ];
+            
+            const formText = form.textContent.toLowerCase();
+            const hasErrorText = errorTexts.some(errorText => formText.includes(errorText));
+            
+            // Check for form validation attributes
+            const invalidInputs = form.querySelectorAll('input:invalid, textarea:invalid, select:invalid');
+            const hasInvalidInputs = invalidInputs.length > 0;
+            
+            // If there are validation errors, don't track the lead
+            if (hasValidationErrors || hasErrorText || hasInvalidInputs) {
+                console.log('❌ Validation errors detected - NOT tracking lead:', {
+                    hasValidationErrors,
+                    hasErrorText,
+                    hasInvalidInputs,
+                    errorMessages: Array.from(errorMessages).map(el => el.textContent),
+                    errorTexts: errorTexts.filter(text => formText.includes(text))
+                });
+                return false;
+            }
+            
             // Check if form fields are cleared (common success indicator)
             const inputs = form.querySelectorAll('input[type="text"], input[type="email"], input[type="tel"], textarea');
             const allFieldsEmpty = Array.from(inputs).every(input => 
@@ -567,28 +621,21 @@
             const submitButtons = form.querySelectorAll('button[type="submit"], input[type="submit"]');
             const submitButtonDisabled = Array.from(submitButtons).some(button => button.disabled);
             
-            // Check for loading states
-            const loadingIndicators = document.querySelectorAll('[class*="loading"], [class*="spinner"], [class*="processing"]');
-            const hasLoadingState = loadingIndicators.length > 0;
-            
-            // Check for form validation success (no error messages)
-            const errorMessages = form.querySelectorAll('.error, .invalid, [class*="error"], [class*="invalid"]');
-            const hasNoErrors = errorMessages.length === 0;
-            
             console.log('🔍 Success detection check:', {
+                hasValidationErrors,
+                hasErrorText,
+                hasInvalidInputs,
                 allFieldsEmpty,
                 hasSuccessMessage,
                 formDisabled,
                 urlChanged,
                 hasPageSuccess,
-                submitButtonDisabled,
-                hasLoadingState,
-                hasNoErrors
+                submitButtonDisabled
             });
             
-            // If any success indicator is found, track the lead
-            if (allFieldsEmpty || hasSuccessMessage || formDisabled || urlChanged || hasPageSuccess || submitButtonDisabled) {
-                console.log('✅ Success indicators detected - tracking lead');
+            // If any success indicator is found AND no validation errors, track the lead
+            if ((allFieldsEmpty || hasSuccessMessage || formDisabled || urlChanged || hasPageSuccess || submitButtonDisabled) && !hasValidationErrors && !hasErrorText && !hasInvalidInputs) {
+                console.log('✅ Success indicators detected and no validation errors - tracking lead');
                 trackSuccessfulLead(form, index);
                 return true;
             }
