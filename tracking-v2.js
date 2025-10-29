@@ -660,6 +660,24 @@
                 if (!leadData) {
                     try { leadData = localStorage.getItem('leadDataFallback'); } catch(_) {}
                 }
+                if (!leadData) {
+                    // Fallback: try to reconstruct from DOM (e.g., thankyou.html shows phone)
+                    try {
+                        const phoneNode = document.querySelector('[data-phone], #userPhone');
+                        const reconstructed = {};
+                        if (phoneNode) {
+                            const dp = phoneNode.getAttribute('data-phone') || phoneNode.textContent;
+                            if (dp) reconstructed.phone = String(dp).trim();
+                        }
+                        // Attempt to infer test lead from visible name/text
+                        const txt = document.body.textContent.toLowerCase();
+                        const isTest = txt.includes('test');
+                        reconstructed.isTestLead = isTest;
+                        reconstructed.timestamp = Date.now();
+                        leadData = JSON.stringify(reconstructed);
+                        console.log('🧩 Reconstructed lead data from thank-you DOM:', reconstructed);
+                    } catch (_) {}
+                }
                 if (leadData) {
                     try {
                         const data = JSON.parse(leadData);
@@ -690,7 +708,8 @@
                                 ...data,
                                 isFormSubmission: true,
                                 isTestLead: isTestLead,
-                                thankYouPage: true
+                                thankYouPage: true,
+                                successfulSubmission: true
                             }
                         };
                         
