@@ -519,57 +519,9 @@
                 checkForFormSuccess(form, index);
             }, 3000);
             
-            // Method 4: Fallback - track lead after 8 seconds if no success indicators found AND no validation errors
+            // Method 4: Fallback DISABLED in strict mode — never track without a real thank-you page
             setTimeout(() => {
-                const leadData = sessionStorage.getItem('leadData');
-                if (leadData) {
-                    // Check for validation errors before fallback tracking
-                    const errorMessages = form.querySelectorAll('.error, .invalid, [class*="error"], [class*="invalid"], .field-error, .validation-error, .form-error');
-                    const hasValidationErrors = errorMessages.length > 0;
-                    
-                    const errorTexts = [
-                        'invalid phone number. for indian numbers, enter a valid 10-digit number starting with 6-9', // <-- *** FIX: ADDED YOUR ERROR ***
-                        'invalid otp',
-                        'failed to send', 'error sending', 'failed to fetch', 'cors policy',
-                        '409', 'conflict', 'validation failed', 'form validation',
-                        'its worng u enter'
-                    ];
-                    
-                    const formText = form.textContent.toLowerCase();
-                    const pageText = document.body.textContent.toLowerCase();
-                    // *** FIX: Check pageText as well
-                    const hasErrorText = errorTexts.some(errorText => formText.includes(errorText) || pageText.includes(errorText.toLowerCase()));
-                    
-                    const invalidInputs = form.querySelectorAll('input:invalid, textarea:invalid, select:invalid');
-                    const hasInvalidInputs = invalidInputs.length > 0;
-                    
-                    // Check for network errors
-                    const hasNetworkErrors = pageText.includes('failed to fetch') || 
-                                           pageText.includes('cors policy') || 
-                                           pageText.includes('error sending') ||
-                                           pageText.includes('409') ||
-                                           pageText.includes('conflict');
-                    
-                    // Check if form is still visible (indicates no redirect/success)
-                    const formStillVisible = form.offsetParent !== null && form.style.display !== 'none';
-                    const noRedirect = !window.location.href.includes('thank') && 
-                                      !window.location.href.includes('success') && 
-                                      !window.location.href.includes('confirmation');
-                    
-                    if (!hasValidationErrors && !hasErrorText && !hasInvalidInputs && !hasNetworkErrors && (!formStillVisible || !noRedirect)) {
-                        console.log('⏰ Fallback: Tracking lead after 8 seconds (no success indicators found, no validation errors)');
-                        trackSuccessfulLead(form, index);
-                    } else {
-                        console.log('⏰ Fallback: NOT tracking lead - validation errors or form still visible:', {
-                            hasValidationErrors,
-                            hasErrorText,
-                            hasInvalidInputs,
-                            hasNetworkErrors,
-                            formStillVisible,
-                            noRedirect
-                        });
-                    }
-                }
+                console.log('⏸️ Strict mode: fallback tracking disabled. Waiting for thank-you page only.');
             }, 8000);
         }
 
@@ -670,9 +622,9 @@
             //     submitButtonDisabled
             // });
             
-            // If any success indicator is found AND no validation errors, track the lead
-            if ((allFieldsEmpty || hasSuccessMessage || formDisabled || urlChanged || hasPageSuccess || submitButtonDisabled) && !hasValidationErrors && !hasErrorText && !hasInvalidInputs) {
-                console.log('✅ Success indicators detected and no validation errors - tracking lead');
+            // Strict mode: Only track on explicit thank-you URL; otherwise do nothing
+            if (urlChanged && !hasValidationErrors && !hasErrorText && !hasInvalidInputs) {
+                console.log('✅ Thank-you URL detected - tracking lead');
                 trackSuccessfulLead(form, index);
                 return true;
             }
