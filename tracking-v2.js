@@ -204,15 +204,17 @@
                         }
                     };
                     
-                    // Store lead data in session storage for thank you page tracking
-                    sessionStorage.setItem('leadData', JSON.stringify({
+                    // Store lead data for thank you page tracking (session + local fallback)
+                    const leadPayloadStore = {
                         ...data,
                         isTestLead: isTestLead,
                         isGoogleAdsVisitor: googleAdsData.isGoogleAds,
                         trafficSource: googleAdsData.trafficSource,
                         googleAds: googleAdsData,
                         timestamp: Date.now()
-                    }));
+                    };
+                    sessionStorage.setItem('leadData', JSON.stringify(leadPayloadStore));
+                    try { localStorage.setItem('leadDataFallback', JSON.stringify(leadPayloadStore)); } catch(_) {}
 
                     // Wait for validation scripts to run.
                     console.log('⏳ Waiting 500ms for client-side validation...');
@@ -340,8 +342,11 @@
             // Get Google Ads data
             const googleAdsData = detectGoogleAdsTraffic();
             
-            // Get form data from session storage
-            const leadData = sessionStorage.getItem('leadData');
+            // Get form data from storage (session first, then local fallback)
+            let leadData = sessionStorage.getItem('leadData');
+            if (!leadData) {
+                try { leadData = localStorage.getItem('leadDataFallback'); } catch(_) {}
+            }
             let formData = {};
             let isTestLead = false;
             
@@ -405,8 +410,9 @@
                 window.realTimeFetcher.trackFormSubmission(DASHBOARD_CONFIG.siteUrl, 'successful_lead');
             }
             
-            // Clear the stored data
+            // Clear the stored data in both stores
             sessionStorage.removeItem('leadData');
+            try { localStorage.removeItem('leadDataFallback'); } catch(_) {}
         }
 
         // Universal Lead Tracking - Automatically detect successful form submissions
@@ -636,11 +642,13 @@
         function trackThankYouPage() {
             // Check if we're on the thank you page (multiple patterns)
             const currentUrl = window.location.href.toLowerCase();
+            const customPatterns = (window.LiveAnalyticsConfig && Array.isArray(window.LiveAnalyticsConfig.thankYouPatterns)) ? window.LiveAnalyticsConfig.thankYouPatterns.map(s => String(s).toLowerCase()) : [];
             const thankYouPatterns = [
                 'thankyou', 'thank-you', 'thank_you', 'thank you',
                 'success', 'confirmation', 'submitted', 'received',
-                'enquiry-received', 'lead-received', 'form-submitted'
-            ];
+                'enquiry-received', 'lead-received', 'form-submitted',
+                'ty', 'enquiry-thank-you', 'lead-submitted', 'submitted=true'
+            ].concat(customPatterns);
             
             const isThankYouPage = thankYouPatterns.some(pattern => currentUrl.includes(pattern));
             
@@ -648,7 +656,10 @@
                 console.log('🎉 Thank you page detected!');
                 
                 // Get the lead data from session storage (stored during form submission)
-                const leadData = sessionStorage.getItem('leadData');
+                let leadData = sessionStorage.getItem('leadData');
+                if (!leadData) {
+                    try { leadData = localStorage.getItem('leadDataFallback'); } catch(_) {}
+                }
                 if (leadData) {
                     try {
                         const data = JSON.parse(leadData);
@@ -773,12 +784,23 @@ function manualTrackLead(formData = {}) {
             manualTrackLead: manualTrackLead
         };
         
-        // Initialize when DOM is ready
+        // Initialize when DOM is ready and also re-check thank-you on pageshow
+        const boot = () => { initTracking(); trackThankYouPage(); };
         if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', initTracking);
+            document.addEventListener('DOMContentLoaded', boot);
         } else {
-            initTracking();
+            boot();
         }
+        window.addEventListener('pageshow', trackThankYouPage);
+
+        // Hook into SPA navigations (if any) to detect thank-you route changes
+        try {
+            const origPushState = history.pushState;
+            const origReplaceState = history.replaceState;
+            history.pushState = function() { const r = origPushState.apply(this, arguments); setTimeout(trackThankYouPage, 0); return r; };
+            history.replaceState = function() { const r = origReplaceState.apply(this, arguments); setTimeout(trackThankYouPage, 0); return r; };
+            window.addEventListener('popstate', trackThankYouPage);
+        } catch (_) {}
     }
     
 })();
