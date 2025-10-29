@@ -206,6 +206,7 @@
                     
                     // Store lead data for thank you page tracking (session + local fallback)
                     const leadPayloadStore = {
+                        uuid: Date.now() + '_' + Math.random().toString(36).substr(2, 9),
                         ...data,
                         isTestLead: isTestLead,
                         isGoogleAdsVisitor: googleAdsData.isGoogleAds,
@@ -661,7 +662,14 @@
                 console.log('🎉 Thank you page detected!');
                 // Idempotency: prevent duplicate sends for this page/session
                 const sessionId = getSessionId();
-                const key = `la_ty_${DASHBOARD_CONFIG.gtmId}_${sessionId}_${location.pathname}`;
+                // Prefer a per-submission UUID if available to allow multiple simultaneous tests
+                let leadRawForKey = sessionStorage.getItem('leadData');
+                if (!leadRawForKey) { try { leadRawForKey = localStorage.getItem('leadDataFallback'); } catch(_) {}
+                }
+                let submissionUuid = '';
+                try { if (leadRawForKey) { const tmp = JSON.parse(leadRawForKey); submissionUuid = tmp.uuid || ''; } } catch(_) {}
+                const keyBase = submissionUuid ? `la_ty_uuid_${submissionUuid}` : `la_ty_${DASHBOARD_CONFIG.gtmId}_${sessionId}_${location.pathname}`;
+                const key = keyBase;
                 const ttlMs = 120000; // 2 minutes TTL
                 try {
                     const raw = sessionStorage.getItem(key) || localStorage.getItem(key);
