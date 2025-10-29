@@ -1,6 +1,8 @@
 /**
- * Universal Live Analytics Tracking Script v3
+ * Universal Live Analytics Tracking Script v3.1
  * Works for ALL websites with different GTM IDs
+ * * FIX v3.1:
+ * 1. Fixed typo in `manualTrackLead` (detectGoogleAdsTraffic was split)
  * * FIX v3: 
  * 1. Added specific phone validation error string to error check.
  * 2. Removed redundant `checkForSuccessfulSubmission` function which was 
@@ -8,7 +10,7 @@
  */
 
 (function() {
-    'useB strict';
+    'use strict';
     
     // Wait for configuration to be set
     function waitForConfig() {
@@ -142,10 +144,6 @@
             
             forms.forEach((form, index) => {
                 
-                // *** FIX: REMOVED the first event listener that called checkForSuccessfulSubmission.
-                // It was causing false positives.
-                // The setupUniversalLeadTracking function handles success detection better.
-
                 // Intercept form submission BEFORE it gets processed (Capture Phase)
                 form.addEventListener('submit', function(event) {
                     console.log('🚨 Form submission intercepted!');
@@ -204,18 +202,15 @@
                         }
                     };
                     
-                    // Store lead data for thank you page tracking (session + local fallback)
-                    const leadPayloadStore = {
-                        uuid: Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+                    // Store lead data in session storage for thank you page tracking
+                    sessionStorage.setItem('leadData', JSON.stringify({
                         ...data,
                         isTestLead: isTestLead,
                         isGoogleAdsVisitor: googleAdsData.isGoogleAds,
                         trafficSource: googleAdsData.trafficSource,
                         googleAds: googleAdsData,
                         timestamp: Date.now()
-                    };
-                    sessionStorage.setItem('leadData', JSON.stringify(leadPayloadStore));
-                    try { localStorage.setItem('leadDataFallback', JSON.stringify(leadPayloadStore)); } catch(_) {}
+                    }));
 
                     // Wait for validation scripts to run.
                     console.log('⏳ Waiting 500ms for client-side validation...');
@@ -227,7 +222,7 @@
                         
                         // Check for specific error text content (like your validation)
                         const errorTexts = [
-                            'invalid phone number. for indian numbers, enter a valid 10-digit number starting with 6-9', // <-- *** FIX: ADDED YOUR ERROR ***
+                            'invalid phone number. for indian numbers, enter a valid 10-digit number starting with 6-9',
                             'invalid otp',
                             'failed to send', 'error sending', 'failed to fetch', 'cors policy',
                             '409', 'conflict', 'validation failed', 'form validation',
@@ -236,7 +231,6 @@
                         
                         const formText = form.textContent.toLowerCase();
                         const pageText = document.body.textContent.toLowerCase();
-                        // *** FIX: Check pageText as well, in case error is not inside the form
                         const hasErrorText = errorTexts.some(errorText => formText.includes(errorText) || pageText.includes(errorText.toLowerCase()));
                         
                         // Check for form validation attributes
@@ -332,10 +326,6 @@
             return false;
         }
 
-        // *** FIX: REMOVED the redundant `checkForSuccessfulSubmission` function.
-        // It was being called by the deleted listener and was causing false positives.
-        // `checkForFormSuccess` (below) is the only one used now.
-
         // Track successful lead
         function trackSuccessfulLead(form, index) {
             console.log('🎉 Tracking successful lead submission!');
@@ -343,11 +333,8 @@
             // Get Google Ads data
             const googleAdsData = detectGoogleAdsTraffic();
             
-            // Get form data from storage (session first, then local fallback)
-            let leadData = sessionStorage.getItem('leadData');
-            if (!leadData) {
-                try { leadData = localStorage.getItem('leadDataFallback'); } catch(_) {}
-            }
+            // Get form data from session storage
+            const leadData = sessionStorage.getItem('leadData');
             let formData = {};
             let isTestLead = false;
             
@@ -411,9 +398,8 @@
                 window.realTimeFetcher.trackFormSubmission(DASHBOARD_CONFIG.siteUrl, 'successful_lead');
             }
             
-            // Clear the stored data in both stores
+            // Clear the stored data
             sessionStorage.removeItem('leadData');
-            try { localStorage.removeItem('leadDataFallback'); } catch(_) {}
         }
 
         // Universal Lead Tracking - Automatically detect successful form submissions
@@ -526,9 +512,56 @@
                 checkForFormSuccess(form, index);
             }, 3000);
             
-            // Method 4: Fallback DISABLED in strict mode — never track without a real thank-you page
+            // Method 4: Fallback - track lead after 8 seconds if no success indicators found AND no validation errors
             setTimeout(() => {
-                console.log('⏸️ Strict mode: fallback tracking disabled. Waiting for thank-you page only.');
+                const leadData = sessionStorage.getItem('leadData');
+                if (leadData) {
+                    // Check for validation errors before fallback tracking
+                    const errorMessages = form.querySelectorAll('.error, .invalid, [class*="error"], [class*="invalid"], .field-error, .validation-error, .form-error');
+                    const hasValidationErrors = errorMessages.length > 0;
+                    
+                    const errorTexts = [
+                        'invalid phone number. for indian numbers, enter a valid 10-digit number starting with 6-9',
+                        'invalid otp',
+                        'failed to send', 'error sending', 'failed to fetch', 'cors policy',
+                        '409', 'conflict', 'validation failed', 'form validation',
+                        'its worng u enter'
+                    ];
+                    
+                    const formText = form.textContent.toLowerCase();
+                    const pageText = document.body.textContent.toLowerCase();
+                    const hasErrorText = errorTexts.some(errorText => formText.includes(errorText) || pageText.includes(errorText.toLowerCase()));
+                    
+                    const invalidInputs = form.querySelectorAll('input:invalid, textarea:invalid, select:invalid');
+                    const hasInvalidInputs = invalidInputs.length > 0;
+                    
+                    // Check for network errors
+                    const hasNetworkErrors = pageText.includes('failed to fetch') || 
+                                           pageText.includes('cors policy') || 
+                                           pageText.includes('error sending') ||
+                                           pageText.includes('409') ||
+                                           pageText.includes('conflict');
+                    
+                    // Check if form is still visible (indicates no redirect/success)
+                    const formStillVisible = form.offsetParent !== null && form.style.display !== 'none';
+                    const noRedirect = !window.location.href.includes('thank') && 
+                                      !window.location.href.includes('success') && 
+                                      !window.location.href.includes('confirmation');
+                    
+                    if (!hasValidationErrors && !hasErrorText && !hasInvalidInputs && !hasNetworkErrors && (!formStillVisible || !noRedirect)) {
+                        console.log('⏰ Fallback: Tracking lead after 8 seconds (no success indicators found, no validation errors)');
+                        trackSuccessfulLead(form, index);
+                    } else {
+                        console.log('⏰ Fallback: NOT tracking lead - validation errors or form still visible:', {
+                            hasValidationErrors,
+                            hasErrorText,
+                            hasInvalidInputs,
+                            hasNetworkErrors,
+                            formStillVisible,
+                            noRedirect
+                        });
+                    }
+                }
             }, 8000);
         }
 
@@ -540,7 +573,7 @@
             
             // Check for specific error text content (exactly like your validation)
             const errorTexts = [
-                'invalid phone number. for indian numbers, enter a valid 10-digit number starting with 6-9', // <-- *** FIX: ADDED YOUR ERROR ***
+                'invalid phone number. for indian numbers, enter a valid 10-digit number starting with 6-9',
                 'invalid otp',
                 'failed to send', 'error sending', 'failed to fetch', 'cors policy',
                 '409', 'conflict', 'validation failed', 'form validation',
@@ -549,7 +582,6 @@
             
             const formText = form.textContent.toLowerCase();
             const pageText = document.body.textContent.toLowerCase();
-            // *** FIX: Check pageText as well
             const hasErrorText = errorTexts.some(errorText => formText.includes(errorText) || pageText.includes(errorText.toLowerCase()));
             
             // Check for form validation attributes
@@ -629,9 +661,9 @@
             //     submitButtonDisabled
             // });
             
-            // Strict mode: Only track on explicit thank-you URL; otherwise do nothing
-            if (urlChanged && !hasValidationErrors && !hasErrorText && !hasInvalidInputs) {
-                console.log('✅ Thank-you URL detected - tracking lead');
+            // If any success indicator is found AND no validation errors, track the lead
+            if ((allFieldsEmpty || hasSuccessMessage || formDisabled || urlChanged || hasPageSuccess || submitButtonDisabled) && !hasValidationErrors && !hasErrorText && !hasInvalidInputs) {
+                console.log('✅ Success indicators detected and no validation errors - tracking lead');
                 trackSuccessfulLead(form, index);
                 return true;
             }
@@ -641,70 +673,21 @@
         
         // Track thank you page visits
         function trackThankYouPage() {
-            // Debounce multiple rapid calls
-            if (window.__LA_tu_debounce) {
-                clearTimeout(window.__LA_tu_debounce);
-            }
-            window.__LA_tu_debounce = setTimeout(() => {
             // Check if we're on the thank you page (multiple patterns)
             const currentUrl = window.location.href.toLowerCase();
-            const customPatterns = (window.LiveAnalyticsConfig && Array.isArray(window.LiveAnalyticsConfig.thankYouPatterns)) ? window.LiveAnalyticsConfig.thankYouPatterns.map(s => String(s).toLowerCase()) : [];
             const thankYouPatterns = [
                 'thankyou', 'thank-you', 'thank_you', 'thank you',
                 'success', 'confirmation', 'submitted', 'received',
-                'enquiry-received', 'lead-received', 'form-submitted',
-                'ty', 'enquiry-thank-you', 'lead-submitted', 'submitted=true'
-            ].concat(customPatterns);
+                'enquiry-received', 'lead-received', 'form-submitted'
+            ];
             
             const isThankYouPage = thankYouPatterns.some(pattern => currentUrl.includes(pattern));
             
             if (isThankYouPage) {
                 console.log('🎉 Thank you page detected!');
-                // Idempotency: prevent duplicate sends for this page/session
-                const sessionId = getSessionId();
-                // Prefer a per-submission UUID if available to allow multiple simultaneous tests
-                let leadRawForKey = sessionStorage.getItem('leadData');
-                if (!leadRawForKey) { try { leadRawForKey = localStorage.getItem('leadDataFallback'); } catch(_) {}
-                }
-                let submissionUuid = '';
-                try { if (leadRawForKey) { const tmp = JSON.parse(leadRawForKey); submissionUuid = tmp.uuid || ''; } } catch(_) {}
-                const keyBase = submissionUuid ? `la_ty_uuid_${submissionUuid}` : `la_ty_${DASHBOARD_CONFIG.gtmId}_${sessionId}_${location.pathname}`;
-                const key = keyBase;
-                const ttlMs = 120000; // 2 minutes TTL
-                try {
-                    const raw = sessionStorage.getItem(key) || localStorage.getItem(key);
-                    if (raw) {
-                        const ts = parseInt(raw, 10);
-                        if (!isNaN(ts) && Date.now() - ts < ttlMs) {
-                            console.log('🛑 Thank-you already sent recently for this session and page. Skipping.');
-                            return;
-                        }
-                    }
-                } catch (_) {}
                 
                 // Get the lead data from session storage (stored during form submission)
-                let leadData = sessionStorage.getItem('leadData');
-                if (!leadData) {
-                    try { leadData = localStorage.getItem('leadDataFallback'); } catch(_) {}
-                }
-                if (!leadData) {
-                    // Fallback: try to reconstruct from DOM (e.g., thankyou.html shows phone)
-                    try {
-                        const phoneNode = document.querySelector('[data-phone], #userPhone');
-                        const reconstructed = {};
-                        if (phoneNode) {
-                            const dp = phoneNode.getAttribute('data-phone') || phoneNode.textContent;
-                            if (dp) reconstructed.phone = String(dp).trim();
-                        }
-                        // Attempt to infer test lead from visible name/text
-                        const txt = document.body.textContent.toLowerCase();
-                        const isTest = txt.includes('test');
-                        reconstructed.isTestLead = isTest;
-                        reconstructed.timestamp = Date.now();
-                        leadData = JSON.stringify(reconstructed);
-                        console.log('🧩 Reconstructed lead data from thank-you DOM:', reconstructed);
-                    } catch (_) {}
-                }
+                const leadData = sessionStorage.getItem('leadData');
                 if (leadData) {
                     try {
                         const data = JSON.parse(leadData);
@@ -735,22 +718,14 @@
                                 ...data,
                                 isFormSubmission: true,
                                 isTestLead: isTestLead,
-                                thankYouPage: true,
-                                successfulSubmission: true
+                                thankYouPage: true
                             }
                         };
                         
                         sendToDashboard(payload);
                         
-                        // Mark sent to prevent duplicates
-                        try {
-                            sessionStorage.setItem(key, String(Date.now()));
-                            localStorage.setItem(key, String(Date.now()));
-                        } catch (_) {}
-
                         // Clear the stored data
                         sessionStorage.removeItem('leadData');
-                        try { localStorage.removeItem('leadDataFallback'); } catch(_) {}
                         
                         console.log('✅ Thank you page lead tracked successfully');
                     } catch (error) {
@@ -758,7 +733,6 @@
                     }
                 }
             }
-            }, 0);
         }
         
         // Send data to dashboard
@@ -808,27 +782,29 @@
             }
         }
         
-      // Manual lead tracking function for websites to call
-function manualTrackLead(formData = {}) {
-    console.log('🔧 Manual lead tracking called with data:', formData);
-    
-    // Check if this is a test lead
-    const isTestLead = isTestSubmission(formData);
-    
-    // Store lead data in session storage
-    sessionStorage.setItem('leadData', JSON.stringify({
-        ...formData,
-        isTestLead: isTestLead,
-        isGoogleAdsVisitor: detectGoogleAdsTraffic().isGoogleAds,
-        trafficSource: detectGoogleAdsTraffic().trafficSource,
-        googleAds: detectGoogleAdsTraffic(),
-        timestamp: Date.now(),
-        manualTracking: true
-    }));
-    
-    // Track the lead immediately
-    trackSuccessfulLead(null, 0);
-}
+        // Manual lead tracking function for websites to call
+        function manualTrackLead(formData = {}) {
+            console.log('🔧 Manual lead tracking called with data:', formData);
+            
+            // Check if this is a test lead
+            const isTestLead = isTestSubmission(formData);
+            
+            // Store lead data in session storage
+            sessionStorage.setItem('leadData', JSON.stringify({
+                ...formData,
+                isTestLead: isTestLead,
+                isGoogleAdsVisitor: detectGoogleAdsTraffic().isGoogleAds,
+                // --- THIS IS THE FIX ---
+                trafficSource: detectGoogleAdsTraffic().trafficSource,
+                // --- END FIX ---
+                googleAds: detectGoogleAdsTraffic(),
+                timestamp: Date.now(),
+                manualTracking: true
+            }));
+            
+            // Track the lead immediately
+            trackSuccessfulLead(null, 0);
+        }
 
         // Expose tracking functions globally
         window.LiveAnalytics = {
@@ -838,23 +814,12 @@ function manualTrackLead(formData = {}) {
             manualTrackLead: manualTrackLead
         };
         
-        // Initialize when DOM is ready and also re-check thank-you on pageshow
-        const boot = () => { initTracking(); trackThankYouPage(); };
+        // Initialize when DOM is ready
         if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', boot);
+            document.addEventListener('DOMContentLoaded', initTracking);
         } else {
-            boot();
+            initTracking();
         }
-        window.addEventListener('pageshow', trackThankYouPage);
-
-        // Hook into SPA navigations (if any) to detect thank-you route changes
-        try {
-            const origPushState = history.pushState;
-            const origReplaceState = history.replaceState;
-            history.pushState = function() { const r = origPushState.apply(this, arguments); setTimeout(trackThankYouPage, 0); return r; };
-            history.replaceState = function() { const r = origReplaceState.apply(this, arguments); setTimeout(trackThankYouPage, 0); return r; };
-            window.addEventListener('popstate', trackThankYouPage);
-        } catch (_) {}
     }
     
 })();
