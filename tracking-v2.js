@@ -640,6 +640,11 @@
         
         // Track thank you page visits
         function trackThankYouPage() {
+            // Debounce multiple rapid calls
+            if (window.__LA_tu_debounce) {
+                clearTimeout(window.__LA_tu_debounce);
+            }
+            window.__LA_tu_debounce = setTimeout(() => {
             // Check if we're on the thank you page (multiple patterns)
             const currentUrl = window.location.href.toLowerCase();
             const customPatterns = (window.LiveAnalyticsConfig && Array.isArray(window.LiveAnalyticsConfig.thankYouPatterns)) ? window.LiveAnalyticsConfig.thankYouPatterns.map(s => String(s).toLowerCase()) : [];
@@ -654,6 +659,20 @@
             
             if (isThankYouPage) {
                 console.log('🎉 Thank you page detected!');
+                // Idempotency: prevent duplicate sends for this page/session
+                const sessionId = getSessionId();
+                const key = `la_ty_${DASHBOARD_CONFIG.gtmId}_${sessionId}_${location.pathname}`;
+                const ttlMs = 120000; // 2 minutes TTL
+                try {
+                    const raw = sessionStorage.getItem(key) || localStorage.getItem(key);
+                    if (raw) {
+                        const ts = parseInt(raw, 10);
+                        if (!isNaN(ts) && Date.now() - ts < ttlMs) {
+                            console.log('🛑 Thank-you already sent recently for this session and page. Skipping.');
+                            return;
+                        }
+                    }
+                } catch (_) {}
                 
                 // Get the lead data from session storage (stored during form submission)
                 let leadData = sessionStorage.getItem('leadData');
@@ -715,8 +734,15 @@
                         
                         sendToDashboard(payload);
                         
+                        // Mark sent to prevent duplicates
+                        try {
+                            sessionStorage.setItem(key, String(Date.now()));
+                            localStorage.setItem(key, String(Date.now()));
+                        } catch (_) {}
+
                         // Clear the stored data
                         sessionStorage.removeItem('leadData');
+                        try { localStorage.removeItem('leadDataFallback'); } catch(_) {}
                         
                         console.log('✅ Thank you page lead tracked successfully');
                     } catch (error) {
@@ -724,6 +750,7 @@
                     }
                 }
             }
+            }, 0);
         }
         
         // Send data to dashboard
