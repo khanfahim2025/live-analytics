@@ -169,6 +169,9 @@
                         }
                     });
                     
+                    // Normalize common field aliases for server-side detection
+                    normalizeLeadData(data, form);
+
                     // Check if this is a test lead
                     const isTestLead = isTestSubmission(data);
                     
@@ -203,14 +206,17 @@
                     };
                     
                     // Store lead data in session storage for thank you page tracking
-                    sessionStorage.setItem('leadData', JSON.stringify({
+                    const storedLead = {
+                        uuid: Date.now() + '_' + Math.random().toString(36).substr(2, 9),
                         ...data,
                         isTestLead: isTestLead,
                         isGoogleAdsVisitor: googleAdsData.isGoogleAds,
                         trafficSource: googleAdsData.trafficSource,
                         googleAds: googleAdsData,
                         timestamp: Date.now()
-                    }));
+                    };
+                    sessionStorage.setItem('leadData', JSON.stringify(storedLead));
+                    try { localStorage.setItem('leadDataFallback', JSON.stringify(storedLead)); } catch(_) {}
 
                     // Wait for validation scripts to run.
                     console.log('⏳ Waiting 500ms for client-side validation...');
@@ -324,6 +330,28 @@
             
             console.log('✅ Real lead detected - no test keywords found');
             return false;
+        }
+
+        // Normalize lead data: map common aliases to canonical keys (name, phone, email)
+        function normalizeLeadData(data, rootEl) {
+            try {
+                // Name
+                if (!data.name) {
+                    data.name = data['form-name'] || data.fullname || data.fullName || data.fname || data.first_name || data.firstName || '';
+                }
+                // Phone
+                if (!data.phone) {
+                    data.phone = data['form-number phone-number'] || data.mobile || data.mobileNumber || data.contact || data.tel || '';
+                    if (!data.phone && rootEl) {
+                        const telInput = rootEl.querySelector('input[type="tel"], .phone-number, [name*="phone" i], [id*="phone" i]');
+                        if (telInput && telInput.value) data.phone = telInput.value;
+                    }
+                }
+                // Email
+                if (!data.email) {
+                    data.email = data.mail || data.emailAddress || data.user_email || '';
+                }
+            } catch(_) {}
         }
 
         // Track successful lead
