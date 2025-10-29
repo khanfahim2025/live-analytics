@@ -1,11 +1,14 @@
 /**
- * Universal Live Analytics Tracking Script v2
+ * Universal Live Analytics Tracking Script v3
  * Works for ALL websites with different GTM IDs
- * Fixed configuration loading issue
+ * * FIX v3: 
+ * 1. Added specific phone validation error string to error check.
+ * 2. Removed redundant `checkForSuccessfulSubmission` function which was 
+ * causing false positive 'thankYouPage' events on validation failure.
  */
 
 (function() {
-    'use strict';
+    'useB strict';
     
     // Wait for configuration to be set
     function waitForConfig() {
@@ -98,37 +101,37 @@
         function trackPageView() {
             const googleAdsData = detectGoogleAdsTraffic();
             
-    const payload = {
-        gtmId: DASHBOARD_CONFIG.gtmId,
-        siteName: DASHBOARD_CONFIG.siteName,
-        siteUrl: DASHBOARD_CONFIG.siteUrl,
-        region: DASHBOARD_CONFIG.region || 'unknown', // NEW: Region support
-        eventType: 'gtm.pageView',
-        timestamp: Date.now(),
-        url: window.location.href,
-        referrer: document.referrer,
-        sessionId: getSessionId(),
-        isMobile: /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent),
-        deviceType: getDeviceType(),
-        userAgent: navigator.userAgent,
-        // NEW: Google Ads tracking data
-        googleAds: googleAdsData,
-        isGoogleAdsVisitor: googleAdsData.isGoogleAds,
-        trafficSource: googleAdsData.trafficSource,
-        data: {
-            pageTitle: document.title,
-            pagePath: window.location.pathname,
-            pageSearch: window.location.search,
-            pageHash: window.location.hash,
-            // UTM parameters
-            utmSource: googleAdsData.utmSource,
-            utmMedium: googleAdsData.utmMedium,
-            utmCampaign: googleAdsData.utmCampaign,
-            utmTerm: googleAdsData.utmTerm,
-            utmContent: googleAdsData.utmContent,
-            gclid: googleAdsData.gclid
-        }
-    };
+            const payload = {
+                gtmId: DASHBOARD_CONFIG.gtmId,
+                siteName: DASHBOARD_CONFIG.siteName,
+                siteUrl: DASHBOARD_CONFIG.siteUrl,
+                region: DASHBOARD_CONFIG.region || 'unknown', // NEW: Region support
+                eventType: 'gtm.pageView',
+                timestamp: Date.now(),
+                url: window.location.href,
+                referrer: document.referrer,
+                sessionId: getSessionId(),
+                isMobile: /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent),
+                deviceType: getDeviceType(),
+                userAgent: navigator.userAgent,
+                // NEW: Google Ads tracking data
+                googleAds: googleAdsData,
+                isGoogleAdsVisitor: googleAdsData.isGoogleAds,
+                trafficSource: googleAdsData.trafficSource,
+                data: {
+                    pageTitle: document.title,
+                    pagePath: window.location.pathname,
+                    pageSearch: window.location.search,
+                    pageHash: window.location.hash,
+                    // UTM parameters
+                    utmSource: googleAdsData.utmSource,
+                    utmMedium: googleAdsData.utmMedium,
+                    utmCampaign: googleAdsData.utmCampaign,
+                    utmTerm: googleAdsData.utmTerm,
+                    utmContent: googleAdsData.utmContent,
+                    gclid: googleAdsData.gclid
+                }
+            };
             
             sendToDashboard(payload);
         }
@@ -138,57 +141,41 @@
             const forms = document.querySelectorAll('form');
             
             forms.forEach((form, index) => {
-                // Track successful form submissions
-                form.addEventListener('submit', function(event) {
-                    // Let the form submit naturally first
-                    setTimeout(() => {
-                        checkForSuccessfulSubmission(form, index);
-                    }, 1000); // Wait 1 second for form processing
-                });
-                // Intercept form submission BEFORE it gets processed
+                
+                // *** FIX: REMOVED the first event listener that called checkForSuccessfulSubmission.
+                // It was causing false positives.
+                // The setupUniversalLeadTracking function handles success detection better.
+
+                // Intercept form submission BEFORE it gets processed (Capture Phase)
                 form.addEventListener('submit', function(event) {
                     console.log('🚨 Form submission intercepted!');
-                    console.log('🔍 Form element:', form);
-                    console.log('🔍 Form HTML:', form.outerHTML);
                     
                     // Get Google Ads data
                     const googleAdsData = detectGoogleAdsTraffic();
                     
                     // Get all input fields from the form
                     const inputs = form.querySelectorAll('input, textarea, select');
-                    console.log('🔍 Found inputs:', inputs.length);
-                    
                     const data = {};
                     
                     inputs.forEach((input, index) => {
-                        console.log(`🔍 Input ${index}:`, {
-                            tagName: input.tagName,
-                            type: input.type,
-                            name: input.name,
-                            id: input.id,
-                            className: input.className,
-                            value: input.value,
-                            placeholder: input.placeholder
-                        });
-                        
-                        // Try different ways to get the field name
                         const fieldName = input.name || input.id || input.className || `field_${index}`;
-                        if (input.value) {
+
+                        if(input.type === 'radio' || input.type === 'checkbox') {
+                            if(input.checked) {
+                                data[fieldName] = input.value;
+                                console.log(`📝 Captured field: ${fieldName} = ${input.value}`);
+                            }
+                        } else if (input.value) {
                             data[fieldName] = input.value;
                             console.log(`📝 Captured field: ${fieldName} = ${input.value}`);
                         }
                     });
-                    
-                    console.log('🔍 All captured form data:', data);
                     
                     // Check if this is a test lead
                     const isTestLead = isTestSubmission(data);
                     
                     console.log('🔍 Form submission data:', data);
                     console.log('🧪 Is test lead:', isTestLead);
-                    console.log('🔍 Name field value:', data.name);
-                    console.log('🔍 Phone field value:', data.phone);
-                    console.log('🎯 Google Ads data:', googleAdsData);
                     
                     const payload = {
                         gtmId: DASHBOARD_CONFIG.gtmId,
@@ -226,29 +213,56 @@
                         googleAds: googleAdsData,
                         timestamp: Date.now()
                     }));
+
+                    // Wait for validation scripts to run.
+                    console.log('⏳ Waiting 500ms for client-side validation...');
+
+                    setTimeout(() => {
+                        // Re-check for validation errors RIGHT BEFORE sending
+                        const errorMessages = form.querySelectorAll('.error, .invalid, [class*="error"], [class*="invalid"], .field-error, .validation-error, .form-error');
+                        const hasValidationErrors = errorMessages.length > 0;
+                        
+                        // Check for specific error text content (like your validation)
+                        const errorTexts = [
+                            'invalid phone number. for indian numbers, enter a valid 10-digit number starting with 6-9', // <-- *** FIX: ADDED YOUR ERROR ***
+                            'invalid otp',
+                            'failed to send', 'error sending', 'failed to fetch', 'cors policy',
+                            '409', 'conflict', 'validation failed', 'form validation',
+                            'its worng u enter'
+                        ];
+                        
+                        const formText = form.textContent.toLowerCase();
+                        const pageText = document.body.textContent.toLowerCase();
+                        // *** FIX: Check pageText as well, in case error is not inside the form
+                        const hasErrorText = errorTexts.some(errorText => formText.includes(errorText) || pageText.includes(errorText.toLowerCase()));
+                        
+                        // Check for form validation attributes
+                        const invalidInputs = form.querySelectorAll('input:invalid, textarea:invalid, select:invalid');
+                        const hasInvalidInputs = invalidInputs.length > 0;
+                        
+                        // Check browser's native validation API
+                        const isFormValid = form.checkValidity();
+
+                        if (hasValidationErrors || hasErrorText || hasInvalidInputs || !isFormValid) {
+                            // Validation failed! DO NOT SEND.
+                            console.log('❌ Validation failed on submit attempt. gtm.formSubmit event CANCELLED.', {
+                                hasValidationErrors: hasValidationErrors,
+                                hasErrorText: hasErrorText,
+                                hasInvalidInputs: hasInvalidInputs,
+                                isFormValid: isFormValid
+                            });
+                        } else {
+                            // Validation passed (or at least, no errors were found). Send the data.
+                            console.log('✅ Validation passed on submit attempt. Sending gtm.formSubmit event.');
+                            sendToDashboard(payload);
+                        }
+                    }, 500); // 500ms delay to allow validation scripts to run and update the DOM
                     
-                    // Send to dashboard immediately (form submission attempt)
-                    sendToDashboard(payload);
-                    console.log('📊 Form submission attempt tracked');
-                    
-                    // Track form submission for status monitoring
+                    // Track form submission for status monitoring (this is separate)
                     if (window.realTimeFetcher && window.realTimeFetcher.trackFormSubmission) {
                         window.realTimeFetcher.trackFormSubmission(DASHBOARD_CONFIG.siteUrl, 'contact');
                     }
                     
-                    // DON'T count as lead yet - wait for successful validation
-                    // The lead will be counted only when form validation passes
-                    // and the form actually submits successfully
-                    
-                    // Log form submission (no user notifications)
-                    if (isTestLead) {
-                        console.log('🧪 Test lead detected - allowing form to proceed with validation');
-                        // For test leads, allow the form to proceed but mark it as test lead
-                        // The website's validation will handle phone number validation
-                        // We'll track it when it reaches the thank you page
-                    } else {
-                        console.log('✅ Real lead - allowing form submission to proceed');
-                    }
                 }, true); // Use capture phase to intercept before other handlers
             });
         }
@@ -284,12 +298,11 @@
             });
         }
         
-        // Check if submission is a test lead (exactly like your validation)
+        // Check if submission is a test lead
         function isTestSubmission(data) {
             console.log('🔍 Checking for test lead in data:', data);
-            console.log('🔍 All form fields:', Object.keys(data));
             
-            // Check name field for "test" keyword (exactly like your logic)
+            // Check name field for "test" keyword
             const nameField = data.name || data.fname || data['form-name'] || '';
             if (typeof nameField === 'string' && nameField.trim() !== '') {
                 const nameValue = nameField.toLowerCase().trim();
@@ -299,67 +312,26 @@
                     return true;
                 }
             }
+
+            // Check all fields for test keywords
+            for (const key in data) {
+                const value = data[key];
+                if (typeof value === 'string') {
+                    const lowerCaseValue = value.toLowerCase().trim();
+                    if (TEST_KEYWORDS.some(keyword => lowerCaseValue.includes(keyword))) {
+                         console.log(`🧪 Test lead detected - field "${key}" contains test keyword:`, { value: value });
+                         return true;
+                    }
+                }
+            }
             
-            console.log('✅ Real lead detected - name does not contain "test"');
+            console.log('✅ Real lead detected - no test keywords found');
             return false;
         }
 
-        // Check for successful form submission
-        function checkForSuccessfulSubmission(form, index) {
-            console.log('🔍 Checking for successful form submission...');
-            
-            // Check if form is still on the page (not redirected)
-            if (!document.contains(form)) {
-                console.log('✅ Form no longer on page - likely successful submission');
-                trackSuccessfulLead(form, index);
-                return;
-            }
-            
-            // Check for success indicators
-            const successIndicators = [
-                'success', 'thank', 'submitted', 'received', 'confirmation',
-                'thank you', 'enquiry received', 'form submitted'
-            ];
-            
-            const pageText = document.body.textContent.toLowerCase();
-            const hasSuccessIndicator = successIndicators.some(indicator => 
-                pageText.includes(indicator)
-            );
-            
-            if (hasSuccessIndicator) {
-                console.log('✅ Success indicator found on page');
-                trackSuccessfulLead(form, index);
-                return;
-            }
-            
-            // Check for error indicators
-            const errorIndicators = [
-                'error', 'invalid', 'required', 'failed', 'try again',
-                'please enter', 'incorrect', 'validation'
-            ];
-            
-            const hasErrorIndicator = errorIndicators.some(indicator => 
-                pageText.includes(indicator)
-            );
-            
-            if (hasErrorIndicator) {
-                console.log('❌ Error indicator found - form submission failed');
-                return;
-            }
-            
-            // If no clear indicators, check if form fields are cleared (success)
-            const inputs = form.querySelectorAll('input, textarea, select');
-            const allFieldsEmpty = Array.from(inputs).every(input => 
-                !input.value || input.value.trim() === ''
-            );
-            
-            if (allFieldsEmpty) {
-                console.log('✅ Form fields cleared - likely successful submission');
-                trackSuccessfulLead(form, index);
-            } else {
-                console.log('⚠️ Form still has values - submission may have failed');
-            }
-        }
+        // *** FIX: REMOVED the redundant `checkForSuccessfulSubmission` function.
+        // It was being called by the deleted listener and was causing false positives.
+        // `checkForFormSuccess` (below) is the only one used now.
 
         // Track successful lead
         function trackSuccessfulLead(form, index) {
@@ -380,6 +352,21 @@
                     isTestLead = data.isTestLead || false;
                 } catch (error) {
                     console.error('❌ Error parsing lead data:', error);
+                }
+            } else {
+                console.warn('⚠️ No leadData found in sessionStorage for successful lead.');
+                // Fallback: try to get data from form if it still exists
+                if (form) {
+                    const inputs = form.querySelectorAll('input, textarea, select');
+                    inputs.forEach((input, inputIndex) => {
+                        const fieldName = input.name || input.id || input.className || `field_${inputIndex}`;
+                        if(input.type === 'radio' || input.type === 'checkbox') {
+                            if(input.checked) { formData[fieldName] = input.value; }
+                        } else if (input.value) {
+                            formData[fieldName] = input.value;
+                        }
+                    });
+                    isTestLead = isTestSubmission(formData);
                 }
             }
             
@@ -443,7 +430,11 @@
                     
                     inputs.forEach((input, inputIndex) => {
                         const fieldName = input.name || input.id || input.className || `field_${inputIndex}`;
-                        if (input.value) {
+                        if(input.type === 'radio' || input.type === 'checkbox') {
+                            if(input.checked) {
+                                formData[fieldName] = input.value;
+                            }
+                        } else if (input.value) {
                             formData[fieldName] = input.value;
                         }
                     });
@@ -451,7 +442,7 @@
                     // Check if this is a test lead
                     const isTestLead = isTestSubmission(formData);
                     
-                    // Store lead data in session storage
+                    // Store lead data in session storage (this might overwrite data from setupFormTracking, which is fine)
                     sessionStorage.setItem('leadData', JSON.stringify({
                         ...formData,
                         isTestLead: isTestLead,
@@ -537,15 +528,17 @@
                     const hasValidationErrors = errorMessages.length > 0;
                     
                     const errorTexts = [
-                        'invalid phone number. for indian numbers, enter a valid 10-digit number starting with 6-9',
+                        'invalid phone number. for indian numbers, enter a valid 10-digit number starting with 6-9', // <-- *** FIX: ADDED YOUR ERROR ***
                         'invalid otp',
                         'failed to send', 'error sending', 'failed to fetch', 'cors policy',
-                        '409', 'conflict', 'validation failed', 'form validation'
+                        '409', 'conflict', 'validation failed', 'form validation',
+                        'its worng u enter'
                     ];
                     
                     const formText = form.textContent.toLowerCase();
                     const pageText = document.body.textContent.toLowerCase();
-                    const hasErrorText = errorTexts.some(errorText => formText.includes(errorText) || pageText.includes(errorText));
+                    // *** FIX: Check pageText as well
+                    const hasErrorText = errorTexts.some(errorText => formText.includes(errorText) || pageText.includes(errorText.toLowerCase()));
                     
                     const invalidInputs = form.querySelectorAll('input:invalid, textarea:invalid, select:invalid');
                     const hasInvalidInputs = invalidInputs.length > 0;
@@ -588,15 +581,17 @@
             
             // Check for specific error text content (exactly like your validation)
             const errorTexts = [
-                'invalid phone number. for indian numbers, enter a valid 10-digit number starting with 6-9',
+                'invalid phone number. for indian numbers, enter a valid 10-digit number starting with 6-9', // <-- *** FIX: ADDED YOUR ERROR ***
                 'invalid otp',
                 'failed to send', 'error sending', 'failed to fetch', 'cors policy',
-                '409', 'conflict', 'validation failed', 'form validation'
+                '409', 'conflict', 'validation failed', 'form validation',
+                'its worng u enter'
             ];
             
             const formText = form.textContent.toLowerCase();
             const pageText = document.body.textContent.toLowerCase();
-            const hasErrorText = errorTexts.some(errorText => formText.includes(errorText) || pageText.includes(errorText));
+            // *** FIX: Check pageText as well
+            const hasErrorText = errorTexts.some(errorText => formText.includes(errorText) || pageText.includes(errorText.toLowerCase()));
             
             // Check for form validation attributes
             const invalidInputs = form.querySelectorAll('input:invalid, textarea:invalid, select:invalid');
@@ -629,6 +624,12 @@
                 });
                 return false;
             }
+
+            // Check if we've already tracked this lead
+            if (!sessionStorage.getItem('leadData')) {
+                // console.log('Lead already tracked, skipping success check.');
+                return true; // Return true to stop intervals
+            }
             
             // Check if form fields are cleared (common success indicator)
             const inputs = form.querySelectorAll('input[type="text"], input[type="email"], input[type="tel"], textarea');
@@ -660,17 +661,14 @@
             const submitButtons = form.querySelectorAll('button[type="submit"], input[type="submit"]');
             const submitButtonDisabled = Array.from(submitButtons).some(button => button.disabled);
             
-            console.log('🔍 Success detection check:', {
-                hasValidationErrors,
-                hasErrorText,
-                hasInvalidInputs,
-                allFieldsEmpty,
-                hasSuccessMessage,
-                formDisabled,
-                urlChanged,
-                hasPageSuccess,
-                submitButtonDisabled
-            });
+            // console.log('🔍 Success detection check:', { // Optional: too noisy
+            //     allFieldsEmpty,
+            //     hasSuccessMessage,
+            //     formDisabled,
+            //     urlChanged,
+            //     hasPageSuccess,
+            //     submitButtonDisabled
+            // });
             
             // If any success indicator is found AND no validation errors, track the lead
             if ((allFieldsEmpty || hasSuccessMessage || formDisabled || urlChanged || hasPageSuccess || submitButtonDisabled) && !hasValidationErrors && !hasErrorText && !hasInvalidInputs) {
@@ -760,7 +758,7 @@
             })
             .then(response => {
                 console.log('📡 Response status:', response.status);
-                console.log('📡 Response headers:', response.headers);
+                // console.log('📡 Response headers:', response.headers); // Optional: for deep debugging
                 return response.json();
             })
             .then(result => {
@@ -768,8 +766,6 @@
             })
             .catch(error => {
                 console.error('❌ Error sending data to dashboard:', error);
-                console.error('❌ Error details:', error.message);
-                console.error('❌ Stack trace:', error.stack);
             });
         }
         
@@ -795,29 +791,27 @@
             }
         }
         
-        // Notification functions removed - no user notifications will be shown
-        
-        // Manual lead tracking function for websites to call
-        function manualTrackLead(formData = {}) {
-            console.log('🔧 Manual lead tracking called with data:', formData);
-            
-            // Check if this is a test lead
-            const isTestLead = isTestSubmission(formData);
-            
-            // Store lead data in session storage
-            sessionStorage.setItem('leadData', JSON.stringify({
-                ...formData,
-                isTestLead: isTestLead,
-                isGoogleAdsVisitor: detectGoogleAdsTraffic().isGoogleAds,
-                trafficSource: detectGoogleAdsTraffic().trafficSource,
-                googleAds: detectGoogleAdsTraffic(),
-                timestamp: Date.now(),
-                manualTracking: true
-            }));
-            
-            // Track the lead immediately
-            trackSuccessfulLead(null, 0);
-        }
+      // Manual lead tracking function for websites to call
+function manualTrackLead(formData = {}) {
+    console.log('🔧 Manual lead tracking called with data:', formData);
+    
+    // Check if this is a test lead
+    const isTestLead = isTestSubmission(formData);
+    
+    // Store lead data in session storage
+    sessionStorage.setItem('leadData', JSON.stringify({
+        ...formData,
+        isTestLead: isTestLead,
+        isGoogleAdsVisitor: detectGoogleAdsTraffic().isGoogleAds,
+        trafficSource: detectGoogleAdsTraffic().trafficSource,
+        googleAds: detectGoogleAdsTraffic(),
+        timestamp: Date.now(),
+        manualTracking: true
+    }));
+    
+    // Track the lead immediately
+    trackSuccessfulLead(null, 0);
+}
 
         // Expose tracking functions globally
         window.LiveAnalytics = {

@@ -3,12 +3,8 @@
 echo "🚀 Deploying Live Analytics - FRESH DEPLOYMENT v11.0"
 echo "===================================================="
 
-# FORCE FRESH DEPLOYMENT - Clear all data
-echo "🧹 FORCING FRESH DEPLOYMENT - Clearing ALL existing data..."
-rm -rf data/siteCounts.json
-rm -rf data/siteCounts.json.backup
-echo "{}" > data/siteCounts.json
-echo "✅ All historical data cleared - starting completely fresh"
+# FORCE FRESH DEPLOYMENT - Do not commit runtime data
+echo "🧹 FRESH DEPLOYMENT - Skipping runtime data files (handled by server)"
 
 # Clear local cache
 echo "🧹 Clearing local cache..."

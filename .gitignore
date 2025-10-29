@@ -84,3 +84,9 @@ jspm_packages/
 
 # TernJS port file
 .tern-port
+
+# Analytics data (persisted at runtime; do not track in git)
+data/siteCounts.json
+data/siteCounts.json.backup
+# Or ignore entire data directory (uncomment if desired)
+# data/
